@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Copy, Link2, RefreshCw, Share2, Trash2 } from "lucide-react";
 import { createInvitation, regenerateInvitation, revokeInvitation } from "@/app/actions/groups";
 import type { GroupInvitationRow } from "@/lib/database.types";
+import { formatDateTime } from "@/lib/dates";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, Select } from "@/components/ui/input";
@@ -34,11 +35,13 @@ export function InvitationsManager({
   invitations,
   siteUrl,
   nowIso,
+  timeZone,
 }: {
   groupId: string;
   invitations: GroupInvitationRow[];
   siteUrl: string;
   nowIso: string;
+  timeZone: string;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -134,7 +137,7 @@ export function InvitationsManager({
                   <p className="mt-1.5 text-xs text-muted">
                     {inv.use_count} {inv.use_count === 1 ? "uso" : "usos"}
                     {inv.max_uses ? ` de ${inv.max_uses}` : ""} ·{" "}
-                    {inv.expires_at ? `caduca ${new Date(inv.expires_at).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" })}` : "sin caducidad"}
+                    {inv.expires_at ? `caduca ${formatDateTime(inv.expires_at, timeZone)}` : "sin caducidad"}
                   </p>
                 </div>
                 {status.active ? (

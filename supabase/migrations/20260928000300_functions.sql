@@ -257,7 +257,7 @@ set search_path = ''
 as $$
   insert into public.habits (group_id, name, description, icon, category, color, frequency, weekdays, weekly_target, is_optional, goal, sort_order, starts_on)
   values
-    (p_group_id, 'Entrenamiento', 'Sesión de fuerza o acondicionamiento.', 'dumbbell', 'physical', '#f97316', 'weekly_target', '{}', 4, false, '4 sesiones / semana', 10, p_starts_on),
+    (p_group_id, 'Entrenamiento', 'Sesión de fuerza o acondicionamiento.', 'dumbbell', 'physical', '#f97316', 'weekly_target', '{}', 4, false, '45-60 min', 10, p_starts_on),
     (p_group_id, 'Boxeo', 'Técnica, saco, sombra o sparring.', 'swords', 'physical', '#ef4444', 'weekdays', '{2,4,6}', null, false, '60 min', 20, p_starts_on),
     (p_group_id, 'Movilidad / estiramientos', 'Movilidad articular y estiramientos.', 'person-standing', 'physical', '#22c55e', 'daily', '{}', null, false, '10 min', 30, p_starts_on),
     (p_group_id, 'Trabajo físico / activación', 'Activación diaria: flexiones, sentadillas, paseo…', 'zap', 'physical', '#eab308', 'daily', '{}', null, false, '15 min', 40, p_starts_on),
@@ -265,7 +265,7 @@ as $$
     (p_group_id, 'Lectura', 'Lectura de calidad, sin pantallas si es posible.', 'book-open', 'mental', '#6366f1', 'daily', '{}', null, false, '20 páginas', 60, p_starts_on),
     (p_group_id, 'Actitud positiva', 'Centrarse en soluciones en lugar de quejas.', 'sun', 'mental', '#f59e0b', 'daily', '{}', null, false, 'Cero quejas', 70, p_starts_on),
     (p_group_id, 'Estudio', 'Bloque de estudio profundo sin distracciones.', 'graduation-cap', 'productivity', '#0ea5e9', 'weekdays', '{1,2,3,4,5}', null, false, '2 h', 80, p_starts_on),
-    (p_group_id, 'Proyecto Google AdSense', 'Avance concreto en el proyecto.', 'rocket', 'productivity', '#14b8a6', 'weekly_target', '{}', 5, false, '5 días / semana', 90, p_starts_on);
+    (p_group_id, 'Proyecto Google AdSense', 'Avance concreto en el proyecto.', 'rocket', 'productivity', '#14b8a6', 'weekly_target', '{}', 5, false, '1 bloque de trabajo', 90, p_starts_on);
 $$;
 
 create or replace function public.create_group(

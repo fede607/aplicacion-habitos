@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useSyncExternalStore, useTransition } from "react";
 import { toast } from "sonner";
 import { LoaderCircle } from "lucide-react";
 import { updateProfile } from "@/app/actions/settings";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
+const noop = () => () => {};
 const EMOJIS = ["", "❄️", "🔥", "🥊", "💪", "📚", "🧠", "🏔️", "⚡", "🐺", "🦅", "🧊"];
 const COLORS = ["#38bdf8", "#6366f1", "#a855f7", "#ec4899", "#ef4444", "#f97316", "#eab308", "#22c55e", "#14b8a6", "#64748b"];
 
@@ -24,10 +25,12 @@ export function ProfileForm({ profile }: { profile: ProfileRow }) {
     timezone: profile.timezone,
   });
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
+  // La lista del navegador difiere de la de Node: se carga tras hidratar para evitar desajustes.
+  const mounted = useSyncExternalStore(noop, () => true, () => false);
   const timezones = useMemo(() => {
-    const list = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
+    const list = mounted && typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
     return list.includes(form.timezone) ? list : [form.timezone, ...list];
-  }, [form.timezone]);
+  }, [form.timezone, mounted]);
 
   return (
     <form

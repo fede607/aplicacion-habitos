@@ -150,3 +150,12 @@ export function formatMinutes(total: number): string {
   if (h === 0) return `${m} min`;
   return m === 0 ? `${h} h` : `${h} h ${m} min`;
 }
+
+/** Fecha y hora de un timestamp en la zona del usuario (idéntico en servidor y cliente). */
+export function formatDateTime(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat(LOCALE, { dateStyle: "medium", timeStyle: "short", timeZone }).format(new Date(iso));
+}
+
+export function formatDateOnly(iso: string, timeZone: string): string {
+  return new Intl.DateTimeFormat(LOCALE, { dateStyle: "medium", timeZone }).format(new Date(iso));
+}

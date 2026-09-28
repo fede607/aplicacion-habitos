@@ -68,7 +68,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
       <header className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold tracking-widest text-primary uppercase">{isToday ? "Hoy" : "Editando"}</p>
-          <h1 className="truncate text-2xl font-bold tracking-tight capitalize sm:text-3xl">{formatLongDate(date)}</h1>
+          <h1 className="truncate text-2xl font-bold tracking-tight first-letter:uppercase sm:text-3xl">{formatLongDate(date)}</h1>
         </div>
         <nav aria-label="Cambiar de día" className="flex shrink-0 gap-1">
           <DayLink href={`/today?date=${prev}`} disabled={!canPrev} label="Día anterior">

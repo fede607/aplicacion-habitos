@@ -1,0 +1,3 @@
+-- Intencionadamente vacío: la app no incluye usuarios ni datos falsos.
+-- Los hábitos iniciales del Winter Arc se crean al crear un grupo (create_group → seed_default_habits)
+-- y el catálogo de logros está en la migración 20260928000300_functions.sql.

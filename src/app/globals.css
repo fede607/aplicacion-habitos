@@ -90,6 +90,10 @@
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
+  /* Evita que un hijo con texto sin salto (truncate) ensanche columnas de grid. */
+  .grid > * {
+    min-width: 0;
+  }
   ::selection {
     background: color-mix(in oklab, var(--primary) 30%, transparent);
   }

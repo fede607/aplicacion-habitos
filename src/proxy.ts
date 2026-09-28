@@ -13,7 +13,9 @@ export async function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
-  const csp = buildCsp(nonce, url, process.env.NODE_ENV === "development");
+  const isHttps =
+    request.nextUrl.protocol === "https:" || request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() === "https";
+  const csp = buildCsp(nonce, url, process.env.NODE_ENV === "development", isHttps);
 
   const forward = () => {
     const headers = new Headers(request.headers);

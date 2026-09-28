@@ -1,5 +1,5 @@
 /** Cabeceras de seguridad y Content Security Policy con nonce por petición. */
-export function buildCsp(nonce: string, supabaseUrl: string, isDev: boolean): string {
+export function buildCsp(nonce: string, supabaseUrl: string, isDev: boolean, isHttps = true): string {
   let supabaseOrigin = "";
   let supabaseWs = "";
   try {
@@ -23,7 +23,7 @@ export function buildCsp(nonce: string, supabaseUrl: string, isDev: boolean): st
     `form-action 'self'`,
     `frame-ancestors 'none'`,
   ];
-  if (!isDev) directives.push("upgrade-insecure-requests");
+  if (!isDev && isHttps) directives.push("upgrade-insecure-requests");
   return directives.join("; ");
 }
 

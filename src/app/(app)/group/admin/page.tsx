@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Administrar grupo" };
 
 export default async function GroupAdminPage({ searchParams }: PageProps<"/group/admin">) {
   // requireGroupAdmin es sólo UX: cada acción vuelve a comprobarse en BD (RLS/RPC).
-  const { supabase, userId, activeGroup, today } = await requireGroupAdmin();
+  const { supabase, userId, activeGroup, today, profile } = await requireGroupAdmin();
   const params = await searchParams;
 
   const [habits, invitationsRes, membersRes] = await Promise.all([
@@ -66,7 +66,7 @@ export default async function GroupAdminPage({ searchParams }: PageProps<"/group
           </div>
         </CardHeader>
         <CardContent>
-          <InvitationsManager groupId={activeGroup.id} invitations={invitationsRes.data ?? []} siteUrl={getSiteUrl()} nowIso={new Date().toISOString()} />
+          <InvitationsManager groupId={activeGroup.id} invitations={invitationsRes.data ?? []} siteUrl={getSiteUrl()} nowIso={new Date().toISOString()} timeZone={profile.timezone} />
         </CardContent>
       </Card>
 
@@ -96,7 +96,7 @@ export default async function GroupAdminPage({ searchParams }: PageProps<"/group
             <CardTitle className="text-base">Miembros ({members.length})</CardTitle>
           </CardHeader>
           <CardContent>
-            <MembersManager groupId={activeGroup.id} members={members} meId={userId} />
+            <MembersManager groupId={activeGroup.id} members={members} meId={userId} timeZone={profile.timezone} />
           </CardContent>
         </Card>
       </div>

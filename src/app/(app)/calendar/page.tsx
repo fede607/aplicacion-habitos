@@ -75,7 +75,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
       <header className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold tracking-widest text-primary uppercase">Calendario</p>
-          <h1 className="text-2xl font-bold tracking-tight capitalize sm:text-3xl">{formatMonth(month)}</h1>
+          <h1 className="text-2xl font-bold tracking-tight first-letter:uppercase sm:text-3xl">{formatMonth(month)}</h1>
         </div>
         <nav aria-label="Cambiar de mes" className="flex gap-1">
           <Link href={`/calendar?month=${prevMonth}`} aria-label="Mes anterior" className="grid size-10 place-items-center rounded-xl border border-border bg-surface hover:bg-surface-2">
@@ -204,7 +204,7 @@ function DayDetail({
     <>
       <CardHeader>
         <div>
-          <CardTitle className="text-base capitalize">{formatLongDate(day)}</CardTitle>
+          <CardTitle className="text-base first-letter:uppercase">{formatLongDate(day)}</CardTitle>
           <p className="tabular mt-1 text-sm text-muted">
             {pct === null ? "Sin hábitos obligatorios" : `${stat!.completed}/${stat!.required} · ${pct}%`}
           </p>

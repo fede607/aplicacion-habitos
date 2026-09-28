@@ -65,7 +65,7 @@ export default async function WorkoutsPage({ searchParams }: PageProps<"/workout
                     <p className="font-semibold">
                       <span aria-hidden="true">{WORKOUT_EMOJI[w.type]}</span> {WORKOUT_LABELS[w.type]}
                     </p>
-                    <p className="text-sm text-muted capitalize">{formatLongDate(w.workout_date)}</p>
+                    <p className="text-sm text-muted first-letter:uppercase">{formatLongDate(w.workout_date)}</p>
                   </div>
                   <div className="tabular shrink-0 text-right text-sm">
                     <p className="font-semibold">{w.duration_min} min</p>

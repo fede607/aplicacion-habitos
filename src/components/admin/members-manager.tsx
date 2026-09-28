@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Crown, UserMinus } from "lucide-react";
+import { formatDateOnly } from "@/lib/dates";
 import { removeMember, setMemberRole, transferAdmin } from "@/app/actions/groups";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +20,7 @@ export type AdminMember = {
   joinedAt: string;
 };
 
-export function MembersManager({ groupId, members, meId }: { groupId: string; members: AdminMember[]; meId: string }) {
+export function MembersManager({ groupId, members, meId, timeZone }: { groupId: string; members: AdminMember[]; meId: string; timeZone: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const run = (fn: () => Promise<{ ok: boolean; error?: string }>, success: string) =>
@@ -43,7 +44,7 @@ export function MembersManager({ groupId, members, meId }: { groupId: string; me
                 {m.name} {isMe ? <span className="font-normal text-muted">(tú)</span> : null}
               </p>
               <p className="truncate text-xs text-muted">
-                @{m.username} · desde {new Date(m.joinedAt).toLocaleDateString("es-ES")}
+                @{m.username} · desde {formatDateOnly(m.joinedAt, timeZone)}
               </p>
             </div>
             {m.role === "admin" ? <Badge tone="primary">Admin</Badge> : null}
