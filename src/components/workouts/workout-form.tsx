@@ -111,7 +111,7 @@ export function WorkoutForm({ workout, defaultDate, minDate, maxDate }: { workou
         <Textarea id="w-exercises" value={form.exercises} maxLength={2000} placeholder="Ej.: 5×5 sentadilla 80 kg, 3×10 dominadas…" onChange={(e) => set("exercises", e.target.value)} />
       </Field>
       <Field label="Observaciones" htmlFor="w-notes" error={errors.notes}>
-        <Textarea id="w-notes" value={form.notes} maxLength={2000} placeholder="Ej.: Trabajé desplazamientos y combinaciones." onChange={(e) => set("notes", e.target.value)} />
+        <Textarea id="w-notes" value={form.notes} maxLength={2000} placeholder="Ej.: Buenas sensaciones, subí peso en sentadilla." onChange={(e) => set("notes", e.target.value)} />
       </Field>
       <Field label="Objetivo del siguiente entrenamiento" htmlFor="w-next" error={errors.nextGoal}>
         <Input id="w-next" value={form.nextGoal} maxLength={500} placeholder="Ej.: Subir 2,5 kg en press banca" onChange={(e) => set("nextGoal", e.target.value)} />

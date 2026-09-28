@@ -83,7 +83,7 @@ export function CreateGroupForm({ today }: { today: string }) {
         <span>
           <span className="block text-sm font-medium">Usar los hábitos del Winter Arc</span>
           <span className="block text-xs text-muted">
-            Entrenamiento, boxeo, movilidad, activación, reflexión, lectura, actitud, estudio y proyecto AdSense. Podrás
+            Entrenamiento, despertar temprano, ducha fría, agua, alimentación limpia, sueño, lectura, reflexión, foco digital y estudio. Podrás
             editarlos.
           </span>
         </span>

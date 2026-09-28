@@ -74,7 +74,7 @@ describe("registerSchema", () => {
 describe("habitSchema", () => {
   const base = {
     groupId: "3f2b2c1e-8f1a-4c5e-9b1a-2d3e4f5a6b7c",
-    name: "Boxeo",
+    name: "Deporte",
     description: "",
     icon: "swords",
     category: "physical",

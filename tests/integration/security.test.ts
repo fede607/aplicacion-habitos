@@ -90,19 +90,21 @@ describe("registro de usuario", () => {
 });
 
 describe("grupos y hábitos iniciales", () => {
-  it("siembra los 9 hábitos del Winter Arc", () => {
+  it("siembra los 10 hábitos genéricos del Winter Arc", () => {
     expect(habitIds.map((h) => h.name)).toEqual([
       "Entrenamiento",
-      "Boxeo",
-      "Movilidad / estiramientos",
-      "Trabajo físico / activación",
-      "Reflexión diaria",
+      "Despertar temprano",
+      "Ducha fría",
+      "Hidratación",
+      "Alimentación limpia",
+      "Dormir 7-8 horas",
       "Lectura",
-      "Actitud positiva",
-      "Estudio",
-      "Proyecto Google AdSense",
+      "Reflexión diaria",
+      "Foco digital",
+      "Aprendizaje / estudio",
     ]);
-    expect(habitIds.find((h) => h.name === "Boxeo")!.weekdays).toEqual([2, 4, 6]);
+    expect(habitIds.find((h) => h.name === "Aprendizaje / estudio")!.weekdays).toEqual([1, 2, 3, 4, 5]);
+    expect(habitIds.find((h) => h.name === "Entrenamiento")!.frequency).toBe("weekly_target");
   });
 
   it("el creador es admin y el invitado miembro", async () => {
@@ -426,8 +428,8 @@ describe("estadísticas", () => {
     const byName = (n: string) => habits!.find((h) => h.name === n)!.id;
     const today = todayIn(TZ);
     await user.client.rpc("set_habit_status", { p_habit_id: byName("Lectura"), p_date: today, p_status: "done" });
-    await user.client.rpc("set_habit_status", { p_habit_id: byName("Movilidad / estiramientos"), p_date: today, p_status: "done" });
-    await user.client.rpc("set_habit_status", { p_habit_id: byName("Actitud positiva"), p_date: today, p_status: "skipped" });
+    await user.client.rpc("set_habit_status", { p_habit_id: byName("Hidratación"), p_date: today, p_status: "done" });
+    await user.client.rpc("set_habit_status", { p_habit_id: byName("Ducha fría"), p_date: today, p_status: "skipped" });
     await user.client.rpc("set_habit_status", { p_habit_id: byName("Entrenamiento"), p_date: today, p_status: "done" });
 
     const isoDow = ((new Date(`${today}T12:00:00Z`).getUTCDay() + 6) % 7) + 1;

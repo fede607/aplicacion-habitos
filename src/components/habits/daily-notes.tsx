@@ -151,7 +151,7 @@ export function DailyNotes({
         <NoteField
           id={`did-${date}`}
           label="¿Qué hice hoy?"
-          placeholder="Ej.: Entrené boxeo durante 1 hora y estudié 2 horas."
+          placeholder="Ej.: Entrené 1 hora, leí 20 páginas y estudié 2 horas."
           value={didToday}
           disabled={!editable}
           onChange={(v) => {

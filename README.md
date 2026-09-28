@@ -21,7 +21,7 @@ tóxicos y con privacidad real.
 | Hábitos | Configurables desde la app por los admins: nombre, descripción, icono, categoría, color, frecuencia (diaria / días concretos / objetivo semanal), opcional, objetivo, orden, activo/inactivo, "activo desde" |
 | Hoy | Progreso del día (x / y, %), marcar ✅ hecho / ⭕ no hecho / ➖ no aplica con **guardado inmediato** y estado "Guardado ✓" real, navegación por los últimos 7 días |
 | Notas | "¿Qué hice hoy?" y "¿Qué puedo mejorar mañana?" con autoguardado y detección de conflictos entre dispositivos |
-| Entrenamiento | Tipo (gimnasio, boxeo, cardio, movilidad, otro), duración, intensidad, sensación 1-10, ejercicios, observaciones, objetivo siguiente |
+| Entrenamiento | Tipo (gimnasio, deporte, cardio, movilidad, otro), duración, intensidad, sensación 1-10, ejercicios, observaciones, objetivo siguiente |
 | Calendario | Vista mensual con colores 🟢 cumplido · 🟡 parcial · 🔴 bajo · ⚪ sin datos; detalle del día (hábitos, entrenos, notas, %) |
 | Estadísticas | Hoy, semana, mes, total del arc, racha actual y mejor, racha por hábito, tiempo entrenando, objetivos semanales, últimas 8 semanas |
 | Grupo | Progreso colectivo, tarjetas por miembro (%, racha, días activos, entrenos, semana), tiempo real, comparación **opcional** configurable por el grupo y por cada persona |
@@ -226,8 +226,8 @@ los dos pasos a la vez.
 1. Nada más desplegar, regístrate en `/register` (la primera cuenta es la del organizador y no necesita invitación).
    Tras confirmar el email llegas a **Empezar** (`/onboarding`).
 2. En *Crear un grupo*: nombre (p. ej. `WINTER ARC 2026`), fechas de inicio/fin y deja activado
-   *Usar los hábitos del Winter Arc* (Entrenamiento 4×/semana, Boxeo mar-jue-sáb, Movilidad, Activación, Reflexión,
-   Lectura, Actitud positiva, Estudio L-V y Proyecto Google AdSense 5×/semana).
+   *Usar los hábitos del Winter Arc*: Entrenamiento (5×/semana), Despertar temprano, Ducha fría, Hidratación,
+   Alimentación limpia, Dormir 7-8 h, Lectura, Reflexión diaria, Foco digital y Aprendizaje/estudio (L-V).
 3. Llegas a **Administración**: ajusta hábitos (frecuencias, días, colores, orden…), reglas y el umbral de "día
    cumplido" (80 % por defecto).
 

@@ -37,7 +37,7 @@ test("flujo completo de dos usuarios en un grupo", async ({ page, browser }, tes
   await expect(page.getByText("¡Grupo creado! Comparte el enlace")).toBeVisible();
 
   // Los 9 hábitos iniciales existen y se puede crear uno nuevo desde la app.
-  await expect(page.getByText("Proyecto Google AdSense")).toBeVisible();
+  await expect(page.getByText("Aprendizaje / estudio")).toBeVisible();
   await page.getByRole("button", { name: "Añadir hábito" }).click();
   const dialog = page.getByRole("dialog", { name: "Nuevo hábito" });
   await dialog.getByLabel("Nombre", { exact: true }).fill("Beber 2L de agua");
@@ -55,13 +55,13 @@ test("flujo completo de dos usuarios en un grupo", async ({ page, browser }, tes
   await page.goto("/today");
   await markHabit(page, "Beber 2L de agua");
   await markHabit(page, "Lectura");
-  await markHabit(page, "Movilidad / estiramientos");
+  await markHabit(page, "Hidratación");
   await page.getByRole("button", { name: "No aplica" }).first().click();
   await waitAllSaved(page);
   await expectNoHorizontalOverflow(page);
 
   // Notas del día (autoguardado).
-  await page.getByLabel("¿Qué hice hoy?").fill("Entrené boxeo durante 1 hora y estudié 2 horas.");
+  await page.getByLabel("¿Qué hice hoy?").fill("Entrené 1 hora y estudié 2 horas.");
   await page.getByLabel("¿Qué puedo mejorar mañana?").fill("Dejar el móvil fuera de la habitación mientras estudio.");
   await page.getByLabel("¿Qué hice hoy?").click();
   await expect(page.getByText("Guardado", { exact: true })).toBeVisible();
@@ -69,21 +69,21 @@ test("flujo completo de dos usuarios en un grupo", async ({ page, browser }, tes
   // Entrenamiento.
   await page.getByRole("link", { name: "Registrar entrenamiento" }).click();
   await expect(page).toHaveURL(/\/workouts\/new/);
-  await page.locator("label").filter({ hasText: "Boxeo" }).click();
-  await expect(page.getByRole("radio", { name: /Boxeo/ })).toBeChecked();
+  await page.locator("label").filter({ hasText: "Deporte" }).click();
+  await expect(page.getByRole("radio", { name: /Deporte/ })).toBeChecked();
   await page.getByLabel("Duración (min)").fill("60");
   await page.getByRole("radio", { name: "8 de 10" }).first().click();
-  await page.getByLabel("Observaciones").fill("Trabajé desplazamientos y combinaciones.");
+  await page.getByLabel("Observaciones").fill("Buenas sensaciones en la sesión.");
   await page.getByRole("button", { name: "Guardar" }).click();
   await expect(page).toHaveURL(/\/workouts$/);
-  await expect(page.getByText("Trabajé desplazamientos y combinaciones.")).toBeVisible();
+  await expect(page.getByText("Buenas sensaciones en la sesión.")).toBeVisible();
 
   // Persistencia: recargar y cerrar sesión / volver a entrar.
   await logout(page);
   await login(page, alice);
   await page.goto("/today");
   await expect(page.getByRole("button", { name: "Desmarcar Lectura" })).toBeVisible();
-  await expect(page.getByLabel("¿Qué hice hoy?")).toHaveValue("Entrené boxeo durante 1 hora y estudié 2 horas.");
+  await expect(page.getByLabel("¿Qué hice hoy?")).toHaveValue("Entrené 1 hora y estudié 2 horas.");
   await logout(page);
 
   // ---------- Usuario B (otro "dispositivo": contexto nuevo) ----------
@@ -113,14 +113,14 @@ test("flujo completo de dos usuarios en un grupo", async ({ page, browser }, tes
   // Registrar sus hábitos.
   await bobPage.goto("/today");
   await markHabit(bobPage, "Lectura");
-  await markHabit(bobPage, "Actitud positiva");
+  await markHabit(bobPage, "Ducha fría");
   await waitAllSaved(bobPage);
 
   // Bob ve el grupo con ambos miembros, pero NO las notas de Alice.
   await bobPage.goto("/group");
   await expect(bobPage.locator("main").getByText(alice.name)).toBeVisible();
   await expect(bobPage.locator("main").getByText(bob.name)).toBeVisible();
-  await expect(bobPage.getByText("Entrené boxeo durante 1 hora")).toHaveCount(0);
+  await expect(bobPage.getByText("Entrené 1 hora")).toHaveCount(0);
   await expect(bobPage.getByText("💪 1 entrenos")).toBeVisible(); // resumen compartido de Alice
   await expectNoHorizontalOverflow(bobPage);
 

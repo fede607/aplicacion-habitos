@@ -17,7 +17,7 @@ export const FREQUENCY_LABELS: Record<HabitFrequency, string> = {
 
 export const WORKOUT_LABELS: Record<WorkoutType, string> = {
   gym: "Gimnasio",
-  boxing: "Boxeo",
+  boxing: "Deporte",
   cardio: "Cardio",
   mobility: "Movilidad",
   other: "Otro",
@@ -25,7 +25,7 @@ export const WORKOUT_LABELS: Record<WorkoutType, string> = {
 
 export const WORKOUT_EMOJI: Record<WorkoutType, string> = {
   gym: "🏋️",
-  boxing: "🥊",
+  boxing: "⚽",
   cardio: "🏃",
   mobility: "🧘",
   other: "⚡",
