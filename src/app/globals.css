@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Winter Arc — tokens de diseño.
+ * Paleta "noche polar": fondos azul-negro, acento hielo y brasas para rachas.
+ */
+:root {
+  --background: #f5f7fb;
+  --surface: #ffffff;
+  --surface-2: #eef2f8;
+  --border: #dde4ee;
+  --foreground: #0b1220;
+  --muted: #5a6a82;
+  --primary: #0369a1;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e0f2fe;
+  --ember: #c2410c;
+  --ember-soft: #ffedd5;
+  --success: #047857;
+  --success-soft: #d1fae5;
+  --warning: #b45309;
+  --warning-soft: #fef3c7;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
+  --ring: #0284c7;
+  --shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 8px 24px -12px rgb(15 23 42 / 0.12);
+  color-scheme: light;
+}
+
+.dark {
+  --background: #060a12;
+  --surface: #0d1420;
+  --surface-2: #131c2c;
+  --border: #1e293b;
+  --foreground: #e6edf7;
+  --muted: #8b9ab3;
+  --primary: #7dd3fc;
+  --primary-foreground: #04121f;
+  --primary-soft: #0c2a3d;
+  --ember: #fb923c;
+  --ember-soft: #2d1609;
+  --success: #34d399;
+  --success-soft: #062a1f;
+  --warning: #fbbf24;
+  --warning-soft: #2a1f05;
+  --danger: #f87171;
+  --danger-soft: #2c0f0f;
+  --ring: #7dd3fc;
+  --shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 12px 32px -16px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-ember: var(--ember);
+  --color-ember-soft: var(--ember-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --shadow-card: var(--shadow);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "cv11", "ss01";
+  }
+  *:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .aurora {
+    background:
+      radial-gradient(60rem 30rem at 10% -10%, color-mix(in oklab, var(--primary) 16%, transparent), transparent 60%),
+      radial-gradient(40rem 24rem at 110% 0%, color-mix(in oklab, var(--ember) 10%, transparent), transparent 60%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
