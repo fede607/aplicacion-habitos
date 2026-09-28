@@ -27,12 +27,22 @@ jobs:
         run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
       - name: Export Supabase env
         run: |
-          supabase status -o env | grep -E '^(API_URL|ANON_KEY)=' | sed 's/^API_URL=/NEXT_PUBLIC_SUPABASE_URL=/; s/^ANON_KEY=/NEXT_PUBLIC_SUPABASE_ANON_KEY=/' | tr -d '"' >> "$GITHUB_ENV"
-          echo "NEXT_PUBLIC_SITE_URL=http://localhost:3000" >> "$GITHUB_ENV"
+          supabase status -o env | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY)=' \
+            | sed 's/^API_URL=/NEXT_PUBLIC_SUPABASE_URL=/; s/^ANON_KEY=/NEXT_PUBLIC_SUPABASE_ANON_KEY=/; s/^SERVICE_ROLE_KEY=/SUPABASE_SERVICE_ROLE_KEY=/' \
+            | tr -d '"' >> "$GITHUB_ENV"
+          {
+            echo "NEXT_PUBLIC_SITE_URL=http://localhost:3000"
+            echo "SMTP_HOST=127.0.0.1"
+            echo "SMTP_PORT=2500"
+            echo "EMAIL_FROM=Winter Arc <ci@winterarc.local>"
+            echo "CRON_SECRET=ci-cron-secret-0123456789abcdef"
+            echo "E2E_MAILBOX_URL=http://127.0.0.1:54399/__mail"
+          } >> "$GITHUB_ENV"
+      - name: Buzón SMTP de pruebas
+        run: GATEWAY_PORT=54399 SMTP_PORT=2500 node scripts/local-stack/gateway.mjs &
       - run: npm run test:integration
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - name: E2E
-        env:
-          E2E_MAILBOX_URL: ""
+        # La recuperación de contraseña usa el email de Supabase Auth (Inbucket en CI), no el buzón de la app.
         run: npx playwright test --grep-invert "recuperar contraseña"

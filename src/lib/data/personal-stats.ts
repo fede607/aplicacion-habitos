@@ -1,7 +1,8 @@
 import "server-only";
-import { addDays, diffDays, startOfIsoWeek, startOfMonth, type IsoDate } from "../dates";
+import { diffDays, startOfIsoWeek, startOfMonth, type IsoDate } from "../dates";
 import { computeStreaks, summarize, type DayStat, type Streaks, type Totals } from "../stats";
 import { getDailyStats, toDayStats } from "./queries";
+import { statsFrom } from "./stats-range";
 import type { GroupSession } from "./session";
 
 export type PersonalStats = {
@@ -18,13 +19,7 @@ export type PersonalStats = {
   started: boolean;
 };
 
-const MAX_RANGE = 400;
-
-/** Inicio efectivo de las estadísticas: arranque del arc (o hoy si aún no empezó). */
-export function statsFrom(startDate: IsoDate, today: IsoDate): IsoDate {
-  const from = startDate <= today ? startDate : today;
-  return diffDays(today, from) > MAX_RANGE ? addDays(today, -MAX_RANGE) : from;
-}
+export { statsFrom };
 
 export async function getPersonalStats(session: GroupSession): Promise<PersonalStats> {
   const { supabase, userId, activeGroup, today } = session;

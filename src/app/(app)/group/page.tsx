@@ -220,13 +220,16 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
 
 function MemberCard({ member: m, rank }: { member: MemberView; rank: number | null }) {
   return (
-    <div className={cn("h-full rounded-2xl border border-border bg-surface p-4 shadow-card", m.isMe && "border-primary/50")}>
+    <div className={cn("relative h-full rounded-2xl border border-border bg-surface p-4 shadow-card transition-colors hover:bg-surface-2", m.isMe && "border-primary/50")}>
       <div className="flex items-center gap-3">
         {rank ? <span className="tabular w-6 text-center text-sm font-bold text-muted">{rank}</span> : null}
         <Avatar name={m.name} emoji={m.emoji} color={m.color} />
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold">
-            {m.name} {m.isMe ? <span className="text-xs font-normal text-muted">(tú)</span> : null}
+            <Link href={`/group/members/${m.userId}`} className="after:absolute after:inset-0 hover:underline">
+              {m.name}
+            </Link>{" "}
+            {m.isMe ? <span className="text-xs font-normal text-muted">(tú)</span> : null}
           </p>
           <p className="truncate text-xs text-muted">@{m.username}</p>
         </div>

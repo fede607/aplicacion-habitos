@@ -53,12 +53,10 @@ export function PreferencesForm({ settings }: { settings: UserSettingsRow }) {
       </fieldset>
       <fieldset className="grid gap-2">
         <legend className="mb-2 text-sm font-semibold">Recordatorio</legend>
-        <ToggleRow id="pref-reminder" title="Recordatorio diario" description="Te avisamos en la app si a esa hora te quedan hábitos por marcar." checked={form.reminderEnabled} onChange={(v) => set("reminderEnabled", v)} />
-        {form.reminderEnabled ? (
-          <Field label="Hora" htmlFor="pref-time" className="max-w-40">
-            <Input id="pref-time" type="time" value={form.reminderTime} onChange={(e) => set("reminderTime", e.target.value)} />
-          </Field>
-        ) : null}
+        <ToggleRow id="pref-reminder" title="Recordatorio en la app" description="Te avisamos en la app si a esa hora te quedan hábitos por marcar." checked={form.reminderEnabled} onChange={(v) => set("reminderEnabled", v)} />
+        <Field label="Hora del recordatorio" htmlFor="pref-time" className="max-w-48" hint="También la usa el recordatorio por email.">
+          <Input id="pref-time" type="time" value={form.reminderTime} onChange={(e) => set("reminderTime", e.target.value)} />
+        </Field>
       </fieldset>
       <Button type="submit" disabled={pending} className="justify-self-start">
         {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}

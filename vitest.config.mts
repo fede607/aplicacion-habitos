@@ -3,7 +3,11 @@ import path from "node:path";
 
 export default defineConfig({
   resolve: {
-    alias: { "@": path.resolve(import.meta.dirname, "src") },
+    alias: {
+      "@": path.resolve(import.meta.dirname, "src"),
+      // `server-only` sólo existe para el bundler de Next; en tests es un no-op.
+      "server-only": path.resolve(import.meta.dirname, "tests/server-only-stub.ts"),
+    },
   },
   test: {
     projects: [

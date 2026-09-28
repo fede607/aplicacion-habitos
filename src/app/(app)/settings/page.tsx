@@ -10,11 +10,15 @@ import { ProfileForm } from "@/components/settings/profile-form";
 import { PreferencesForm } from "@/components/settings/preferences-form";
 import { DeleteAccountForm, SignOutButton } from "@/components/settings/account-actions";
 import { LeaveGroupButton } from "@/components/admin/danger-zone";
+import { NotificationsForm } from "@/components/settings/notifications-form";
+import { isEmailConfigured } from "@/lib/email/mailer";
 
 export const metadata: Metadata = { title: "Ajustes" };
 
 export default async function SettingsPage() {
-  const { profile, settings, groups, activeGroup, email } = await requireSession();
+  const { supabase, profile, settings, groups, activeGroup, email } = await requireSession();
+  const { data: notify } = await supabase.rpc("my_notification_email");
+  const n = notify?.[0];
   return (
     <div className="grid gap-6">
       <header className="flex flex-wrap items-end justify-between gap-3">
@@ -44,6 +48,30 @@ export default async function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card id="notificaciones">
+        <CardHeader>
+          <div>
+            <CardTitle className="text-base">Notificaciones por email</CardTitle>
+            <CardDescription>Recordatorios y resumen semanal con tus estadísticas y las de tu grupo.</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <NotificationsForm
+            state={{
+              accountEmail: n?.account_email ?? email,
+              accountConfirmed: n?.account_confirmed ?? false,
+              customEmail: n?.notification_email ?? null,
+              customVerified: n?.verified ?? false,
+              pendingEmail: n?.pending_email ?? null,
+              daily: settings.email_daily_reminder,
+              weekly: settings.email_weekly_summary,
+              reminderTime: settings.reminder_time,
+              emailConfigured: isEmailConfigured(),
+            }}
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

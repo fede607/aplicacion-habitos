@@ -1,43 +1,104 @@
 "use client";
 
-import { useActionState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
+import { useRouter } from "next/navigation";
 import { MailCheck } from "lucide-react";
-import { signUp, type AuthFormState } from "@/app/actions/auth";
+import { getBrowserClient } from "@/lib/supabase/client";
+import { signUpErrorMessage } from "@/lib/auth-errors";
+import { fieldErrors, registerSchema, safeNextPath } from "@/lib/validation";
 import { Field, Input } from "@/components/ui/input";
 import { FormError, SubmitButton } from "./form-bits";
 
 const noop = () => () => {};
 
 export function RegisterForm({ next }: { next?: string }) {
-  const [state, action] = useActionState<AuthFormState, FormData>(signUp, null);
+  const router = useRouter();
   const timezone = useSyncExternalStore(
     noop,
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
     () => "Europe/Madrid",
   );
-  const errors = state && !state.ok ? state.fieldErrors : undefined;
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [checkEmail, setCheckEmail] = useState(false);
 
-  if (state?.ok && state.data === "check-email") {
+  if (checkEmail) {
     return (
       <div className="grid justify-items-center gap-3 text-center" role="status">
         <MailCheck className="size-10 text-primary" aria-hidden="true" />
         <h2 className="text-lg font-semibold">Revisa tu correo</h2>
         <p className="text-sm text-muted">
-          Te hemos enviado un enlace para confirmar tu cuenta. Ábrelo desde este dispositivo o cualquier otro.
+          Te hemos enviado un enlace para confirmar tu cuenta. Si no lo ves, mira en spam o promociones.
         </p>
       </div>
     );
   }
 
   return (
-    <form action={action} className="grid gap-4" noValidate>
-      <input type="hidden" name="next" value={next ?? ""} />
-      <input type="hidden" name="timezone" value={timezone} />
-      <FormError message={state && !state.ok ? state.error : null} />
-      <Field label="Nombre" htmlFor="displayName" error={errors?.displayName}>
-        <Input id="displayName" name="displayName" autoComplete="name" maxLength={40} required aria-invalid={!!errors?.displayName} />
+    <form
+      className="grid gap-4"
+      noValidate
+      onSubmit={async (e) => {
+        e.preventDefault();
+        const form = new FormData(e.currentTarget);
+        const parsed = registerSchema.safeParse({
+          email: form.get("email"),
+          password: form.get("password"),
+          displayName: form.get("displayName"),
+          username: form.get("username"),
+          timezone,
+        });
+        if (!parsed.success) {
+          setErrors(fieldErrors(parsed.error));
+          setError("Revisa los campos.");
+          return;
+        }
+        setPending(true);
+        setErrors({});
+        setError(null);
+        try {
+          const supabase = getBrowserClient();
+          const { data: available } = await supabase.rpc("username_available", { p_username: parsed.data.username });
+          if (available === false) {
+            setErrors({ username: "Ese nombre de usuario ya está cogido." });
+            setError("Revisa los campos.");
+            setPending(false);
+            return;
+          }
+          const target = safeNextPath(next, "/onboarding");
+          const { data, error: authError } = await supabase.auth.signUp({
+            email: parsed.data.email,
+            password: parsed.data.password,
+            options: {
+              data: { username: parsed.data.username, display_name: parsed.data.displayName, timezone: parsed.data.timezone },
+              emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(target)}`,
+            },
+          });
+          if (authError) {
+            const msg = signUpErrorMessage(authError);
+            setError(msg.form);
+            if (msg.field) setErrors({ [msg.field[0]]: msg.field[1] });
+            setPending(false);
+            return;
+          }
+          if (data.session) {
+            router.replace(target);
+            router.refresh();
+          } else {
+            setCheckEmail(true);
+          }
+        } catch {
+          setError("Sin conexión. Inténtalo de nuevo.");
+          setPending(false);
+        }
+      }}
+    >
+      <FormError message={error} />
+      <Field label="Nombre" htmlFor="displayName" error={errors.displayName}>
+        <Input id="displayName" name="displayName" autoComplete="name" maxLength={40} required aria-invalid={!!errors.displayName} />
       </Field>
-      <Field label="Nombre de usuario" htmlFor="username" error={errors?.username} hint="3-24 caracteres: minúsculas, números o _">
+      <Field label="Nombre de usuario" htmlFor="username" error={errors.username} hint="3-24 caracteres: minúsculas, números o _">
         <Input
           id="username"
           name="username"
@@ -45,18 +106,19 @@ export function RegisterForm({ next }: { next?: string }) {
           autoCapitalize="none"
           spellCheck={false}
           maxLength={24}
-          pattern="[a-z0-9_]{3,24}"
           required
-          aria-invalid={!!errors?.username}
+          aria-invalid={!!errors.username}
         />
       </Field>
-      <Field label="Email" htmlFor="email" error={errors?.email}>
-        <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" required aria-invalid={!!errors?.email} />
+      <Field label="Email" htmlFor="email" error={errors.email}>
+        <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" required aria-invalid={!!errors.email} />
       </Field>
-      <Field label="Contraseña" htmlFor="password" error={errors?.password} hint="Mínimo 8 caracteres, con letras y números">
-        <Input id="password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={72} required aria-invalid={!!errors?.password} />
+      <Field label="Contraseña" htmlFor="password" error={errors.password} hint="Mínimo 8 caracteres, con letras y números">
+        <Input id="password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={72} required aria-invalid={!!errors.password} />
       </Field>
-      <SubmitButton pendingText="Creando cuenta…">Crear cuenta</SubmitButton>
+      <SubmitButton pending={pending} pendingText="Creando cuenta…">
+        Crear cuenta
+      </SubmitButton>
     </form>
   );
 }

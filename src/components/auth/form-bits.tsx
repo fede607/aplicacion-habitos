@@ -4,8 +4,17 @@ import { useFormStatus } from "react-dom";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function SubmitButton({ children, pendingText }: { children: React.ReactNode; pendingText: string }) {
-  const { pending } = useFormStatus();
+export function SubmitButton({
+  children,
+  pendingText,
+  pending: pendingProp,
+}: {
+  children: React.ReactNode;
+  pendingText: string;
+  pending?: boolean;
+}) {
+  const status = useFormStatus();
+  const pending = pendingProp ?? status.pending;
   return (
     <Button type="submit" size="lg" className="w-full" disabled={pending} aria-disabled={pending}>
       {pending ? (

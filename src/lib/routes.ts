@@ -1,6 +1,7 @@
 /** Rutas públicas (accesibles sin sesión). Todo lo demás exige sesión. */
-const PUBLIC_EXACT = new Set(["/", "/login", "/register", "/forgot-password", "/offline"]);
-const PUBLIC_PREFIXES = ["/auth/"];
+const PUBLIC_EXACT = new Set(["/", "/login", "/register", "/forgot-password", "/offline", "/unsubscribe", "/notifications/verify"]);
+// /api/* se autentica en cada route handler (secreto de cron o token de baja).
+const PUBLIC_PREFIXES = ["/auth/", "/api/"];
 /** Páginas de autenticación: si ya hay sesión, se redirige a la app. */
 const AUTH_PAGES = new Set(["/login", "/register", "/forgot-password"]);
 

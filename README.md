@@ -25,7 +25,9 @@ tóxicos y con privacidad real.
 | Estadísticas | Hoy, semana, mes, total del arc, racha actual y mejor, racha por hábito, tiempo entrenando, objetivos semanales, últimas 8 semanas |
 | Grupo | Progreso colectivo, tarjetas por miembro (%, racha, días activos, entrenos, semana), tiempo real, comparación **opcional** configurable por el grupo y por cada persona |
 | Gamificación | XP, niveles, 12 logros calculados en servidor (7 días, rachas de 7/14/30, 10/30 entrenos, 20 sesiones de estudio…) |
-| Recordatorios | Recordatorio configurable (activado + hora) mostrado en la app si quedan hábitos pendientes |
+| Notificaciones por email | Recordatorio diario (a tu hora, sólo si te quedan hábitos) y resumen semanal (domingo) con tus estadísticas y las del grupo. Cada persona puede usar el email de su cuenta u otro que **debe verificar**; baja con un clic en cada correo |
+| Estadísticas de cada amigo | `/group/members/[id]`: hoy, semana, mes, total del arc, rachas, últimos 14 días, hábitos de la semana y entrenos — sólo si esa persona comparte sus datos |
+| Recordatorios en la app | Aviso dentro de la app a la hora elegida si quedan hábitos pendientes |
 | PWA | Manifest, iconos (incl. maskable), service worker con página offline |
 
 ## 2. Stack
@@ -45,6 +47,7 @@ supabase/
     20260928000100_schema.sql     Tablas, tipos, constraints, índices, triggers de integridad
     20260928000200_security.sql   Helpers de autorización, validaciones, RLS, grants mínimos
     20260928000300_functions.sql  RPCs (grupos, invitaciones, stats, logros), catálogo de logros
+    20260929000400_notifications.sql  Emails: verificación, baja, lote de envío idempotente
   seed.sql                    Vacío a propósito: no hay datos falsos
 src/
   proxy.ts                    Refresco de sesión, protección optimista de rutas, CSP con nonce
@@ -65,7 +68,7 @@ src/
     supabase/                 Clientes server/browser
 public/                       sw.js, offline.html, iconos
 tests/
-  integration/security.test.ts  42 tests de permisos y abuso contra Supabase real
+  integration/                  Permisos y abuso contra Supabase real + notificaciones por email
   e2e/                          Flujo completo A/B, seguridad, recuperación de contraseña
 scripts/
   local-stack/                Stack Supabase mínimo sin Docker (sólo para tests)
@@ -92,9 +95,13 @@ Los emails de confirmación/recuperación en local se ven en Inbucket/Mailpit (`
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Sí | Vercel + local | URL del proyecto Supabase |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Sí* | Vercel + local | Clave publicable (`sb_publishable_…`). *O bien `NEXT_PUBLIC_SUPABASE_ANON_KEY` en proyectos con claves legacy |
-| `NEXT_PUBLIC_SITE_URL` | Recomendada | Vercel + local | URL pública (enlaces de invitación y redirecciones de email). En Vercel, si falta, se usa `VERCEL_PROJECT_PRODUCTION_URL` |
+| `NEXT_PUBLIC_SITE_URL` | Recomendada | Vercel + local | URL pública (enlaces de invitación y de los emails). En Vercel, si falta, se usa `VERCEL_PROJECT_PRODUCTION_URL` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Para emails | **Sólo Vercel (servidor)** | La usa únicamente el cron de notificaciones y la creación de verificaciones de email. Nunca con prefijo `NEXT_PUBLIC_` |
+| `CRON_SECRET` | Para emails | Vercel + GitHub Secrets | Secreto que protege `/api/cron/notifications` (`openssl rand -hex 32`) |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | Para emails | Sólo Vercel (servidor) | Servidor SMTP (Gmail, Resend, Brevo…) |
+| `EMAIL_FROM` | Para emails | Sólo Vercel (servidor) | Remitente, p. ej. `Winter Arc <tucuenta@gmail.com>` |
 
-**No existe ninguna variable secreta en la app.** La `service_role` key no se usa en ningún sitio: no la añadas a Vercel.
+Sin las variables "Para emails" la app funciona igual; simplemente no envía notificaciones (Ajustes lo indica).
 
 ## 6. Configuración de Supabase (producción)
 
@@ -106,8 +113,13 @@ Los emails de confirmación/recuperación en local se ven en Inbucket/Mailpit (`
    - *Site URL*: `https://tu-app.vercel.app`
    - *Redirect URLs*: `https://tu-app.vercel.app/auth/confirm` (y `http://localhost:3000/auth/confirm` para desarrollo)
 4. **Authentication → Providers → Email**: deja activado *Confirm email* (recomendado). Longitud mínima de contraseña ≥ 8.
-5. **Authentication → Emails → SMTP**: configura un SMTP propio (Resend, Postmark, SES…). El SMTP por defecto de
-   Supabase tiene un límite muy bajo de emails por hora y no sirve para producción.
+5. **Authentication → Emails → SMTP (imprescindible para que se registre todo el mundo)**: el SMTP por defecto de
+   Supabase sólo envía unos pocos emails por hora; con varios amigos registrándose a la vez los emails de
+   confirmación dejarían de llegar. Usa el mismo SMTP que en las variables `SMTP_*` (ver *Notificaciones*).
+   Después sube en **Authentication → Rate Limits** el límite de emails por hora.
+   Recomendado: en **Emails → Templates** cambia el enlace de *Confirm signup* y *Reset password* por
+   `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/onboarding` (y `type=recovery&next=/reset-password`)
+   para que el enlace funcione aunque se abra en otro dispositivo.
 6. **Authentication → Attack Protection**: activa CAPTCHA (Cloudflare Turnstile) si abres el registro a mucha gente, y
    la protección de contraseñas filtradas (plan Pro).
 7. **Database → Publications**: la migración añade `habit_logs` a `supabase_realtime` para el panel de grupo en directo.
@@ -124,8 +136,8 @@ Los emails de confirmación/recuperación en local se ven en Inbucket/Mailpit (`
 ```bash
 npm run lint
 npm run typecheck
-npm test                    # unit: fechas/zonas horarias, rachas, %, XP, validación (56 tests)
-npm run test:integration    # integración + abuso contra Supabase real (42 tests)
+npm test                    # unit: fechas/zonas horarias, rachas, %, XP, validación, emails (60 tests)
+npm run test:integration    # integración + abuso contra Supabase real, notificaciones y envío SMTP (50 tests)
 npm run build
 npm run test:e2e            # Playwright: flujo A/B, seguridad, recuperación de contraseña y
                             # responsive (10 páginas × 5 tamaños × claro/oscuro), móvil + escritorio
@@ -144,6 +156,32 @@ binario de PostgREST + un gateway Node que imita el enrutado de Supabase y un bu
 `reset-db.sh` recrea el esquema y aplica las migraciones; `env.sh` exporta las variables. Usa un secreto JWT de
 desarrollo público: **nunca** lo uses fuera de local.
 </details>
+
+## Notificaciones por email
+
+**Cómo funciona**: cada hora un cron llama a `GET /api/cron/notifications` con `Authorization: Bearer CRON_SECRET`.
+La base de datos decide a quién toca escribir según su zona horaria y **reserva** cada envío
+(`usuario + tipo + día/semana`), así que aunque el cron se ejecute varias veces nadie recibe duplicados.
+
+- **Recordatorio diario** (opt-in): a partir de la hora de recordatorio de cada persona, sólo si le quedan hábitos
+  obligatorios sin marcar. Incluye qué le falta y su racha.
+- **Resumen semanal** (activado por defecto): domingos desde las 19:00 locales. Semana (x/y, %), racha actual y mejor,
+  entrenamientos, objetivos semanales y el progreso del grupo (sólo de quien comparte sus hábitos; numerado sólo si el
+  grupo activó la comparación).
+- **Email propio**: por defecto se usa el de la cuenta (ya verificado). Si alguien pone otro, recibe un enlace de
+  verificación (24 h); hasta confirmarlo no se le envía nada. Así nadie puede usar la app para mandar correos a terceros.
+- **Baja**: enlace en cada correo + cabeceras `List-Unsubscribe` (baja con un clic en Gmail/Outlook).
+
+**Puesta en marcha (≈10 min)**
+
+1. SMTP. Opción sin dominio: Gmail → activa verificación en dos pasos → crea una *contraseña de aplicación* →
+   `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=465`, `SMTP_USER=tu@gmail.com`, `SMTP_PASSWORD=<contraseña de aplicación>`
+   (límite ~500 emails/día). Opción con dominio propio: Resend/Brevo (mejor entregabilidad).
+2. Pon el mismo SMTP en **Supabase → Authentication → SMTP** (emails de confirmación y recuperación).
+3. En Vercel añade `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, `SMTP_*` y `EMAIL_FROM`, y redepliega.
+4. En GitHub → *Settings → Secrets and variables → Actions* crea `APP_URL` y `CRON_SECRET`. El workflow
+   `.github/workflows/notifications-cron.yml` lo llama cada hora (gratis). Pruébalo con *Run workflow*.
+   Alternativas: Vercel Cron (horario requiere plan Pro) o `pg_cron` + `pg_net` en Supabase.
 
 ## 9. Despliegue (Vercel + Supabase)
 
@@ -175,8 +213,11 @@ desarrollo público: **nunca** lo uses fuera de local.
 
 **Principio**: el navegador no es de fiar. Cada lectura/escritura pasa por Postgres con el JWT del usuario y RLS decide.
 
-- **Autenticación**: Supabase Auth; sesión en cookies httpOnly gestionadas por `@supabase/ssr`; `getClaims()` valida el
-  JWT en cada petición del servidor. Contraseñas gestionadas exclusivamente por Supabase (bcrypt).
+- **Autenticación**: Supabase Auth. Login, registro y petición de recuperación se hacen desde el navegador para que
+  los límites anti-fuerza-bruta de Supabase se apliquen por la IP de cada persona (si se hicieran desde el servidor,
+  todos compartirían la IP de Vercel y unos pocos intentos bloquearían a todo el mundo). La sesión vive en cookies
+  gestionadas por `@supabase/ssr` y el servidor la valida con `getClaims()` en cada petición. Contraseñas gestionadas
+  exclusivamente por Supabase (bcrypt).
 - **RLS en todas las tablas** (deny by default):
   - `profiles`: lees el tuyo y el de quien comparte grupo contigo; sólo editas el tuyo (y sólo columnas permitidas).
   - `user_settings`, `daily_entries` (notas), `workouts`: **sólo el propietario**.
@@ -202,12 +243,19 @@ desarrollo público: **nunca** lo uses fuera de local.
 - **Server Actions**: protección CSRF nativa de Next.js (comprobación de Origin); redirecciones post-login filtradas
   (anti open-redirect); errores de BD traducidos a mensajes genéricos y registrados sin secretos ni tokens.
 - **PWA**: el service worker nunca cachea HTML autenticado ni respuestas de datos, sólo estáticos inmutables.
-- **Sin secretos en el cliente**: sólo URL + clave publicable. Un test E2E verifica que el bundle no contiene `service_role`.
+- **Sin secretos en el cliente**: sólo URL + clave publicable. La `service_role` se usa sólo en el cron y en crear
+  verificaciones de email, desde módulos `server-only`; las funciones de lote de la BD sólo las puede ejecutar
+  `service_role`. Un test E2E verifica que el bundle no contiene `service_role`.
+- **Emails**: sólo a direcciones verificadas (cuenta confirmada o enlace de verificación de 256 bits, hash SHA-256 en
+  BD, un solo uso, 24 h, máx. 5 solicitudes/hora); contenido escapado contra inyección HTML; cron protegido con
+  secreto comparado en tiempo constante; baja con un clic.
 
 ### Riesgos residuales conocidos
 
-- **Rate limiting de login/registro**: además de los límites de Supabase Auth, la app aplica un limitador en memoria
-  por instancia (en serverless no es global). Para exposición pública amplia, activa CAPTCHA en Supabase Auth.
+- **Registro abierto**: cualquiera con el enlace de la app puede crear cuenta (sólo ve grupos a los que le inviten).
+  Si la app se hace pública y aparece spam de cuentas, activa CAPTCHA (Turnstile) en Supabase Auth.
+- **Entregabilidad**: con Gmail los correos pueden caer en spam al principio y hay ~500 envíos/día; con un dominio
+  propio en Resend/Brevo (SPF/DKIM) mejora.
 - **Histórico con la configuración actual**: las estadísticas pasadas se calculan con la configuración vigente de
   cada hábito (desactivar un hábito lo quita también del histórico; "activo desde" protege los días anteriores a un
   hábito nuevo). Es una decisión consciente para simplicidad; no se versiona la configuración.

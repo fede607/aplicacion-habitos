@@ -9,6 +9,7 @@ export type HabitCategory = "physical" | "mental" | "productivity" | "health" | 
 export type HabitFrequency = "daily" | "weekdays" | "weekly_target";
 export type HabitLogStatus = "done" | "missed" | "skipped";
 export type WorkoutType = "gym" | "boxing" | "cardio" | "mobility" | "other";
+export type NotificationKind = "daily_reminder" | "weekly_summary";
 
 type Timestamps = { created_at: string; updated_at: string };
 
@@ -29,6 +30,11 @@ export type UserSettingsRow = {
   reminder_enabled: boolean;
   reminder_time: string;
   active_group_id: string | null;
+  email_daily_reminder: boolean;
+  email_weekly_summary: boolean;
+  notification_email: string | null;
+  notification_email_verified_at: string | null;
+  unsubscribe_token: string;
 } & Timestamps;
 
 export type GroupRow = {
@@ -213,6 +219,40 @@ export type Database = {
       };
       evaluate_my_achievements: { Args: Record<string, never>; Returns: string[] };
       delete_my_account: { Args: Record<string, never>; Returns: undefined };
+      my_notification_email: {
+        Args: Record<string, never>;
+        Returns: {
+          account_email: string;
+          account_confirmed: boolean;
+          notification_email: string | null;
+          verified: boolean;
+          pending_email: string | null;
+        }[];
+      };
+      use_account_email_for_notifications: { Args: Record<string, never>; Returns: undefined };
+      admin_create_email_verification: {
+        Args: { p_user_id: string; p_email: string; p_token_hash: string };
+        Returns: undefined;
+      };
+      verify_notification_email: { Args: { p_token: string }; Returns: boolean };
+      unsubscribe_emails: { Args: { p_token: string }; Returns: boolean };
+      claim_notification_batch: {
+        Args: { p_kind: NotificationKind; p_now?: string; p_limit?: number };
+        Returns: {
+          user_id: string;
+          email: string;
+          display_name: string;
+          timezone: string;
+          group_id: string;
+          local_date: string;
+          period_key: string;
+          unsubscribe_token: string;
+        }[];
+      };
+      finish_notification: {
+        Args: { p_user_id: string; p_kind: NotificationKind; p_period_key: string; p_status: "sent" | "skipped" | "failed" };
+        Returns: undefined;
+      };
     };
     Enums: {
       group_role: GroupRole;
