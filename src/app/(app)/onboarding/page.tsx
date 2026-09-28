@@ -19,30 +19,34 @@ export default async function OnboardingPage() {
           {groups.length ? "Crea o únete a otro grupo" : `Hola, ${profile.display_name}`}
         </h1>
         <p className="mt-1 text-muted">
-          El Winter Arc se hace en grupo. Crea uno e invita a tus amigos, o únete con un código.
+          {profile.can_create_groups
+            ? "El Winter Arc se hace en grupo. Crea uno e invita a tus amigos, o únete con un código."
+            : "Winter Arc es sólo por invitación. Únete a un grupo con el enlace o el código que te hayan enviado."}
         </p>
       </header>
-      <div className="grid gap-5 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <div>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Snowflake className="size-4 text-primary" aria-hidden="true" /> Crear un grupo
-              </CardTitle>
-              <CardDescription>Serás el administrador.</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <CreateGroupForm today={today} />
-          </CardContent>
-        </Card>
+      <div className={profile.can_create_groups ? "grid gap-5 lg:grid-cols-2" : "grid max-w-xl gap-5"}>
+        {profile.can_create_groups ? (
+          <Card>
+            <CardHeader>
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Snowflake className="size-4 text-primary" aria-hidden="true" /> Crear un grupo
+                </CardTitle>
+                <CardDescription>Serás el administrador.</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CreateGroupForm today={today} />
+            </CardContent>
+          </Card>
+        ) : null}
         <Card className="self-start">
           <CardHeader>
             <div>
               <CardTitle className="flex items-center gap-2 text-base">
                 <Users className="size-4 text-primary" aria-hidden="true" /> Unirme con un código
               </CardTitle>
-              <CardDescription>Pide el código o el enlace a quien administre el grupo.</CardDescription>
+              <CardDescription>Pide el enlace o el código a quien administre el grupo.</CardDescription>
             </div>
           </CardHeader>
           <CardContent>

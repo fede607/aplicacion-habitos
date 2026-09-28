@@ -48,3 +48,10 @@ double_confirm_changes = true
 # En local se confirma automáticamente; en producción activa "Confirm email".
 enable_confirmations = false
 secure_password_change = true
+
+# CAPTCHA: en producción actívalo en el panel (Auth → Attack Protection).
+# Para probarlo en local descomenta y usa las claves de prueba de Cloudflare.
+# [auth.captcha]
+# enabled = true
+# provider = "turnstile"
+# secret = "1x0000000000000000000000000000000AA"

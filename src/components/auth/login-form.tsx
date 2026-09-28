@@ -8,6 +8,8 @@ import { signInErrorMessage } from "@/lib/auth-errors";
 import { fieldErrors, loginSchema, safeNextPath } from "@/lib/validation";
 import { Field, Input } from "@/components/ui/input";
 import { FormError, SubmitButton } from "./form-bits";
+import { Turnstile } from "./turnstile";
+import { CAPTCHA_LOAD_ERROR, CAPTCHA_PENDING, useCaptcha } from "./use-captcha";
 
 /**
  * El login se hace desde el navegador: así los límites anti-fuerza-bruta de
@@ -19,6 +21,7 @@ export function LoginForm({ next }: { next?: string }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const captcha = useCaptcha();
 
   return (
     <form
@@ -33,13 +36,21 @@ export function LoginForm({ next }: { next?: string }) {
           setError("Revisa los campos.");
           return;
         }
+        if (!captcha.ready) {
+          setError(CAPTCHA_PENDING);
+          return;
+        }
         setPending(true);
         setErrors({});
         try {
-          const { error: authError } = await getBrowserClient().auth.signInWithPassword(parsed.data);
+          const { error: authError } = await getBrowserClient().auth.signInWithPassword({
+            ...parsed.data,
+            options: captcha.options,
+          });
           if (authError) {
             setError(signInErrorMessage(authError));
             setPending(false);
+            captcha.reset();
             return;
           }
           router.replace(safeNextPath(next));
@@ -62,6 +73,8 @@ export function LoginForm({ next }: { next?: string }) {
           ¿Has olvidado la contraseña?
         </Link>
       </div>
+      <Turnstile onToken={captcha.setToken} resetSignal={captcha.resetSignal} onLoadError={captcha.onLoadError} />
+      {captcha.loadError ? <FormError message={CAPTCHA_LOAD_ERROR} /> : null}
       <SubmitButton pending={pending} pendingText="Entrando…">
         Entrar
       </SubmitButton>

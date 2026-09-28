@@ -7,12 +7,15 @@ import { TOO_MANY } from "@/lib/auth-errors";
 import { forgotPasswordSchema } from "@/lib/validation";
 import { Field, Input } from "@/components/ui/input";
 import { FormError, SubmitButton } from "./form-bits";
+import { Turnstile } from "./turnstile";
+import { CAPTCHA_LOAD_ERROR, CAPTCHA_PENDING, useCaptcha } from "./use-captcha";
 
 export function ForgotPasswordForm() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<string | undefined>();
   const [sent, setSent] = useState(false);
+  const captcha = useCaptcha();
 
   if (sent) {
     return (
@@ -36,15 +39,21 @@ export function ForgotPasswordForm() {
           setFieldError("Email no válido");
           return;
         }
+        if (!captcha.ready) {
+          setError(CAPTCHA_PENDING);
+          return;
+        }
         setPending(true);
         setFieldError(undefined);
         try {
           const { error: authError } = await getBrowserClient().auth.resetPasswordForEmail(parsed.data.email, {
             redirectTo: `${window.location.origin}/auth/confirm?next=/reset-password`,
+            ...captcha.options,
           });
-          if (authError?.status === 429) {
-            setError(TOO_MANY);
+          if (authError?.status === 429 || authError?.code === "captcha_failed") {
+            setError(authError.status === 429 ? TOO_MANY : CAPTCHA_PENDING);
             setPending(false);
+            captcha.reset();
             return;
           }
           // Misma respuesta exista o no la cuenta (evita enumeración de emails).
@@ -59,6 +68,8 @@ export function ForgotPasswordForm() {
       <Field label="Email" htmlFor="email" error={fieldError}>
         <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" required aria-invalid={!!fieldError} />
       </Field>
+      <Turnstile onToken={captcha.setToken} resetSignal={captcha.resetSignal} onLoadError={captcha.onLoadError} />
+      {captcha.loadError ? <FormError message={CAPTCHA_LOAD_ERROR} /> : null}
       <SubmitButton pending={pending} pendingText="Enviando…">
         Enviar enlace
       </SubmitButton>

@@ -20,6 +20,7 @@ export type ProfileRow = {
   avatar_emoji: string | null;
   avatar_color: string;
   timezone: string;
+  can_create_groups: boolean;
 } & Timestamps;
 
 export type UserSettingsRow = {
@@ -219,6 +220,8 @@ export type Database = {
       };
       evaluate_my_achievements: { Args: Record<string, never>; Returns: string[] };
       delete_my_account: { Args: Record<string, never>; Returns: undefined };
+      invite_signup_preview: { Args: { p_code: string }; Returns: { status: string; group_name: string | null }[] };
+      admin_allow_signup: { Args: { p_email: string }; Returns: undefined };
       my_notification_email: {
         Args: Record<string, never>;
         Returns: {

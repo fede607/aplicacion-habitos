@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { requireSession } from "@/lib/data/session";
+import { requireGroup } from "@/lib/data/session";
 import { addDays } from "@/lib/dates";
 import { uuidSchema } from "@/lib/validation";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Editar entrenamiento" };
 export default async function EditWorkoutPage({ params }: PageProps<"/workouts/[id]">) {
   const { id } = await params;
   if (!uuidSchema.safeParse(id).success) notFound();
-  const { supabase, userId, today } = await requireSession();
+  const { supabase, userId, today } = await requireGroup();
   // RLS garantiza que sólo se devuelven entrenamientos propios.
   const { data: workout } = await supabase.from("workouts").select("*").eq("id", id).eq("user_id", userId).maybeSingle();
   if (!workout) notFound();

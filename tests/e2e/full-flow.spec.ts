@@ -4,8 +4,9 @@
  * Usuario B: registro → unirse por enlace → ver dashboard → registrar hábitos
  * Verificación: los datos persisten tras cerrar sesión/volver a entrar y el grupo ve el progreso de ambos.
  */
-import { expect, test, type Page } from "@playwright/test";
-import { expectNoHorizontalOverflow, login, logout, newUser, register, trackConsoleErrors } from "./helpers";
+import { E2E_CAPTCHA_TOKEN, expect, mockTurnstile, test } from "./fixtures";
+import type { Page } from "@playwright/test";
+import { expectNoHorizontalOverflow, login, logout, newUser, register, registerWithInvite, trackConsoleErrors } from "./helpers";
 
 test.describe.configure({ mode: "serial" });
 
@@ -87,23 +88,22 @@ test("flujo completo de dos usuarios en un grupo", async ({ page, browser }, tes
 
   // ---------- Usuario B (otro "dispositivo": contexto nuevo) ----------
   const bobContext = await browser.newContext({ ...testInfo.project.use, locale: "es-ES", timezoneId: "Europe/Madrid" });
+  await mockTurnstile(bobContext);
   const bobPage = await bobContext.newPage();
   const bobErrors = trackConsoleErrors(bobPage);
 
-  // Enlace de invitación sin sesión → login/registro → vuelve a la invitación.
+  // Enlace de invitación sin sesión → "Crear mi cuenta" → registro con la invitación → dentro del grupo.
+  const signupBodies: string[] = [];
+  bobPage.on("request", (r) => {
+    if (r.url().includes("/auth/v1/signup")) signupBodies.push(r.postData() ?? "");
+  });
   await bobPage.goto(`/join/${code}`);
-  await expect(bobPage).toHaveURL(/\/login\?next=%2Fjoin%2F/);
-  await bobPage.getByRole("link", { name: "Regístrate" }).click();
-  await expect(bobPage).toHaveURL(/\/register\?next=/);
-  await bobPage.getByLabel("Nombre", { exact: true }).fill(bob.name);
-  await bobPage.getByLabel("Nombre de usuario").fill(bob.username);
-  await bobPage.getByLabel("Email").fill(bob.email);
-  await bobPage.getByLabel("Contraseña").fill(bob.password);
-  await bobPage.getByRole("button", { name: "Crear cuenta" }).click();
-  await expect(bobPage).toHaveURL(new RegExp(`/join/${code}`));
   await expect(bobPage.getByRole("heading", { name: groupName })).toBeVisible();
-  await bobPage.getByRole("button", { name: "Unirme al grupo" }).click();
+  await registerWithInvite(bobPage, bob, code);
   await expect(bobPage).toHaveURL(/\/today/);
+  // El token del CAPTCHA y la invitación viajan a Supabase Auth.
+  expect(signupBodies.join()).toContain(E2E_CAPTCHA_TOKEN);
+  expect(signupBodies.join()).toContain(code);
 
   // Dashboard.
   await bobPage.goto("/dashboard");

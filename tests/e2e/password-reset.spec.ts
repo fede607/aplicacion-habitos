@@ -2,7 +2,7 @@
  * Recuperación de contraseña de extremo a extremo. Requiere el buzón SMTP del
  * stack local (scripts/local-stack/gateway.mjs expone GET /__mail).
  */
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { login, newUser, register } from "./helpers";
 
 const MAILBOX = process.env.E2E_MAILBOX_URL ?? "http://127.0.0.1:54321/__mail";
@@ -16,6 +16,7 @@ test("recuperar contraseña por email", async ({ page, request }, testInfo) => {
 
   await page.goto("/forgot-password");
   await page.getByLabel("Email").fill(user.email);
+  await expect(page.getByTestId("captcha-ok")).toBeVisible();
   await page.getByRole("button", { name: "Enviar enlace" }).click();
   await expect(page.getByText("Si existe una cuenta con ese email")).toBeVisible();
 

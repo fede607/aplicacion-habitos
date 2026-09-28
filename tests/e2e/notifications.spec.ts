@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { expectNoHorizontalOverflow, newUser, register, trackConsoleErrors } from "./helpers";
 
 const MAILBOX = process.env.E2E_MAILBOX_URL ?? "http://127.0.0.1:54321/__mail";

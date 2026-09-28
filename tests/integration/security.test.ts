@@ -4,7 +4,7 @@
  * manipulación de IDs, fuerza bruta de invitaciones…) y verifica que la BD lo impide.
  */
 import { beforeAll, describe, expect, it } from "vitest";
-import { anonClient, createUser, todayIn, type TestUser } from "./helpers";
+import { adminClient, anonClient, createUser, todayIn, type TestUser } from "./helpers";
 
 let alice: TestUser; // admin del grupo
 let bob: TestUser; // miembro
@@ -68,8 +68,10 @@ describe("registro de usuario", () => {
   it("usa un username alternativo si el pedido ya existe", async () => {
     const { data: aliceProfile } = await alice.client.from("profiles").select("username").eq("id", alice.id).single();
     const client = anonClient();
+    const dupEmail = `dup.${Date.now()}@test.winterarc.local`;
+    await adminClient().rpc("admin_allow_signup", { p_email: dupEmail });
     const { data } = await client.auth.signUp({
-      email: `dup.${Date.now()}@test.winterarc.local`,
+      email: dupEmail,
       password: "Dup-password-123",
       options: { data: { username: aliceProfile!.username, display_name: "dup" } },
     });

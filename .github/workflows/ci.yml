@@ -37,6 +37,8 @@ jobs:
             echo "EMAIL_FROM=Winter Arc <ci@winterarc.local>"
             echo "CRON_SECRET=ci-cron-secret-0123456789abcdef"
             echo "E2E_MAILBOX_URL=http://127.0.0.1:54399/__mail"
+            # Clave de sitio de pruebas de Cloudflare: el E2E simula el widget.
+            echo "NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA"
           } >> "$GITHUB_ENV"
       - name: Buzón SMTP de pruebas
         run: GATEWAY_PORT=54399 SMTP_PORT=2500 node scripts/local-stack/gateway.mjs &

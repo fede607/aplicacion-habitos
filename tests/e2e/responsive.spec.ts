@@ -2,7 +2,7 @@
  * Recorre todas las pantallas en varios tamaños (móvil pequeño → monitor grande) y
  * en ambos temas: sin scroll horizontal, sin errores de consola, con captura para revisión.
  */
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { expectNoHorizontalOverflow, newUser, register, trackConsoleErrors } from "./helpers";
 
 const VIEWPORTS = [

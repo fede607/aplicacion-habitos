@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { requireSession } from "@/lib/data/session";
+import { requireGroup } from "@/lib/data/session";
 import { addDays, isIsoDate } from "@/lib/dates";
 import { Card, CardContent } from "@/components/ui/card";
 import { WorkoutForm } from "@/components/workouts/workout-form";
@@ -7,7 +7,7 @@ import { WorkoutForm } from "@/components/workouts/workout-form";
 export const metadata: Metadata = { title: "Nuevo entrenamiento" };
 
 export default async function NewWorkoutPage({ searchParams }: PageProps<"/workouts/new">) {
-  const { today } = await requireSession();
+  const { today } = await requireGroup();
   const params = await searchParams;
   const minDate = addDays(today, -60);
   const date = typeof params.date === "string" && isIsoDate(params.date) && params.date <= today && params.date >= minDate ? params.date : today;

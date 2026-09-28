@@ -3,14 +3,12 @@
  * email, baja con un clic, reserva idempotente y envío real al buzón SMTP local.
  */
 import { createHash, randomBytes } from "node:crypto";
-import { createClient } from "@supabase/supabase-js";
 import { beforeAll, describe, expect, it } from "vitest";
-import { anonClient, createUser, SUPABASE_URL, todayIn, type TestUser } from "./helpers";
+import { adminClient, anonClient, createUser, todayIn, type TestUser } from "./helpers";
 import { runNotifications } from "@/lib/notifications/run";
 
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 const MAILBOX = process.env.E2E_MAILBOX_URL ?? "http://127.0.0.1:54321/__mail";
-const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
+const admin = adminClient();
 
 let alice: TestUser;
 let bob: TestUser;
@@ -40,7 +38,6 @@ function nextSundayEvening(): Date {
 }
 
 beforeAll(async () => {
-  expect(SERVICE_KEY, "SUPABASE_SERVICE_ROLE_KEY necesaria").not.toBe("");
   [alice, bob] = await Promise.all([createUser("nalice"), createUser("nbob")]);
   const { data } = await alice.client.rpc("create_group", { p_name: "Notif group", p_start_date: todayIn("Europe/Madrid", -3) });
   groupId = data as string;

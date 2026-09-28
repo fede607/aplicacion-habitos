@@ -15,7 +15,9 @@ export function buildCsp(nonce: string, supabaseUrl: string, isDev: boolean, isH
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob:`,
     `font-src 'self'`,
-    `connect-src 'self' ${supabaseOrigin} ${supabaseWs}${isDev ? " ws: http://localhost:* http://127.0.0.1:*" : ""}`,
+    `connect-src 'self' ${supabaseOrigin} ${supabaseWs} https://challenges.cloudflare.com${isDev ? " ws: http://localhost:* http://127.0.0.1:*" : ""}`,
+    // Cloudflare Turnstile (CAPTCHA) se muestra en un iframe.
+    `frame-src https://challenges.cloudflare.com`,
     `worker-src 'self'`,
     `manifest-src 'self'`,
     `object-src 'none'`,

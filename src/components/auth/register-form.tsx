@@ -8,10 +8,17 @@ import { signUpErrorMessage } from "@/lib/auth-errors";
 import { fieldErrors, registerSchema, safeNextPath } from "@/lib/validation";
 import { Field, Input } from "@/components/ui/input";
 import { FormError, SubmitButton } from "./form-bits";
+import { Turnstile } from "./turnstile";
+import { CAPTCHA_LOAD_ERROR, CAPTCHA_PENDING, useCaptcha } from "./use-captcha";
 
 const noop = () => () => {};
 
-export function RegisterForm({ next }: { next?: string }) {
+/**
+ * Registro sólo por invitación: `invite` llega del enlace /join/CODIGO. Sin
+ * invitación sólo pueden registrarse la primera cuenta y los emails autorizados
+ * (lo decide la base de datos, no este formulario).
+ */
+export function RegisterForm({ next, invite }: { next?: string; invite?: string }) {
   const router = useRouter();
   const timezone = useSyncExternalStore(
     noop,
@@ -22,6 +29,7 @@ export function RegisterForm({ next }: { next?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [checkEmail, setCheckEmail] = useState(false);
+  const captcha = useCaptcha();
 
   if (checkEmail) {
     return (
@@ -54,6 +62,10 @@ export function RegisterForm({ next }: { next?: string }) {
           setError("Revisa los campos.");
           return;
         }
+        if (!captcha.ready) {
+          setError(CAPTCHA_PENDING);
+          return;
+        }
         setPending(true);
         setErrors({});
         setError(null);
@@ -66,12 +78,19 @@ export function RegisterForm({ next }: { next?: string }) {
             setPending(false);
             return;
           }
-          const target = safeNextPath(next, "/onboarding");
+          // Con invitación, el alta ya mete a la persona en el grupo: directo a "Hoy".
+          const target = invite ? "/today" : safeNextPath(next, "/onboarding");
           const { data, error: authError } = await supabase.auth.signUp({
             email: parsed.data.email,
             password: parsed.data.password,
             options: {
-              data: { username: parsed.data.username, display_name: parsed.data.displayName, timezone: parsed.data.timezone },
+              data: {
+                username: parsed.data.username,
+                display_name: parsed.data.displayName,
+                timezone: parsed.data.timezone,
+                ...(invite ? { invite_code: invite } : {}),
+              },
+              ...captcha.options,
               emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(target)}`,
             },
           });
@@ -80,6 +99,7 @@ export function RegisterForm({ next }: { next?: string }) {
             setError(msg.form);
             if (msg.field) setErrors({ [msg.field[0]]: msg.field[1] });
             setPending(false);
+            captcha.reset();
             return;
           }
           if (data.session) {
@@ -116,6 +136,8 @@ export function RegisterForm({ next }: { next?: string }) {
       <Field label="Contraseña" htmlFor="password" error={errors.password} hint="Mínimo 8 caracteres, con letras y números">
         <Input id="password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={72} required aria-invalid={!!errors.password} />
       </Field>
+      <Turnstile onToken={captcha.setToken} resetSignal={captcha.resetSignal} onLoadError={captcha.onLoadError} />
+      {captcha.loadError ? <FormError message={CAPTCHA_LOAD_ERROR} /> : null}
       <SubmitButton pending={pending} pendingText="Creando cuenta…">
         Crear cuenta
       </SubmitButton>

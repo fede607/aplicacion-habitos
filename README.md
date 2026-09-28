@@ -14,7 +14,8 @@ tóxicos y con privacidad real.
 
 | Área | Funcionalidad |
 | --- | --- |
-| Cuenta | Registro, login, logout, recuperación de contraseña por email, sesión persistente (cookies httpOnly), perfil con avatar (emoji + color) y zona horaria, borrado de cuenta |
+| Acceso | **Sólo por invitación**: crear cuenta exige el enlace de un grupo (se entra directamente en él). **CAPTCHA** (Cloudflare Turnstile) en registro, login y recuperación |
+| Cuenta | Registro, login, logout, recuperación de contraseña por email, sesión persistente, perfil con avatar (emoji + color) y zona horaria, borrado de cuenta |
 | Grupos | Crear grupo (quien lo crea es admin), unirse por **enlace `/join/CODIGO`** o **código**, varios grupos por usuario, salir, expulsar, promover/quitar admin, transferir administración, eliminar grupo (soft delete) |
 | Invitaciones | Códigos aleatorios de 60 bits, caducidad opcional, usos máximos, revocar y regenerar, rate limiting anti fuerza bruta |
 | Hábitos | Configurables desde la app por los admins: nombre, descripción, icono, categoría, color, frecuencia (diaria / días concretos / objetivo semanal), opcional, objetivo, orden, activo/inactivo, "activo desde" |
@@ -48,6 +49,7 @@ supabase/
     20260928000200_security.sql   Helpers de autorización, validaciones, RLS, grants mínimos
     20260928000300_functions.sql  RPCs (grupos, invitaciones, stats, logros), catálogo de logros
     20260929000400_notifications.sql  Emails: verificación, baja, lote de envío idempotente
+    20260929000500_invite_only.sql    Alta sólo con invitación, creadores de grupos
   seed.sql                    Vacío a propósito: no hay datos falsos
 src/
   proxy.ts                    Refresco de sesión, protección optimista de rutas, CSP con nonce
@@ -96,6 +98,7 @@ Los emails de confirmación/recuperación en local se ven en Inbucket/Mailpit (`
 | `NEXT_PUBLIC_SUPABASE_URL` | Sí | Vercel + local | URL del proyecto Supabase |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Sí* | Vercel + local | Clave publicable (`sb_publishable_…`). *O bien `NEXT_PUBLIC_SUPABASE_ANON_KEY` en proyectos con claves legacy |
 | `NEXT_PUBLIC_SITE_URL` | Recomendada | Vercel + local | URL pública (enlaces de invitación y de los emails). En Vercel, si falta, se usa `VERCEL_PROJECT_PRODUCTION_URL` |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Recomendada | Vercel | Clave de sitio de Cloudflare Turnstile (pública). Sin ella no se muestra el CAPTCHA |
 | `SUPABASE_SERVICE_ROLE_KEY` | Para emails | **Sólo Vercel (servidor)** | La usa únicamente el cron de notificaciones y la creación de verificaciones de email. Nunca con prefijo `NEXT_PUBLIC_` |
 | `CRON_SECRET` | Para emails | Vercel + GitHub Secrets | Secreto que protege `/api/cron/notifications` (`openssl rand -hex 32`) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | Para emails | Sólo Vercel (servidor) | Servidor SMTP (Gmail, Resend, Brevo…) |
@@ -120,8 +123,8 @@ Sin las variables "Para emails" la app funciona igual; simplemente no envía not
    Recomendado: en **Emails → Templates** cambia el enlace de *Confirm signup* y *Reset password* por
    `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/onboarding` (y `type=recovery&next=/reset-password`)
    para que el enlace funcione aunque se abra en otro dispositivo.
-6. **Authentication → Attack Protection**: activa CAPTCHA (Cloudflare Turnstile) si abres el registro a mucha gente, y
-   la protección de contraseñas filtradas (plan Pro).
+6. **Authentication → Attack Protection → Enable CAPTCHA protection**: proveedor *Cloudflare Turnstile* y pega la
+   **clave secreta** (ver *Acceso y CAPTCHA*). Activa también la protección de contraseñas filtradas (plan Pro).
 7. **Database → Publications**: la migración añade `habit_logs` a `supabase_realtime` para el panel de grupo en directo.
 8. Revisa **Advisors → Security** tras migrar: no debería mostrar tablas sin RLS.
 
@@ -136,8 +139,8 @@ Sin las variables "Para emails" la app funciona igual; simplemente no envía not
 ```bash
 npm run lint
 npm run typecheck
-npm test                    # unit: fechas/zonas horarias, rachas, %, XP, validación, emails (60 tests)
-npm run test:integration    # integración + abuso contra Supabase real, notificaciones y envío SMTP (50 tests)
+npm test                    # unit: fechas/zonas horarias, rachas, %, XP, validación, emails, errores de Auth (62 tests)
+npm run test:integration    # integración + abuso contra Supabase real, invitación obligatoria, notificaciones (57 tests)
 npm run build
 npm run test:e2e            # Playwright: flujo A/B, seguridad, recuperación de contraseña y
                             # responsive (10 páginas × 5 tamaños × claro/oscuro), móvil + escritorio
@@ -153,7 +156,7 @@ El test E2E de recuperación de contraseña lee los emails de `E2E_MAILBOX_URL` 
 
 Para entornos sin Docker (CI restringidos) hay un stack mínimo: Postgres 16 + binario de `supabase/auth` +
 binario de PostgREST + un gateway Node que imita el enrutado de Supabase y un buzón SMTP en memoria.
-`reset-db.sh` recrea el esquema y aplica las migraciones; `env.sh` exporta las variables. Usa un secreto JWT de
+`start.sh` arranca todo, `reset-db.sh` recrea el esquema y aplica las migraciones y `env.sh` exporta las variables. Usa un secreto JWT de
 desarrollo público: **nunca** lo uses fuera de local.
 </details>
 
@@ -191,9 +194,37 @@ La base de datos decide a quién toca escribir según su zona horaria y **reserv
 4. Deploy. Añade el dominio final a *Site URL* / *Redirect URLs* de Supabase y a `NEXT_PUBLIC_SITE_URL`.
 5. Comprueba: registro → email de confirmación → `/onboarding`.
 
+## Acceso y CAPTCHA
+
+**Sólo por invitación.** La base de datos rechaza cualquier alta sin un código de invitación válido (aunque alguien
+llame a la API de Auth directamente). Quien se registra desde un enlace `/join/CODIGO` entra en ese grupo en la misma
+operación. Excepciones, llamadas *creadores* (pueden registrarse sin invitación y crear grupos):
+
+- **La primera cuenta** que se registre en la instalación (tú). Regístrate justo después de desplegar.
+- Los emails que autorices en **Supabase → SQL Editor**:
+  ```sql
+  select public.admin_allow_signup('amigo.organizador@gmail.com');
+  ```
+  (si esa persona ya tenía cuenta, pasa a poder crear grupos).
+
+El resto de personas sólo pueden entrar por el enlace y no pueden crear grupos propios.
+
+**CAPTCHA (Cloudflare Turnstile, gratis):**
+
+1. [dash.cloudflare.com](https://dash.cloudflare.com) → *Turnstile* → *Add widget*: nombre `Winter Arc`, dominio
+   `tu-app.vercel.app` (y `localhost` si quieres probar en local), modo *Managed*.
+2. Copia la **Site Key** → Vercel `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (redepliega).
+3. Copia la **Secret Key** → Supabase → *Authentication → Attack Protection* → *Enable CAPTCHA protection* →
+   proveedor *Turnstile*.
+
+El widget aparece en registro, login y recuperación de contraseña; Supabase valida el token en su servidor, así que un
+bot no puede saltárselo. Si activas el CAPTCHA en Supabase sin poner la Site Key en Vercel, nadie podrá entrar: haz
+los dos pasos a la vez.
+
 ## 10. Crear el primer grupo
 
-1. Entra en la app y regístrate. Tras confirmar el email llegas a **Empezar** (`/onboarding`).
+1. Nada más desplegar, regístrate en `/register` (la primera cuenta es la del organizador y no necesita invitación).
+   Tras confirmar el email llegas a **Empezar** (`/onboarding`).
 2. En *Crear un grupo*: nombre (p. ej. `WINTER ARC 2026`), fechas de inicio/fin y deja activado
    *Usar los hábitos del Winter Arc* (Entrenamiento 4×/semana, Boxeo mar-jue-sáb, Movilidad, Activación, Reflexión,
    Lectura, Actitud positiva, Estudio L-V y Proyecto Google AdSense 5×/semana).
@@ -206,8 +237,8 @@ La base de datos decide a quién toca escribir según su zona horaria y **reserv
   **Compartir** (menú nativo del móvil), copiar **enlace** (`https://tu-app/join/ABCD…`) o **código**, crear
   invitaciones con caducidad (24 h – 90 días o sin caducidad) y usos máximos, **revocar** una o **regenerar**
   (revoca todas y crea una nueva).
-- Tus amigos abren el enlace → se registran → vuelven a la invitación → *Unirme al grupo*. O introducen el código en
-  *Empezar → Unirme con un código* (acepta guiones y minúsculas).
+- Tus amigos abren el enlace → *Crear mi cuenta* → al registrarse ya están dentro del grupo. Quien ya tenga cuenta pulsa
+  *Ya tengo cuenta* → *Unirme al grupo*, o introduce el código en *Empezar → Unirme con un código*.
 
 ## 12. Arquitectura de seguridad
 
@@ -252,8 +283,12 @@ La base de datos decide a quién toca escribir según su zona horaria y **reserv
 
 ### Riesgos residuales conocidos
 
-- **Registro abierto**: cualquiera con el enlace de la app puede crear cuenta (sólo ve grupos a los que le inviten).
-  Si la app se hace pública y aparece spam de cuentas, activa CAPTCHA (Turnstile) en Supabase Auth.
+- **Enlaces de invitación compartidos**: quien tenga un enlace válido puede entrar. Si un enlace se filtra, revócalo o
+  regenera el código; usa caducidad y máximo de usos para invitaciones grandes.
+- **Primera cuenta**: hasta que te registres, la primera persona que lo haga será organizadora. Regístrate nada más
+  desplegar (o autoriza tu email con `admin_allow_signup` antes de publicar el enlace).
+- **CAPTCHA**: probado con un widget simulado y verificando que Supabase Auth rechaza peticiones sin token; el entorno
+  de desarrollo no tenía acceso a Cloudflare, así que la validación real contra Cloudflare se comprueba al desplegar.
 - **Entregabilidad**: con Gmail los correos pueden caer en spam al principio y hay ~500 envíos/día; con un dominio
   propio en Resend/Brevo (SPF/DKIM) mejora.
 - **Histórico con la configuración actual**: las estadísticas pasadas se calculan con la configuración vigente de
