@@ -2,9 +2,7 @@
 
 import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { MailCheck } from "lucide-react";
 import { getBrowserClient } from "@/lib/supabase/client";
-import { signUpErrorMessage } from "@/lib/auth-errors";
 import { fieldErrors, registerSchema, safeNextPath } from "@/lib/validation";
 import { Field, Input } from "@/components/ui/input";
 import { FormError, SubmitButton } from "./form-bits";
@@ -14,9 +12,8 @@ import { CAPTCHA_LOAD_ERROR, CAPTCHA_PENDING, useCaptcha } from "./use-captcha";
 const noop = () => () => {};
 
 /**
- * Registro sólo por invitación: `invite` llega del enlace /join/CODIGO. Sin
- * invitación sólo pueden registrarse la primera cuenta y los emails autorizados
- * (lo decide la base de datos, no este formulario).
+ * Registro sólo por invitación. Usa la Edge Function `register-user` para crear
+ * la cuenta con email ya confirmado (sin envío de correo) y devolver la sesión.
  */
 export function RegisterForm({ next, invite }: { next?: string; invite?: string }) {
   const router = useRouter();
@@ -28,20 +25,7 @@ export function RegisterForm({ next, invite }: { next?: string; invite?: string 
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [checkEmail, setCheckEmail] = useState(false);
   const captcha = useCaptcha();
-
-  if (checkEmail) {
-    return (
-      <div className="grid justify-items-center gap-3 text-center" role="status">
-        <MailCheck className="size-10 text-primary" aria-hidden="true" />
-        <h2 className="text-lg font-semibold">Revisa tu correo</h2>
-        <p className="text-sm text-muted">
-          Te hemos enviado un enlace para confirmar tu cuenta. Si no lo ves, mira en spam o promociones.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <form
@@ -69,44 +53,65 @@ export function RegisterForm({ next, invite }: { next?: string; invite?: string 
         setPending(true);
         setErrors({});
         setError(null);
+
         try {
-          const supabase = getBrowserClient();
-          const { data: available } = await supabase.rpc("username_available", { p_username: parsed.data.username });
-          if (available === false) {
-            setErrors({ username: "Ese nombre de usuario ya está cogido." });
-            setError("Revisa los campos.");
-            setPending(false);
-            return;
-          }
-          // Con invitación, el alta ya mete a la persona en el grupo: directo a "Hoy".
-          const target = invite ? "/today" : safeNextPath(next, "/onboarding");
-          const { data, error: authError } = await supabase.auth.signUp({
-            email: parsed.data.email,
-            password: parsed.data.password,
-            options: {
-              data: {
-                username: parsed.data.username,
-                display_name: parsed.data.displayName,
-                timezone: parsed.data.timezone,
-                ...(invite ? { invite_code: invite } : {}),
-              },
-              ...captcha.options,
-              emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(target)}`,
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+          const anonKey =
+            process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+          const resp = await fetch(`${supabaseUrl}/functions/v1/register-user`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: anonKey,
             },
+            body: JSON.stringify({
+              email: parsed.data.email,
+              password: parsed.data.password,
+              username: parsed.data.username,
+              displayName: parsed.data.displayName,
+              timezone: parsed.data.timezone,
+              inviteCode: invite,
+            }),
           });
-          if (authError) {
-            const msg = signUpErrorMessage(authError);
-            setError(msg.form);
-            if (msg.field) setErrors({ [msg.field[0]]: msg.field[1] });
+
+          const result = (await resp.json()) as {
+            created?: boolean;
+            fallback?: boolean;
+            access_token?: string;
+            refresh_token?: string;
+            error?: string;
+            field?: string;
+          };
+
+          if (!resp.ok || result.error) {
+            if (result.field === "username") {
+              setErrors({ username: "Ese nombre de usuario ya está cogido." });
+            }
+            setError(result.error ?? "No se ha podido crear la cuenta. Inténtalo de nuevo.");
             setPending(false);
             captcha.reset();
             return;
           }
-          if (data.session) {
+
+          if (result.fallback) {
+            // Cuenta creada pero no se pudo obtener sesión automáticamente
+            router.replace(
+              `/login?message=${encodeURIComponent("Cuenta creada. Inicia sesión para entrar.")}&email=${encodeURIComponent(parsed.data.email)}`,
+            );
+            return;
+          }
+
+          if (result.access_token && result.refresh_token) {
+            const supabase = getBrowserClient();
+            await supabase.auth.setSession({
+              access_token: result.access_token,
+              refresh_token: result.refresh_token,
+            });
+            const target = invite ? "/today" : safeNextPath(next, "/onboarding");
             router.replace(target);
             router.refresh();
-          } else {
-            setCheckEmail(true);
           }
         } catch {
           setError("Sin conexión. Inténtalo de nuevo.");
