@@ -26,7 +26,10 @@ function getTransporter(): Transporter {
       host: process.env.SMTP_HOST,
       port,
       secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === "true" : port === 465,
-      auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD } : undefined,
+      // Se acepta también en minúsculas: así se creó en el panel de Vercel.
+      auth: process.env.SMTP_USER
+        ? { user: process.env.SMTP_USER, pass: (process.env.SMTP_PASSWORD ?? process.env.smtp_password)?.replace(/\s+/g, "") }
+        : undefined,
       pool: true,
       maxConnections: 2,
       rateDelta: 1000,
