@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { CheckCircle2, CreditCard, Lock, ShieldCheck, Sparkles } from "lucide-react";
 import { hasFullAccess, requireGroup } from "@/lib/data/session";
-import { confirmCheckout, confirmPaypal } from "@/app/actions/billing";
-import { isBillingConfigured } from "@/lib/billing/stripe";
+import { confirmPaypal } from "@/app/actions/billing";
 import { isPaypalConfigured } from "@/lib/billing/paypal";
 import { formatDateOnly } from "@/lib/dates";
 import { Badge } from "@/components/ui/badge";
@@ -15,16 +14,14 @@ const FEATURES = ["Rangos y score de disciplina", "Grupo, actividad en directo y
 
 export default async function ProPage({ searchParams }: PageProps<"/pro">) {
   const params = await searchParams;
-  if (params.status === "success" && typeof params.session_id === "string") await confirmCheckout(params.session_id);
   if (params.paypal === "success" && typeof params.subscription_id === "string") await confirmPaypal(params.subscription_id);
-  const paid = params.status === "success" || params.paypal === "success";
-  const stripeOn = isBillingConfigured();
+  const paid = params.paypal === "success";
   const paypalOn = isPaypalConfigured();
 
   const session = await requireGroup();
   const { supabase, userId, activeGroup, profile } = session;
   const [{ data: sub }, fullAccess] = await Promise.all([
-    supabase.from("subscriptions").select("provider, status, current_period_end, cancel_at_period_end").eq("user_id", userId).maybeSingle(),
+    supabase.from("subscriptions").select("status, current_period_end, cancel_at_period_end").eq("user_id", userId).maybeSingle(),
     hasFullAccess(session),
   ]);
   const active = !!sub && ["active", "trialing", "past_due"].includes(sub.status);
@@ -81,18 +78,14 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
                 </p>
               )}
               {sub.status === "past_due" ? <p className="text-warning">El último cobro falló: se reintentará. Revisa tu método de pago.</p> : null}
-              <p className="text-xs text-muted">Pagas con {sub.provider === "paypal" ? "PayPal" : "Stripe"}.</p>
-              {sub.provider === "paypal" && sub.cancel_at_period_end ? null : (
+              {sub.cancel_at_period_end ? null : (
                 <div>
-                  <CancelButton resume={sub.cancel_at_period_end} />
+                  <CancelButton />
                 </div>
               )}
             </div>
-          ) : stripeOn || paypalOn ? (
-            <div className="flex flex-col gap-3 sm:flex-row">
-              {stripeOn ? <SubscribeButton via="stripe" label="Pagar con tarjeta · 2 €/mes" /> : null}
-              {paypalOn ? <SubscribeButton via="paypal" label="Pagar con PayPal · 2 €/mes" /> : null}
-            </div>
+          ) : paypalOn ? (
+            <SubscribeButton />
           ) : (
             <p className="rounded-2xl bg-surface-2 p-4 text-sm text-muted">Los pagos se están activando. Vuelve en un rato.</p>
           )}
@@ -102,11 +95,11 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
       <div className="grid gap-2 text-xs text-muted">
         <p className="flex items-start gap-2">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
-          Pago seguro con Stripe o PayPal (ambos certificados PCI DSS nivel 1). Tu tarjeta o cuenta se introduce en su página: Winter Arc nunca la ve ni la guarda.
+          Pago seguro con PayPal (certificado PCI DSS nivel 1). Pagas en la página de PayPal: Winter Arc nunca ve ni guarda tu cuenta ni tu tarjeta.
         </p>
         <p className="flex items-start gap-2">
           <CreditCard className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          Se cobra cada mes el mismo día en que te suscribiste (p. ej. del 5 de enero al 5 de febrero). Puedes cancelar cuando quieras desde aquí.
+          Se cobra cada mes el mismo día en que te suscribiste (p. ej. del 5 de enero al 5 de febrero). Puedes cancelar cuando quieras desde aquí o desde tu cuenta de PayPal.
         </p>
         <p>Las salas gratuitas siguen siendo gratis. Pro sólo es necesario en salas de pago.</p>
       </div>

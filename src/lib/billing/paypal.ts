@@ -2,7 +2,6 @@ import "server-only";
 import { createAdminClient } from "../supabase/admin";
 import { getSiteUrl } from "../env";
 import { logServerError } from "../errors";
-import { activeElsewhere } from "./stripe";
 
 /**
  * PayPal Subscriptions (REST v1). El pago y los datos de la cuenta/tarjeta se
@@ -129,6 +128,17 @@ export async function verifyPaypalWebhook(headers: Headers, event: unknown): Pro
   return res.verification_status === "SUCCESS";
 }
 
+const ACTIVE = ["active", "trialing", "past_due"];
+
+/**
+ * ¿Tiene el usuario otra suscripción todavía activa? Evita que un aviso tardío
+ * de una suscripción vieja (p. ej. cancelada y sustituida) le quite el Pro.
+ */
+async function activeElsewhere(userId: string, subId: string): Promise<boolean> {
+  const { data } = await createAdminClient().from("subscriptions").select("status, paypal_subscription_id").eq("user_id", userId).maybeSingle();
+  return !!data && ACTIVE.includes(data.status) && data.paypal_subscription_id !== subId;
+}
+
 export type PaypalSubscription = {
   id: string;
   status: "APPROVAL_PENDING" | "APPROVED" | "ACTIVE" | "SUSPENDED" | "CANCELLED" | "EXPIRED";
@@ -171,7 +181,7 @@ export async function syncPaypalSubscription(sub: PaypalSubscription): Promise<v
     default:
       status = "incomplete";
   }
-  if (status !== "active" && (await activeElsewhere({ user_id: userId }, sub.id))) return;
+  if (status !== "active" && (await activeElsewhere(userId, sub.id))) return;
   const { error } = await admin.from("subscriptions").upsert(
     {
       user_id: userId,
