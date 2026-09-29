@@ -28,6 +28,11 @@ const SPECIFIC: [RegExp, string][] = [
   [/too many habits/, "Has alcanzado el máximo de hábitos del grupo."],
   [/too many workouts/, "Demasiados entrenamientos registrados ese día."],
   [/invalid timezone/, "Zona horaria no válida."],
+  [/duel exists/, "Ya tenéis un duelo esa semana."],
+  [/habits not shared/, "Los dos tenéis que compartir vuestros hábitos con el grupo para batiros en duelo."],
+  [/too many duels/, "Como máximo 3 retos por semana."],
+  [/duel closed/, "Este duelo ya no admite cambios."],
+  [/invalid week/, "Sólo puedes retar para esta semana o la próxima."],
   [/profiles_username_key|duplicate key.*username/, "Ese nombre de usuario ya está cogido."],
 ];
 

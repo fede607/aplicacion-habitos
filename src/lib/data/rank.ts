@@ -1,6 +1,6 @@
 import "server-only";
 import type { ServerSupabase } from "../supabase/server";
-import type { HabitCategory, HabitLogStatus, RankSnapshotRow } from "../database.types";
+import type { HabitCategory, HabitLogStatus, HabitRevisionRow, RankSnapshotRow } from "../database.types";
 import { addDays, type IsoDate } from "../dates";
 import { logServerError } from "../errors";
 import { computeRank, localDateOf, phaseFor, RANK_CONFIG, type RankHabitRevision, type RankLog, type RankResult } from "../rank/engine";
@@ -53,26 +53,8 @@ export async function getMemberRank(
   if (revRes.error) logServerError("getMemberRank:revisions", revRes.error);
   if (habitRes.error) logServerError("getMemberRank:habits", habitRes.error);
 
-  const revisions: RankHabitRevision[] = (revRes.data ?? []).map((r) => ({
-    habitId: r.habit_id,
-    effectiveFrom: r.effective_from,
-    weight: Number(r.weight),
-    category: r.category,
-    frequency: r.frequency,
-    weekdays: r.weekdays ?? [],
-    weeklyTarget: r.weekly_target,
-    isOptional: r.is_optional,
-    isActive: r.is_active,
-    archived: r.archived,
-    startsOn: r.starts_on,
-  }));
-
-  const rankLogs: RankLog[] = logs.map((l) => ({
-    habitId: l.habit_id,
-    date: l.log_date,
-    status: l.status,
-    recordedOn: localDateOf(l.updated_at, timeZone),
-  }));
+  const revisions = toRankRevisions(revRes.data ?? []);
+  const rankLogs = toRankLogs(logs, timeZone);
 
   const result = computeRank({ from, today: to, threshold: group.streak_threshold, revisions, logs: rankLogs });
   const habits: RankHabitMeta[] = (habitRes.data ?? []).map((h) => ({
@@ -88,7 +70,27 @@ export async function getMemberRank(
   return { result, habits };
 }
 
-async function fetchLogs(supabase: ServerSupabase, groupId: string, userId: string, from: IsoDate, to: IsoDate) {
+export function toRankRevisions(rows: HabitRevisionRow[]): RankHabitRevision[] {
+  return rows.map((r) => ({
+    habitId: r.habit_id,
+    effectiveFrom: r.effective_from,
+    weight: Number(r.weight),
+    category: r.category,
+    frequency: r.frequency,
+    weekdays: r.weekdays ?? [],
+    weeklyTarget: r.weekly_target,
+    isOptional: r.is_optional,
+    isActive: r.is_active,
+    archived: r.archived,
+    startsOn: r.starts_on,
+  }));
+}
+
+export function toRankLogs(rows: { habit_id: string; log_date: string; status: HabitLogStatus; updated_at: string }[], timeZone: string): RankLog[] {
+  return rows.map((l) => ({ habitId: l.habit_id, date: l.log_date, status: l.status, recordedOn: localDateOf(l.updated_at, timeZone) }));
+}
+
+export async function fetchLogs(supabase: ServerSupabase, groupId: string, userId: string, from: IsoDate, to: IsoDate) {
   const out: { habit_id: string; log_date: string; status: HabitLogStatus; updated_at: string }[] = [];
   for (let page = 0; page < 20; page++) {
     const { data, error } = await supabase

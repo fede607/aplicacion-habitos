@@ -12,6 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress";
 import { GroupRealtime } from "@/components/groups/group-realtime";
+import { getGroupDuels, getGroupFeed } from "@/lib/data/social";
+import { ActivityFeed } from "@/components/social/activity-feed";
+import { DuelsSection } from "@/components/social/duels-section";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Grupo" };
@@ -48,11 +51,13 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
   const from = statsFrom(activeGroup.start_date, today);
   const weekStart = startOfIsoWeek(today) < from ? from : startOfIsoWeek(today);
 
-  const [membersRes, visibilityRes, statsRows, workoutsRes] = await Promise.all([
+  const [membersRes, visibilityRes, statsRows, workoutsRes, feed, duels] = await Promise.all([
     supabase.from("group_members").select("user_id, role, joined_at").eq("group_id", activeGroup.id).order("joined_at").limit(1000),
     supabase.rpc("group_member_visibility", { p_group_id: activeGroup.id }),
     getDailyStats(supabase, activeGroup.id, from, today),
     supabase.rpc("group_workout_summary", { p_group_id: activeGroup.id, p_from: from, p_to: today }),
+    getGroupFeed(supabase, activeGroup.id, userId),
+    getGroupDuels(supabase, { group: activeGroup, userId, today }),
   ]);
 
   const memberRows = membersRes.data ?? [];
@@ -158,6 +163,11 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
           </div>
         </CardContent>
       </Card>
+
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        <DuelsSection duels={duels} />
+        <ActivityFeed groupId={activeGroup.id} items={feed.items} nowMs={feed.now} />
+      </div>
 
       {activeGroup.rules ? (
         <Card>

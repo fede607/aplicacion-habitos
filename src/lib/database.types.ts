@@ -135,6 +135,40 @@ export type HabitLogRow = {
   status: HabitLogStatus;
 } & Timestamps;
 
+export type ActivityKind = "day_complete" | "achievement" | "rank_up" | "duel_accepted" | "joined";
+export type ReactionEmoji = "🔥" | "💪" | "👏" | "🫡";
+
+export type GroupActivityRow = {
+  id: number;
+  group_id: string;
+  user_id: string;
+  kind: ActivityKind;
+  event_key: string;
+  payload: Record<string, unknown>;
+  created_at: string;
+};
+
+export type ActivityReactionRow = {
+  activity_id: number;
+  user_id: string;
+  group_id: string;
+  emoji: ReactionEmoji;
+  created_at: string;
+};
+
+export type DuelStatus = "pending" | "accepted" | "declined" | "cancelled";
+
+export type DuelRow = {
+  id: string;
+  group_id: string;
+  challenger_id: string;
+  opponent_id: string;
+  week_start: string;
+  status: DuelStatus;
+  created_at: string;
+  responded_at: string | null;
+};
+
 export type DailyEntryRow = {
   user_id: string;
   entry_date: string;
@@ -200,6 +234,9 @@ export type Database = {
       habit_logs: Table<HabitLogRow>;
       habit_revisions: Table<HabitRevisionRow>;
       rank_snapshots: Table<RankSnapshotRow>;
+      group_activity: Table<GroupActivityRow>;
+      activity_reactions: Table<ActivityReactionRow>;
+      duels: Table<DuelRow>;
       daily_entries: Table<DailyEntryRow>;
       workouts: Table<WorkoutRow>;
       achievements: Table<AchievementRow>;
@@ -255,6 +292,9 @@ export type Database = {
         Args: { p_group_id: string };
         Returns: { user_id: string; share_habits: boolean; share_workouts: boolean; show_in_comparison: boolean }[];
       };
+      create_duel: { Args: { p_group_id: string; p_opponent_id: string; p_week_start: string }; Returns: string };
+      respond_duel: { Args: { p_duel_id: string; p_accept: boolean }; Returns: undefined };
+      cancel_duel: { Args: { p_duel_id: string }; Returns: undefined };
       evaluate_my_achievements: { Args: Record<string, never>; Returns: string[] };
       delete_my_account: { Args: Record<string, never>; Returns: undefined };
       invite_signup_preview: { Args: { p_code: string }; Returns: { status: string; group_name: string | null }[] };
