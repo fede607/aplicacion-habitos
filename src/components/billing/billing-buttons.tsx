@@ -4,25 +4,26 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { LoaderCircle, Sparkles } from "lucide-react";
-import { cancelSubscription, resumeSubscription, startCheckout } from "@/app/actions/billing";
+import { cancelSubscription, resumeSubscription, startCheckout, startPaypalCheckout } from "@/app/actions/billing";
 import { Button } from "@/components/ui/button";
 
-export function SubscribeButton() {
+export function SubscribeButton({ via = "stripe", label }: { via?: "stripe" | "paypal"; label: string }) {
   const [pending, start] = useTransition();
   return (
     <Button
       size="lg"
+      variant={via === "paypal" ? "outline" : "primary"}
       className="w-full sm:w-auto"
       disabled={pending}
       onClick={() =>
         start(async () => {
-          const res = await startCheckout();
+          const res = via === "paypal" ? await startPaypalCheckout() : await startCheckout();
           if (res && !res.ok) toast.error(res.error);
         })
       }
     >
       {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Sparkles aria-hidden="true" />}
-      Hacerse Pro · 2 €/mes
+      {label}
     </Button>
   );
 }

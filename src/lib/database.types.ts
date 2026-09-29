@@ -172,8 +172,10 @@ export type DuelRow = {
 
 export type SubscriptionRow = {
   user_id: string;
-  stripe_customer_id: string;
+  provider: "stripe" | "paypal";
+  stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
+  paypal_subscription_id: string | null;
   status: string;
   current_period_end: string | null;
   cancel_at_period_end: boolean;

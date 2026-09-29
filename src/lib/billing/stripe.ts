@@ -58,6 +58,19 @@ export async function ensureWebhook(): Promise<void> {
   if (error) throw error;
 }
 
+const ACTIVE: string[] = ["active", "trialing", "past_due"];
+
+/**
+ * ¿Tiene el usuario otra suscripción (de otro proveedor o id) todavía activa?
+ * Evita que un aviso tardío de una suscripción vieja le quite el Pro vigente.
+ */
+export async function activeElsewhere(match: { user_id: string } | { stripe_customer_id: string }, subId: string): Promise<boolean> {
+  const q = createAdminClient().from("subscriptions").select("status, stripe_subscription_id, paypal_subscription_id");
+  const { data } = await ("user_id" in match ? q.eq("user_id", match.user_id) : q.eq("stripe_customer_id", match.stripe_customer_id)).maybeSingle();
+  if (!data || !ACTIVE.includes(data.status)) return false;
+  return data.stripe_subscription_id !== subId && data.paypal_subscription_id !== subId;
+}
+
 function periodEnd(sub: Stripe.Subscription): string | null {
   const ends = sub.items.data.map((i) => i.current_period_end).filter((n): n is number => typeof n === "number");
   return ends.length ? new Date(Math.max(...ends) * 1000).toISOString() : null;
@@ -69,6 +82,7 @@ export async function syncSubscription(sub: Stripe.Subscription): Promise<void> 
   const customerId = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
   const admin = createAdminClient();
   const row = {
+    provider: "stripe" as const,
     stripe_customer_id: customerId,
     stripe_subscription_id: sub.id,
     status: sub.status,
@@ -76,6 +90,7 @@ export async function syncSubscription(sub: Stripe.Subscription): Promise<void> 
     cancel_at_period_end: sub.cancel_at_period_end || sub.cancel_at !== null,
     updated_at: new Date().toISOString(),
   };
+  if (!ACTIVE.includes(sub.status) && (await activeElsewhere(userId ? { user_id: userId } : { stripe_customer_id: customerId }, sub.id))) return;
   const { error } = userId
     ? await admin.from("subscriptions").upsert({ user_id: userId, ...row }, { onConflict: "user_id" })
     : await admin.from("subscriptions").update(row).eq("stripe_customer_id", customerId);
