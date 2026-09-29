@@ -6,6 +6,7 @@ import { BottomNav, SidebarNav } from "@/components/layout/app-nav";
 import { GroupSwitcher } from "@/components/layout/group-switcher";
 import { GroupTabs } from "@/components/layout/group-tabs";
 import { Logo } from "@/components/layout/logo";
+import { InstallAppBanner } from "@/components/pwa/install-app";
 import { OfflineBanner } from "@/components/layout/offline-banner";
 import { TimezoneMismatch } from "@/components/layout/timezone-mismatch";
 
@@ -109,6 +110,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               </Link>
             </div>
           ) : null}
+          <InstallAppBanner />
           {children}
         </main>
       </div>

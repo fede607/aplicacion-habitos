@@ -36,6 +36,9 @@ export default function LandingPage() {
             <Button asChild size="lg" variant="outline">
               <Link href="/login">Ya tengo cuenta</Link>
             </Button>
+            <Button asChild size="lg" variant="ghost">
+              <Link href="/instalar">📲 Descargar la app</Link>
+            </Button>
           </div>
         </section>
         <section className="mt-20 grid gap-4 sm:grid-cols-2" aria-label="Qué incluye">

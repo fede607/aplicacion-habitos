@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import { initInstallCapture } from "./install-state";
+
+// Se captura al cargar el módulo: el evento puede llegar antes de cualquier efecto.
+initInstallCapture();
 
 /** Registra el service worker sólo en producción (en dev interfiere con HMR). */
 export function ServiceWorkerRegistrar() {
