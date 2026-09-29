@@ -29,7 +29,14 @@ type GroupContext = {
   from: IsoDate;
 };
 
-export type RunResult = Record<NotificationKind, { sent: number; skipped: number; failed: number }>;
+export type RunResult = Record<NotificationKind, { sent: number; skipped: number; failed: number }> & { lastError?: string };
+
+/** Motivo del fallo sin datos sensibles (código SMTP/nodemailer o primera línea del mensaje). */
+function describeError(e: unknown): string {
+  const err = e as { code?: string; responseCode?: number; message?: string } | undefined;
+  const parts = [err?.code, err?.responseCode, err?.message?.split("\n")[0]?.slice(0, 120)].filter(Boolean);
+  return parts.join(" · ") || "unknown";
+}
 
 /**
  * Procesa los envíos pendientes. Idempotente: la BD reserva cada
@@ -78,6 +85,7 @@ export async function runNotifications(options: { now?: Date; limit?: number } =
         }
       } catch (e) {
         logServerError(`notification:${kind}`, e);
+        result.lastError = `${kind}: ${describeError(e)}`;
       }
       result[kind][status] += 1;
       const { error: finishError } = await admin.rpc("finish_notification", {
