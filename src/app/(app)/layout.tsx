@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Medal } from "lucide-react";
+import { Medal, Sparkles, TrendingUp } from "lucide-react";
 import { hasFullAccess, requireSession, type GroupSession } from "@/lib/data/session";
 import { Avatar } from "@/components/ui/avatar";
 import { BottomNav, SidebarNav } from "@/components/layout/app-nav";
@@ -57,7 +57,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               {activeGroup ? activeGroup.name : "Sin grupo"}
             </div>
             <div className="flex items-center gap-2">
-              <GroupSwitcher groups={groupOptions} activeId={activeGroup?.id ?? null} />
+              {/* En móvil las pestañas de sala ya permiten cambiar de grupo. */}
+              <div className="hidden lg:block">
+                <GroupSwitcher groups={groupOptions} activeId={activeGroup?.id ?? null} />
+              </div>
+              {activeGroup?.requires_pro ? (
+                <Link
+                  href={locked ? "/pro?locked=1" : "/pro"}
+                  className="pro-gradient inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-bold lg:hidden"
+                >
+                  <Sparkles className="size-4" aria-hidden="true" />
+                  {locked ? "Hazte Pro" : "Pro"}
+                </Link>
+              ) : null}
               <Link
                 href={locked ? "/pro?locked=1" : "/rank"}
                 aria-label="Rango"
@@ -67,9 +79,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               </Link>
               <Link
                 href={locked ? "/pro?locked=1" : "/progress"}
-                className="inline-flex h-9 items-center rounded-xl px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-foreground lg:hidden"
+                aria-label="Progreso"
+                className="inline-flex size-9 items-center justify-center rounded-xl text-muted hover:bg-surface-2 hover:text-foreground lg:hidden"
               >
-                Progreso
+                <TrendingUp className="size-5" aria-hidden="true" />
               </Link>
               <Link href="/settings" aria-label="Ajustes y perfil" className="rounded-full lg:hidden">
                 <Avatar name={profile.display_name} emoji={profile.avatar_emoji} color={profile.avatar_color} size="sm" />
@@ -87,15 +100,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </div>
           ) : null}
           {locked ? (
-            <Link
-              href="/pro?locked=1"
-              className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-primary-soft px-4 py-3 text-sm text-primary"
-            >
-              <span>
-                <b>Sala Pro.</b> Sin suscripción sólo ves tus hábitos del día.
-              </span>
-              <span className="shrink-0 font-semibold">Hazte Pro · 2 €/mes →</span>
-            </Link>
+            <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-primary/30 bg-primary-soft p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-foreground">
+                <b>Sala Pro.</b> Sin Pro sólo ves tus hábitos del día. Desbloquea rangos, duelos y estadísticas.
+              </p>
+              <Link href="/pro?locked=1" className="pro-gradient inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 font-bold">
+                <Sparkles className="size-4" aria-hidden="true" /> Hazte Pro · 2 €/mes
+              </Link>
+            </div>
           ) : null}
           {children}
         </main>

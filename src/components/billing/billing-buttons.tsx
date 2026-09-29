@@ -11,8 +11,9 @@ export function SubscribeButton() {
   const [pending, start] = useTransition();
   return (
     <Button
-      size="lg"
-      className="w-full sm:w-auto"
+      variant="pro"
+      size="xl"
+      className="w-full"
       disabled={pending}
       onClick={() =>
         start(async () => {

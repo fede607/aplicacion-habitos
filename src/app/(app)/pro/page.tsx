@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CheckCircle2, CreditCard, Lock, ShieldCheck, Sparkles } from "lucide-react";
 import { hasFullAccess, requireGroup } from "@/lib/data/session";
 import { confirmPaypal } from "@/app/actions/billing";
@@ -33,7 +34,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
 
   const paypalMe = (
     <div className="grid gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
-      <a href={PAYPAL_ME_PAY_URL} target="_blank" rel="noopener noreferrer" className={buttonVariants({ size: "lg", className: "w-full sm:w-auto" })}>
+      <a href={PAYPAL_ME_PAY_URL} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "pro", size: "xl", className: "w-full" })}>
         <Sparkles aria-hidden="true" /> {manual ? "Renovar: pagar 2 € con PayPal" : "Pagar 2 € con PayPal"}
       </a>
       <ol className="grid list-decimal gap-1 pl-5 text-muted">
@@ -84,7 +85,14 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
             ))}
           </ul>
 
-          {manual ? (
+          {isCreator && activeGroup.requires_pro && !active ? (
+            <div className="grid gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
+              <p>Eres el creador de esta sala: tienes todo gratis. Cuando alguien te pague, actívale el Pro desde la administración del grupo.</p>
+              <Link href="/group/admin" className={buttonVariants({ variant: "pro", size: "xl", className: "w-full" })}>
+                <Sparkles aria-hidden="true" /> Gestionar pagos Pro
+              </Link>
+            </div>
+          ) : manual ? (
             <>
               <p className="rounded-2xl bg-surface-2 p-4 text-sm">
                 Pro pagado hasta el <b>{nextDate}</b>. Para seguir siendo Pro, paga otros 2 € antes de esa fecha.
