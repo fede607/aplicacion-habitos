@@ -102,7 +102,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           {locked ? (
             <div className="mb-5 flex flex-col gap-3 rounded-2xl border border-primary/30 bg-primary-soft p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
               <p className="text-foreground">
-                <b>Sala Pro.</b> Sin Pro sólo ves tus hábitos del día. Desbloquea rangos, duelos y estadísticas.
+                <b>Sala Pro.</b> Sin Pro tienes hábitos, grupo y duelos. Desbloquea rango, panel, calendario, progreso y entrenos.
               </p>
               <Link href="/pro?locked=1" className="pro-gradient inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl px-5 font-bold">
                 <Sparkles className="size-4" aria-hidden="true" /> Hazte Pro · 2 €/mes

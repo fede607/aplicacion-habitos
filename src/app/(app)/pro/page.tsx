@@ -13,7 +13,7 @@ import { CancelButton, SubscribeButton } from "@/components/billing/billing-butt
 
 export const metadata: Metadata = { title: "Winter Arc Pro" };
 
-const FEATURES = ["Rangos y score de disciplina", "Grupo, actividad en directo y duelos", "Panel, calendario y progreso", "Entrenamientos y estadísticas completas"];
+const FEATURES = ["Rangos y score de disciplina", "Panel, calendario y progreso", "Entrenamientos y estadísticas completas"];
 
 export default async function ProPage({ searchParams }: PageProps<"/pro">) {
   const params = await searchParams;
@@ -42,7 +42,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
           Envía <b className="text-foreground">2 €</b> y escribe en la nota tu usuario: <b className="text-foreground">@{profile.username}</b>
         </li>
         <li>El creador de la sala activará tu Pro en cuanto le llegue el pago.</li>
-        <li>Cada pago da 1 mes de Pro. Si no pagas el mes siguiente, vuelves a ver sólo los hábitos.</li>
+        <li>Cada pago da 1 mes de Pro. Si no pagas el mes siguiente, vuelves a la versión gratis (hábitos, grupo y duelos).</li>
       </ol>
     </div>
   );
@@ -64,7 +64,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
       {params.locked && !fullAccess ? (
         <p className="flex items-start gap-2 rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-warning" role="status">
           <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          «{activeGroup.name}» es una sala Pro. Sin suscripción sólo puedes marcar tus hábitos del día.
+          «{activeGroup.name}» es una sala Pro. Sin Pro puedes marcar tus hábitos, ver el grupo y hacer duelos.
         </p>
       ) : null}
 
@@ -134,7 +134,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
           <CreditCard className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {paypalOn
             ? "Se cobra cada mes el mismo día en que te suscribiste (p. ej. del 5 de enero al 5 de febrero). Puedes cancelar cuando quieras desde aquí o desde tu cuenta de PayPal."
-            : "Pagas mes a mes: no hay cobros automáticos ni nada que cancelar. Si dejas de pagar, simplemente vuelves a ver sólo tus hábitos."}
+            : "Pagas mes a mes: no hay cobros automáticos ni nada que cancelar. Si dejas de pagar, vuelves a la versión gratis (hábitos, grupo y duelos)."}
         </p>
         <p>Las salas gratuitas siguen siendo gratis. Pro sólo es necesario en salas de pago.</p>
       </div>

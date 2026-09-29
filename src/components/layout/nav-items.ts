@@ -9,7 +9,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/workouts", label: "Entrenos", icon: Dumbbell, mobile: true },
   { href: "/rank", label: "Rango", icon: Medal, mobile: false },
   { href: "/progress", label: "Progreso", icon: TrendingUp, mobile: false },
-  { href: "/group", label: "Grupo", icon: Users, mobile: true },
+  { href: "/group", label: "Grupo", icon: Users, mobile: true, free: true },
   { href: "/pro", label: "Pro", icon: Sparkles, mobile: false, free: true },
   { href: "/settings", label: "Ajustes", icon: Settings, mobile: false, free: true },
 ];

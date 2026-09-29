@@ -43,7 +43,7 @@ export function ProManager({ groupId, members, meId, timeZone }: { groupId: stri
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{m.name}</p>
               <p className="text-xs text-muted">
-                {m.active && m.proUntil ? `Pro hasta el ${formatDateOnly(m.proUntil, timeZone)}` : "Sólo hábitos"}
+                {m.active && m.proUntil ? `Pro hasta el ${formatDateOnly(m.proUntil, timeZone)}` : "Versión gratis"}
               </p>
             </div>
             {m.active ? <Badge tone="success">Pro</Badge> : null}
