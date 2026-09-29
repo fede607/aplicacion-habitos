@@ -37,6 +37,7 @@ type MemberView = {
   weekPercent: number | null;
   weekDone: number;
   weekRequired: number;
+  weekDays: number;
   workouts: number | null;
   minutes: number | null;
   loggedToday: boolean;
@@ -100,6 +101,7 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
       weekPercent: week?.percent ?? null,
       weekDone: week?.completed ?? 0,
       weekRequired: week?.required ?? 0,
+      weekDays: series?.filter((d) => d.day >= weekStart && d.day <= today && d.required > 0).length ?? 0,
       workouts: w ? w.workouts : null,
       minutes: w ? w.minutes : null,
       loggedToday: Boolean(todayStat && todayStat.completed + todayStat.bonus + todayStat.skipped > 0),
@@ -263,9 +265,11 @@ function MemberCard({ member: m, rank }: { member: MemberView; rank: number | nu
           </dl>
           <div className="mt-3 grid gap-1">
             <div className="flex justify-between text-xs text-muted">
-              <span>Esta semana</span>
+              <span>
+                Esta semana · {m.weekDays} {m.weekDays === 1 ? "día" : "días"}
+              </span>
               <span className="tabular">
-                {m.weekDone}/{m.weekRequired}
+                {m.weekDone}/{m.weekRequired} hábitos
               </span>
             </div>
             <ProgressBar value={m.weekPercent ?? 0} label={`Semana de ${m.name}`} />
