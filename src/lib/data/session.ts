@@ -80,3 +80,18 @@ export async function requireGroupAdmin(): Promise<GroupSession> {
   if (session.activeGroup.role !== "admin") redirect("/group");
   return session;
 }
+
+/** ¿Acceso completo al grupo activo? (sala gratis, creador o Pro). Lo decide la BD. */
+export const hasFullAccess = cache(async (session: GroupSession): Promise<boolean> => {
+  if (!session.activeGroup.requires_pro) return true;
+  const { data, error } = await session.supabase.rpc("has_full_access", { p_group_id: session.activeGroup.id });
+  if (error) logServerError("hasFullAccess", error);
+  return data === true;
+});
+
+/** Páginas Pro: en una sala de pago, sin suscripción sólo se ven los hábitos de hoy. */
+export async function requireFullAccess(): Promise<GroupSession> {
+  const session = await requireGroup();
+  if (!(await hasFullAccess(session))) redirect("/pro?locked=1");
+  return session;
+}

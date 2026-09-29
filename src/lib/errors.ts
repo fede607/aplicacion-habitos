@@ -28,6 +28,7 @@ const SPECIFIC: [RegExp, string][] = [
   [/too many habits/, "Has alcanzado el máximo de hábitos del grupo."],
   [/too many workouts/, "Demasiados entrenamientos registrados ese día."],
   [/invalid timezone/, "Zona horaria no válida."],
+  [/pro required/, "Esta sala es Pro: hazte Pro para usar esta función."],
   [/duel exists/, "Ya tenéis un duelo esa semana."],
   [/habits not shared/, "Los dos tenéis que compartir vuestros hábitos con el grupo para batiros en duelo."],
   [/too many duels/, "Como máximo 3 retos por semana."],

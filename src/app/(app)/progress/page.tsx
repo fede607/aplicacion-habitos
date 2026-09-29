@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Flame, Sparkles, Trophy } from "lucide-react";
-import { requireGroup } from "@/lib/data/session";
+import { requireFullAccess } from "@/lib/data/session";
 import { getPersonalStats } from "@/lib/data/personal-stats";
 import { getActiveHabits, getMyLogs, getXpInputs, indexLogs } from "@/lib/data/queries";
 import { addDays, formatShortDate, startOfIsoWeek } from "@/lib/dates";
@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = { title: "Progreso" };
 
 export default async function ProgressPage() {
-  const session = await requireGroup();
+  const session = await requireFullAccess();
   const { supabase, userId, activeGroup, today } = session;
 
   // Los logros se evalúan en BD con datos reales (idempotente).

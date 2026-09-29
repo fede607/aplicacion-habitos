@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Lock, Settings2, Users } from "lucide-react";
-import { requireGroup } from "@/lib/data/session";
+import { requireFullAccess } from "@/lib/data/session";
 import { statsFrom } from "@/lib/data/personal-stats";
 import { getDailyStats, toDayStats } from "@/lib/data/queries";
 import { formatMinutes, startOfIsoWeek } from "@/lib/dates";
@@ -43,7 +43,7 @@ type MemberView = {
 };
 
 export default async function GroupPage({ searchParams }: PageProps<"/group">) {
-  const { supabase, userId, activeGroup, today } = await requireGroup();
+  const { supabase, userId, activeGroup, today } = await requireFullAccess();
   const params = await searchParams;
   const compare = activeGroup.comparison_enabled && params.view === "compare";
   const page = Math.max(0, Number.parseInt(typeof params.page === "string" ? params.page : "0", 10) || 0);

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CalendarCheck, ChevronRight, Clock, Dumbbell, Flame, Target, TrendingUp } from "lucide-react";
-import { requireGroup } from "@/lib/data/session";
+import { requireFullAccess } from "@/lib/data/session";
 import { getPersonalStats } from "@/lib/data/personal-stats";
 import { getMemberRank, persistRankSnapshots } from "@/lib/data/rank";
 import { PHASE_LABELS } from "@/lib/rank/engine";
@@ -20,7 +20,7 @@ import { RecentDaysChart } from "@/components/stats/recent-days-chart";
 export const metadata: Metadata = { title: "Panel" };
 
 export default async function DashboardPage() {
-  const session = await requireGroup();
+  const session = await requireFullAccess();
   const { supabase, userId, activeGroup, today } = session;
   const weekStart = startOfIsoWeek(today);
 

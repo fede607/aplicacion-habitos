@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Clock, Dumbbell, Plus } from "lucide-react";
-import { requireGroup } from "@/lib/data/session";
+import { requireFullAccess } from "@/lib/data/session";
 import { getWorkoutsPage, getWorkoutTotals } from "@/lib/data/queries";
 import { formatLongDate, formatMinutes, startOfMonth } from "@/lib/dates";
 import { WORKOUT_EMOJI, WORKOUT_LABELS } from "@/lib/labels";
@@ -12,7 +12,7 @@ import { Stat } from "@/components/ui/stat";
 export const metadata: Metadata = { title: "Entrenamientos" };
 
 export default async function WorkoutsPage({ searchParams }: PageProps<"/workouts">) {
-  const { supabase, userId, today } = await requireGroup();
+  const { supabase, userId, today } = await requireFullAccess();
   const params = await searchParams;
   const page = Math.max(0, Math.min(1000, Number.parseInt(typeof params.page === "string" ? params.page : "0", 10) || 0));
 

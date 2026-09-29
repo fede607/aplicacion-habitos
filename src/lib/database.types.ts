@@ -48,6 +48,7 @@ export type GroupRow = {
   streak_threshold: number;
   comparison_enabled: boolean;
   max_members: number;
+  requires_pro: boolean;
   created_by: string | null;
   deleted_at: string | null;
 } & Timestamps;
@@ -169,6 +170,16 @@ export type DuelRow = {
   responded_at: string | null;
 };
 
+export type SubscriptionRow = {
+  user_id: string;
+  stripe_customer_id: string;
+  stripe_subscription_id: string | null;
+  status: string;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  updated_at: string;
+};
+
 export type DailyEntryRow = {
   user_id: string;
   entry_date: string;
@@ -237,6 +248,7 @@ export type Database = {
       group_activity: Table<GroupActivityRow>;
       activity_reactions: Table<ActivityReactionRow>;
       duels: Table<DuelRow>;
+      subscriptions: Table<SubscriptionRow>;
       daily_entries: Table<DailyEntryRow>;
       workouts: Table<WorkoutRow>;
       achievements: Table<AchievementRow>;
@@ -292,6 +304,9 @@ export type Database = {
         Args: { p_group_id: string };
         Returns: { user_id: string; share_habits: boolean; share_workouts: boolean; show_in_comparison: boolean }[];
       };
+      has_full_access: { Args: { p_group_id: string }; Returns: boolean };
+      billing_config_get: { Args: { p_key: string }; Returns: string | null };
+      billing_config_set: { Args: { p_key: string; p_value: string }; Returns: undefined };
       create_duel: { Args: { p_group_id: string; p_opponent_id: string; p_week_start: string }; Returns: string };
       respond_duel: { Args: { p_duel_id: string; p_accept: boolean }; Returns: undefined };
       cancel_duel: { Args: { p_duel_id: string }; Returns: undefined };

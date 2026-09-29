@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarCheck, ChevronLeft, Clock, Dumbbell, Flame, Lock, Target, TrendingUp } from "lucide-react";
-import { requireGroup } from "@/lib/data/session";
+import { requireFullAccess } from "@/lib/data/session";
 import { statsFrom } from "@/lib/data/stats-range";
 import { getActiveHabits, getDailyStats, toDayStats } from "@/lib/data/queries";
 import { addDays, eachDay, formatMinutes, startOfIsoWeek, startOfMonth } from "@/lib/dates";
@@ -28,7 +28,7 @@ export const metadata: Metadata = { title: "Estadísticas del miembro" };
 export default async function MemberStatsPage({ params }: PageProps<"/group/members/[userId]">) {
   const { userId: memberId } = await params;
   if (!uuidSchema.safeParse(memberId).success) notFound();
-  const { supabase, userId, activeGroup, today } = await requireGroup();
+  const { supabase, userId, activeGroup, today } = await requireFullAccess();
 
   // RLS: sólo devuelve la fila si ambos estáis en el grupo.
   const [memberRes, profileRes] = await Promise.all([

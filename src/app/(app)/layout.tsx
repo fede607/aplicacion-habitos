@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Medal } from "lucide-react";
-import { requireSession } from "@/lib/data/session";
+import { hasFullAccess, requireSession, type GroupSession } from "@/lib/data/session";
 import { Avatar } from "@/components/ui/avatar";
 import { BottomNav, SidebarNav } from "@/components/layout/app-nav";
 import { GroupSwitcher } from "@/components/layout/group-switcher";
@@ -13,6 +13,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const session = await requireSession();
   const { profile, groups, activeGroup } = session;
   const groupOptions = groups.map((g) => ({ id: g.id, name: g.name }));
+  const locked = activeGroup ? !(await hasFullAccess(session as GroupSession)) : false;
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[16rem_1fr]">
@@ -33,7 +34,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <p className="truncate text-sm font-semibold">{activeGroup.name}</p>
           </div>
         ) : null}
-        <SidebarNav />
+        <SidebarNav locked={locked} />
         <Link
           href="/settings"
           className="mt-auto flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-surface-2"
@@ -58,14 +59,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="flex items-center gap-2">
               <GroupSwitcher groups={groupOptions} activeId={activeGroup?.id ?? null} />
               <Link
-                href="/rank"
+                href={locked ? "/pro?locked=1" : "/rank"}
                 aria-label="Rango"
                 className="inline-flex size-9 items-center justify-center rounded-xl text-muted hover:bg-surface-2 hover:text-foreground lg:hidden"
               >
                 <Medal className="size-5" aria-hidden="true" />
               </Link>
               <Link
-                href="/progress"
+                href={locked ? "/pro?locked=1" : "/progress"}
                 className="inline-flex h-9 items-center rounded-xl px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-foreground lg:hidden"
               >
                 Progreso
@@ -85,11 +86,22 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <GroupTabs groups={groupOptions} activeId={activeGroup?.id ?? null} />
             </div>
           ) : null}
+          {locked ? (
+            <Link
+              href="/pro?locked=1"
+              className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-primary/30 bg-primary-soft px-4 py-3 text-sm text-primary"
+            >
+              <span>
+                <b>Sala Pro.</b> Sin suscripción sólo ves tus hábitos del día.
+              </span>
+              <span className="shrink-0 font-semibold">Hazte Pro · 2 €/mes →</span>
+            </Link>
+          ) : null}
           {children}
         </main>
       </div>
 
-      <BottomNav />
+      <BottomNav locked={locked} />
     </div>
   );
 }
