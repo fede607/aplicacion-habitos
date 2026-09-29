@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/data/session";
 import { Avatar } from "@/components/ui/avatar";
 import { BottomNav, SidebarNav } from "@/components/layout/app-nav";
 import { GroupSwitcher } from "@/components/layout/group-switcher";
+import { GroupTabs } from "@/components/layout/group-tabs";
 import { Logo } from "@/components/layout/logo";
 import { OfflineBanner } from "@/components/layout/offline-banner";
 import { TimezoneMismatch } from "@/components/layout/timezone-mismatch";
@@ -79,6 +80,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </header>
 
         <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 pt-5 pb-28 sm:px-6 lg:pb-12">
+          {groups.length > 1 ? (
+            <div className="mb-5">
+              <GroupTabs groups={groupOptions} activeId={activeGroup?.id ?? null} />
+            </div>
+          ) : null}
           {children}
         </main>
       </div>
