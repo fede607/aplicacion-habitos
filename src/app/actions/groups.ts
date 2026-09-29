@@ -230,6 +230,7 @@ export async function saveHabit(input: z.input<typeof habitSchema>): Promise<Act
     weekdays: h.frequency === "weekdays" ? h.weekdays : [],
     weekly_target: h.frequency === "weekly_target" ? h.weeklyTarget : null,
     is_optional: h.isOptional,
+    weight: h.weight,
     goal: h.goal,
     starts_on: h.startsOn,
   };

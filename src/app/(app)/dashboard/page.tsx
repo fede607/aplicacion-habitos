@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarCheck, Clock, Dumbbell, Flame, Target, TrendingUp } from "lucide-react";
+import { CalendarCheck, ChevronRight, Clock, Dumbbell, Flame, Target, TrendingUp } from "lucide-react";
 import { requireGroup } from "@/lib/data/session";
 import { getPersonalStats } from "@/lib/data/personal-stats";
+import { getMemberRank, persistRankSnapshots } from "@/lib/data/rank";
+import { PHASE_LABELS } from "@/lib/rank/engine";
+import { getTier } from "@/lib/rank/tiers";
+import { RankEmblem } from "@/components/rank/rank-emblem";
 import { getActiveHabits, getMyLogs, getWorkoutTotals, indexLogs } from "@/lib/data/queries";
 import { addDays, eachDay, formatMinutes, formatShortDate, startOfIsoWeek } from "@/lib/dates";
 import { weeklyTargetProgress } from "@/lib/stats";
@@ -20,7 +24,7 @@ export default async function DashboardPage() {
   const { supabase, userId, activeGroup, today } = session;
   const weekStart = startOfIsoWeek(today);
 
-  const [stats, workouts, habits, weekLogs, notesRes] = await Promise.all([
+  const [stats, workouts, habits, weekLogs, notesRes, rank] = await Promise.all([
     getPersonalStats(session),
     getWorkoutTotals(supabase, userId, activeGroup.start_date <= today ? activeGroup.start_date : undefined, today),
     getActiveHabits(supabase, activeGroup.id),
@@ -32,7 +36,16 @@ export default async function DashboardPage() {
       .neq("improve_tomorrow", "")
       .order("entry_date", { ascending: false })
       .limit(5),
+    getMemberRank(supabase, {
+      group: activeGroup,
+      memberId: userId,
+      joinedAt: activeGroup.joined_at,
+      timeZone: session.profile.timezone,
+      today,
+    }),
   ]);
+  await persistRankSnapshots(supabase, userId, activeGroup.id, rank.result, today);
+  const g = rank.result.global;
 
   const logIndex = indexLogs(weekLogs);
   const weeklyHabits = habits.filter((h) => h.frequency === "weekly_target");
@@ -91,6 +104,27 @@ export default async function DashboardPage() {
           <Stat label="Total del arc" icon={<Target />} tone="success" value={stats.arc.percent === null ? "—" : `${stats.arc.percent}%`} sub={`${stats.arc.activeDays} días activos`} />
         </div>
       </section>
+
+      <Link
+        href="/rank"
+        className="group flex items-center gap-4 rounded-2xl border border-border bg-surface p-4 shadow-card transition-colors hover:bg-surface-2"
+      >
+        <RankEmblem tierIndex={g.tierIndex} size={56} />
+        <div className="grid min-w-0 flex-1 gap-1.5">
+          <div className="flex flex-wrap items-baseline gap-x-2">
+            <span className="text-xs font-semibold tracking-widest text-muted uppercase">Tu rango</span>
+            <span className="text-lg font-black tracking-tight uppercase">{g.tierIndex === null ? "Sin rango aún" : getTier(g.tierIndex).name}</span>
+            {g.tierIndex !== null && g.phase !== "stable" ? <span className="text-xs text-muted">{PHASE_LABELS[g.phase].toLowerCase()}</span> : null}
+          </div>
+          <ProgressBar value={g.progress} label="Progreso hacia el siguiente rango" />
+          <span className="tabular text-xs text-muted">
+            {g.score === null
+              ? "Completa tu primer día para desbloquearlo"
+              : `${g.score.toLocaleString("es-ES", { maximumFractionDigits: 1 })} / 100${g.next ? ` · +${g.next.pointsNeeded.toLocaleString("es-ES", { maximumFractionDigits: 1 })} para ${g.next.name}` : ""}`}
+          </span>
+        </div>
+        <ChevronRight className="size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+      </Link>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>

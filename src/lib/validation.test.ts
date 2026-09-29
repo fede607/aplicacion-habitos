@@ -94,6 +94,14 @@ describe("habitSchema", () => {
     expect(habitSchema.safeParse({ ...base, frequency: "weekly_target", weeklyTarget: null }).success).toBe(false);
     expect(habitSchema.safeParse({ ...base, frequency: "weekly_target", weeklyTarget: 3 }).success).toBe(true);
   });
+
+  it("peso: sólo 1, 1,5 o 2 (por defecto 1)", () => {
+    expect(habitSchema.parse(base).weight).toBe(1);
+    expect(habitSchema.safeParse({ ...base, weight: 1.5 }).success).toBe(true);
+    expect(habitSchema.safeParse({ ...base, weight: "2" }).success).toBe(true);
+    expect(habitSchema.safeParse({ ...base, weight: 3 }).success).toBe(false);
+    expect(habitSchema.safeParse({ ...base, weight: 0.5 }).success).toBe(false);
+  });
   it("rechaza iconos o colores arbitrarios (inyección)", () => {
     expect(habitSchema.safeParse({ ...base, icon: "<script>" }).success).toBe(false);
     expect(habitSchema.safeParse({ ...base, color: "red;background:url(x)" }).success).toBe(false);

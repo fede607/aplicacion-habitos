@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Medal } from "lucide-react";
 import { requireSession } from "@/lib/data/session";
 import { Avatar } from "@/components/ui/avatar";
 import { BottomNav, SidebarNav } from "@/components/layout/app-nav";
@@ -55,6 +56,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </div>
             <div className="flex items-center gap-2">
               <GroupSwitcher groups={groupOptions} activeId={activeGroup?.id ?? null} />
+              <Link
+                href="/rank"
+                aria-label="Rango"
+                className="inline-flex size-9 items-center justify-center rounded-xl text-muted hover:bg-surface-2 hover:text-foreground lg:hidden"
+              >
+                <Medal className="size-5" aria-hidden="true" />
+              </Link>
               <Link
                 href="/progress"
                 className="inline-flex h-9 items-center rounded-xl px-3 text-sm font-medium text-muted hover:bg-surface-2 hover:text-foreground lg:hidden"

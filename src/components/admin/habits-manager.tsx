@@ -7,7 +7,7 @@ import { Archive, ArrowDown, ArrowUp, LoaderCircle, Pencil, Plus } from "lucide-
 import { archiveHabit, moveHabit, saveHabit, setHabitActive } from "@/app/actions/groups";
 import type { HabitCategory, HabitFrequency, HabitRow } from "@/lib/database.types";
 import { CATEGORY_LABELS, describeFrequency, FREQUENCY_LABELS } from "@/lib/labels";
-import { HABIT_CATEGORIES, HABIT_FREQUENCIES } from "@/lib/validation";
+import { HABIT_CATEGORIES, HABIT_FREQUENCIES, HABIT_WEIGHTS } from "@/lib/validation";
 import { WEEKDAY_LABELS, WEEKDAY_NAMES } from "@/lib/dates";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ import { Field, Input, Select } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { HABIT_ICONS, HabitIcon } from "@/components/habits/habit-icon";
 import { cn } from "@/lib/utils";
+
+const WEIGHT_LABELS: Record<(typeof HABIT_WEIGHTS)[number], string> = { 1: "Normal ×1", 1.5: "Exigente ×1,5", 2: "Clave ×2" };
 
 const COLORS = ["#38bdf8", "#0ea5e9", "#6366f1", "#a855f7", "#ec4899", "#ef4444", "#f97316", "#f59e0b", "#eab308", "#22c55e", "#14b8a6", "#64748b"];
 
@@ -30,6 +32,7 @@ type Draft = {
   weekdays: number[];
   weeklyTarget: string;
   isOptional: boolean;
+  weight: number;
   goal: string;
   startsOn: string;
 };
@@ -46,6 +49,7 @@ function toDraft(h: HabitRow | null, today: string): Draft {
     weekdays: h?.weekdays ?? [],
     weeklyTarget: h?.weekly_target ? String(h.weekly_target) : "3",
     isOptional: h?.is_optional ?? false,
+    weight: h ? Number(h.weight) : 1,
     goal: h?.goal ?? "",
     startsOn: h?.starts_on ?? today,
   };
@@ -77,6 +81,7 @@ export function HabitsManager({ groupId, habits, today }: { groupId: string; hab
               <p className="truncate text-sm font-semibold">{h.name}</p>
               <p className="text-xs text-muted">
                 {CATEGORY_LABELS[h.category]} · {describeFrequency(h)}
+                {Number(h.weight) > 1 ? ` · peso ×${String(Number(h.weight)).replace(".", ",")}` : ""}
                 {h.goal ? ` · ${h.goal}` : ""}
               </p>
             </div>
@@ -118,6 +123,7 @@ export function HabitsManager({ groupId, habits, today }: { groupId: string; hab
       </Button>
       <p className="text-xs text-muted">
         Desactivar un hábito lo quita del día a día y de las estadísticas (también del histórico). «Activo desde» evita que un hábito nuevo penalice los días anteriores.
+        En los rangos, los cambios de peso, frecuencia u obligatoriedad se aplican desde mañana y los hábitos desactivados o archivados siguen contando en los días pasados: el histórico no se reescribe.
       </p>
 
       <Dialog open={editing !== null} onOpenChange={(open) => !open && setEditing(null)}>
@@ -229,6 +235,20 @@ function HabitForm({ draft, groupId, onSaved, onCancel }: { draft: Draft; groupI
           </Field>
         ) : null}
         {errors.weekdays ? <p className="text-sm text-danger">{errors.weekdays}</p> : null}
+      </fieldset>
+
+      <fieldset className="grid gap-2">
+        <legend className="mb-1 text-sm font-medium">Dificultad (peso en el rango)</legend>
+        <div className="grid grid-cols-3 gap-2">
+          {HABIT_WEIGHTS.map((w) => (
+            <label key={w} className={cn("cursor-pointer rounded-xl border border-border p-2.5 text-center text-sm font-medium has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring", form.weight === w && "border-primary bg-primary-soft text-primary")}>
+              <input type="radio" name="weight" className="sr-only" checked={form.weight === w} onChange={() => set("weight", w)} />
+              {WEIGHT_LABELS[w]}
+            </label>
+          ))}
+        </div>
+        <p className="text-xs text-muted">Reserva «Clave» para lo realmente importante. Los cambios de peso cuentan desde mañana.</p>
+        {errors.weight ? <p className="text-sm text-danger">{errors.weight}</p> : null}
       </fieldset>
 
       <fieldset className="grid gap-2">

@@ -87,9 +87,44 @@ export type HabitRow = {
   sort_order: number;
   is_active: boolean;
   starts_on: string;
+  weight: number;
   created_by: string | null;
   archived_at: string | null;
 } & Timestamps;
+
+export type HabitRevisionRow = {
+  habit_id: string;
+  group_id: string;
+  effective_from: string;
+  weight: number;
+  category: HabitCategory;
+  frequency: HabitFrequency;
+  weekdays: number[];
+  weekly_target: number | null;
+  is_optional: boolean;
+  is_active: boolean;
+  archived: boolean;
+  starts_on: string;
+  recorded_at: string;
+};
+
+export type RankSnapshotRow = {
+  user_id: string;
+  group_id: string;
+  snapshot_date: string;
+  daily_score: number | null;
+  discipline_score: number;
+  tier_index: number;
+  phase: "provisional" | "estimated" | "stabilizing" | "stable";
+  current_streak: number;
+  best_streak: number;
+  consistency: number | null;
+  category_scores: Record<string, { score: number; tier_index: number }>;
+  components: Record<string, number>;
+  inputs: { required: number; done: number; weights: Record<string, number>; completed: string[] };
+  algorithm_version: number;
+  computed_at: string;
+};
 
 export type HabitLogRow = {
   id: string;
@@ -163,6 +198,8 @@ export type Database = {
       group_invitations: Table<GroupInvitationRow>;
       habits: Table<HabitRow>;
       habit_logs: Table<HabitLogRow>;
+      habit_revisions: Table<HabitRevisionRow>;
+      rank_snapshots: Table<RankSnapshotRow>;
       daily_entries: Table<DailyEntryRow>;
       workouts: Table<WorkoutRow>;
       achievements: Table<AchievementRow>;

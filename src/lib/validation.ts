@@ -104,6 +104,7 @@ export const groupSettingsSchema = z
 
 export const HABIT_CATEGORIES = ["physical", "mental", "productivity", "health", "other"] as const;
 export const HABIT_FREQUENCIES = ["daily", "weekdays", "weekly_target"] as const;
+export const HABIT_WEIGHTS = [1, 1.5, 2] as const;
 
 export const habitSchema = z
   .object({
@@ -118,6 +119,10 @@ export const habitSchema = z
     weekdays: z.array(z.coerce.number().int().min(1).max(7)).max(7),
     weeklyTarget: z.coerce.number().int().min(1).max(7).nullable(),
     isOptional: z.boolean(),
+    weight: z.coerce
+      .number()
+      .refine((v) => HABIT_WEIGHTS.includes(v as (typeof HABIT_WEIGHTS)[number]), "Peso no válido")
+      .default(1),
     goal: trimmed(100),
     startsOn: isoDateSchema,
   })
