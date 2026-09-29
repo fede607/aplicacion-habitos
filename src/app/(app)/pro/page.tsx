@@ -3,6 +3,8 @@ import { CheckCircle2, CreditCard, Lock, ShieldCheck, Sparkles } from "lucide-re
 import { hasFullAccess, requireGroup } from "@/lib/data/session";
 import { confirmPaypal } from "@/app/actions/billing";
 import { isPaypalConfigured } from "@/lib/billing/paypal";
+import { PAYPAL_ME_PAY_URL } from "@/lib/billing/paypal-me";
+import { buttonVariants } from "@/components/ui/button";
 import { formatDateOnly } from "@/lib/dates";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,12 +23,28 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
   const session = await requireGroup();
   const { supabase, userId, activeGroup, profile } = session;
   const [{ data: sub }, fullAccess] = await Promise.all([
-    supabase.from("subscriptions").select("status, current_period_end, cancel_at_period_end").eq("user_id", userId).maybeSingle(),
+    supabase.from("subscriptions").select("status, current_period_end, cancel_at_period_end, paypal_subscription_id").eq("user_id", userId).maybeSingle(),
     hasFullAccess(session),
   ]);
   const active = !!sub && ["active", "trialing", "past_due"].includes(sub.status);
   const isCreator = activeGroup.created_by === userId;
   const nextDate = sub?.current_period_end ? formatDateOnly(sub.current_period_end, profile.timezone) : null;
+  const manual = active && !sub.paypal_subscription_id;
+
+  const paypalMe = (
+    <div className="grid gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
+      <a href={PAYPAL_ME_PAY_URL} target="_blank" rel="noopener noreferrer" className={buttonVariants({ size: "lg", className: "w-full sm:w-auto" })}>
+        <Sparkles aria-hidden="true" /> {manual ? "Renovar: pagar 2 € con PayPal" : "Pagar 2 € con PayPal"}
+      </a>
+      <ol className="grid list-decimal gap-1 pl-5 text-muted">
+        <li>
+          Envía <b className="text-foreground">2 €</b> y escribe en la nota tu usuario: <b className="text-foreground">@{profile.username}</b>
+        </li>
+        <li>El creador de la sala activará tu Pro en cuanto le llegue el pago.</li>
+        <li>Cada pago da 1 mes de Pro. Si no pagas el mes siguiente, vuelves a ver sólo los hábitos.</li>
+      </ol>
+    </div>
+  );
 
   return (
     <div className="mx-auto grid max-w-2xl gap-6">
@@ -66,7 +84,14 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
             ))}
           </ul>
 
-          {active ? (
+          {manual ? (
+            <>
+              <p className="rounded-2xl bg-surface-2 p-4 text-sm">
+                Pro pagado hasta el <b>{nextDate}</b>. Para seguir siendo Pro, paga otros 2 € antes de esa fecha.
+              </p>
+              {paypalMe}
+            </>
+          ) : active ? (
             <div className="grid gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
               {sub.cancel_at_period_end ? (
                 <p>
@@ -87,7 +112,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
           ) : paypalOn ? (
             <SubscribeButton />
           ) : (
-            <p className="rounded-2xl bg-surface-2 p-4 text-sm text-muted">Los pagos se están activando. Vuelve en un rato.</p>
+            paypalMe
           )}
         </CardContent>
       </Card>
@@ -99,7 +124,9 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
         </p>
         <p className="flex items-start gap-2">
           <CreditCard className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          Se cobra cada mes el mismo día en que te suscribiste (p. ej. del 5 de enero al 5 de febrero). Puedes cancelar cuando quieras desde aquí o desde tu cuenta de PayPal.
+          {paypalOn
+            ? "Se cobra cada mes el mismo día en que te suscribiste (p. ej. del 5 de enero al 5 de febrero). Puedes cancelar cuando quieras desde aquí o desde tu cuenta de PayPal."
+            : "Pagas mes a mes: no hay cobros automáticos ni nada que cancelar. Si dejas de pagar, simplemente vuelves a ver sólo tus hábitos."}
         </p>
         <p>Las salas gratuitas siguen siendo gratis. Pro sólo es necesario en salas de pago.</p>
       </div>

@@ -82,3 +82,20 @@ export async function cancelSubscription(): Promise<ActionResult> {
   revalidatePath("/", "layout");
   return { ok: true, data: undefined };
 }
+
+/**
+ * El creador de la sala de pago da (o quita, con 0) meses de Pro a quien le ha
+ * pagado por PayPal.me. La BD comprueba que es el creador y que es miembro.
+ */
+export async function grantManualPro(input: { groupId: string; userId: string; months: number }): Promise<ActionResult> {
+  const uuid = /^[0-9a-f-]{36}$/i;
+  if (!uuid.test(input.groupId) || !uuid.test(input.userId) || !Number.isInteger(input.months) || input.months < 0 || input.months > 12) {
+    return { ok: false, error: "Datos no válidos." };
+  }
+  const { supabase, userId } = await authed();
+  if (!userId) return NOT_AUTHENTICATED;
+  const { error } = await supabase.rpc("grant_manual_pro", { p_group_id: input.groupId, p_user_id: input.userId, p_months: input.months });
+  if (error) return fail(error, "grantManualPro");
+  revalidatePath("/", "layout");
+  return { ok: true, data: undefined };
+}
