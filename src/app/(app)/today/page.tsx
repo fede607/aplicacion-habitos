@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { PasswordUpdatedToast } from "./password-updated-toast";
+import { ShareStreakButton } from "@/components/social/share-streak-button";
 
 export const metadata: Metadata = { title: "Hoy" };
 
@@ -113,6 +114,8 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
       ) : (
         <TodayTracker key={date} date={date} habits={trackerHabits} initialStatuses={statuses} editable />
       )}
+
+      {isToday && trackerHabits.length > 0 ? <ShareStreakButton className="w-full sm:w-auto sm:justify-self-start" /> : null}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <DailyNotes

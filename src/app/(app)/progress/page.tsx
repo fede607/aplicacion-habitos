@@ -13,6 +13,7 @@ import { Stat } from "@/components/ui/stat";
 import { HabitIcon } from "@/components/habits/habit-icon";
 import { NewAchievementsToast } from "./new-achievements-toast";
 import { cn } from "@/lib/utils";
+import { ShareStreakButton } from "@/components/social/share-streak-button";
 import { compareMonths, habitTrends, weekdayPattern } from "@/lib/analytics";
 import { WEEKDAY_NAMES } from "@/lib/dates";
 
@@ -60,9 +61,12 @@ export default async function ProgressPage() {
   return (
     <div className="grid gap-6">
       <NewAchievementsToast codes={newlyUnlocked} names={Object.fromEntries(achievements.map((a) => [a.code, `${a.emoji} ${a.name}`]))} />
-      <header>
-        <p className="text-xs font-semibold tracking-widest text-primary uppercase">Progreso</p>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Constancia y logros</h1>
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold tracking-widest text-primary uppercase">Progreso</p>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Constancia y logros</h1>
+        </div>
+        <ShareStreakButton />
       </header>
 
       <Card className="aurora">
