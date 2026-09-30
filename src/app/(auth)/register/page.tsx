@@ -5,6 +5,8 @@ import { RegisterForm } from "@/components/auth/register-form";
 import { createClient } from "@/lib/supabase/server";
 import { inviteFromParams } from "@/lib/invite";
 import { safeNextPath } from "@/lib/validation";
+import { enabledOAuthProviders } from "@/lib/auth-providers";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 
 export const metadata: Metadata = { title: "Crear cuenta" };
 
@@ -47,7 +49,8 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
         </p>
       )}
 
-      <div className="rounded-3xl border border-border bg-surface p-5 shadow-card sm:p-6">
+      <div className="grid gap-4 rounded-3xl border border-border bg-surface p-5 shadow-card sm:p-6">
+        {invite ? <OAuthButtons providers={enabledOAuthProviders()} invite={invite.code} next={next} /> : null}
         <RegisterForm next={next} invite={invite?.code} />
       </div>
       <p className="text-center text-sm text-muted">
