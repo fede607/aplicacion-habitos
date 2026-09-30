@@ -8,7 +8,7 @@ import { joinGroup } from "@/app/actions/groups";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 
-export function JoinByCodeForm() {
+export function JoinByCodeForm({ redirectTo = "/today", onJoined }: { redirectTo?: string; onJoined?: () => void } = {}) {
   const router = useRouter();
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | undefined>();
@@ -22,7 +22,9 @@ export function JoinByCodeForm() {
           const res = await joinGroup(code);
           if (res.ok) {
             toast.success("¡Te has unido al grupo!");
-            router.push("/today");
+            onJoined?.();
+            router.push(redirectTo);
+            router.refresh();
           } else {
             setError(res.error);
           }
@@ -43,9 +45,9 @@ export function JoinByCodeForm() {
           aria-invalid={!!error}
         />
       </Field>
-      <Button type="submit" size="lg" variant="secondary" disabled={pending || code.trim().length < 12}>
+      <Button type="submit" size="lg" variant="pro" className="w-full" disabled={pending || code.trim().length < 12}>
         {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
-        Unirme
+        Unirme al grupo
       </Button>
     </form>
   );

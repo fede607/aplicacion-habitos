@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress";
 import { GroupRealtime } from "@/components/groups/group-realtime";
+import { GroupActions, InviteCodeBox } from "@/components/groups/group-actions";
+import { getSiteUrl } from "@/lib/env";
 import { getGroupDuels, getGroupFeed } from "@/lib/data/social";
 import { ActivityFeed } from "@/components/social/activity-feed";
 import { DuelsSection } from "@/components/social/duels-section";
@@ -52,14 +54,28 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
   const from = statsFrom(activeGroup.start_date, today);
   const weekStart = startOfIsoWeek(today) < from ? from : startOfIsoWeek(today);
 
-  const [membersRes, visibilityRes, statsRows, workoutsRes, feed, duels] = await Promise.all([
+  const isAdmin = activeGroup.role === "admin";
+  const inviteQuery = isAdmin
+    ? supabase
+        .from("group_invitations")
+        .select("code, expires_at, max_uses, use_count")
+        .eq("group_id", activeGroup.id)
+        .is("revoked_at", null)
+        .order("created_at", { ascending: false })
+        .limit(10)
+    : Promise.resolve({ data: [] as { code: string; expires_at: string | null; max_uses: number | null; use_count: number }[] });
+  const [membersRes, visibilityRes, statsRows, workoutsRes, feed, duels, invitesRes] = await Promise.all([
     supabase.from("group_members").select("user_id, role, joined_at").eq("group_id", activeGroup.id).order("joined_at").limit(1000),
     supabase.rpc("group_member_visibility", { p_group_id: activeGroup.id }),
     getDailyStats(supabase, activeGroup.id, from, today),
     supabase.rpc("group_workout_summary", { p_group_id: activeGroup.id, p_from: from, p_to: today }),
     getGroupFeed(supabase, activeGroup.id, userId),
     getGroupDuels(supabase, { group: activeGroup, userId, today }),
+    inviteQuery,
   ]);
+  const nowIso = new Date().toISOString();
+  const inviteCode =
+    (invitesRes.data ?? []).find((i) => (!i.expires_at || i.expires_at > nowIso) && (i.max_uses === null || i.use_count < i.max_uses))?.code ?? null;
 
   const memberRows = membersRes.data ?? [];
   const { data: profiles } = await supabase
@@ -130,7 +146,7 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
         </div>
         <div className="flex items-center gap-3">
           <GroupRealtime groupId={activeGroup.id} />
-          {activeGroup.role === "admin" ? (
+          {isAdmin ? (
             <Button asChild variant="outline" size="sm">
               <Link href="/group/admin">
                 <Settings2 aria-hidden="true" />
@@ -140,6 +156,19 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
           ) : null}
         </div>
       </header>
+
+      <GroupActions siteUrl={getSiteUrl()} />
+
+      {isAdmin && inviteCode ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Invita a tus amigos a «{activeGroup.name}»</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <InviteCodeBox code={inviteCode} siteUrl={getSiteUrl()} />
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card className="aurora">
         <CardContent className="grid gap-4 p-5 sm:grid-cols-[1fr_auto] sm:items-center sm:p-6">

@@ -41,6 +41,33 @@ export async function createGroup(input: z.input<typeof createGroupSchema>): Pro
   return { ok: true, data: { groupId: data } };
 }
 
+/**
+ * «Crear grupo» en un toque: grupo nuevo con los hábitos por defecto (90 días)
+ * y su código de invitación, listo para copiar y compartir.
+ */
+export async function quickCreateGroup(): Promise<ActionResult<{ groupId: string; code: string | null }>> {
+  const { supabase, userId } = await authed();
+  if (!userId) return NOT_AUTHENTICATED;
+  const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle();
+  const firstName = (profile?.display_name ?? "").trim().split(/\s+/)[0]?.slice(0, 40);
+  const { data: groupId, error } = await supabase.rpc("create_group", {
+    p_name: firstName ? `Grupo de ${firstName}` : "Mi grupo",
+    p_description: "",
+    p_seed_defaults: true,
+  });
+  if (error || !groupId) return fail(error, "quickCreateGroup");
+  const { data: inv } = await supabase
+    .from("group_invitations")
+    .select("code")
+    .eq("group_id", groupId)
+    .is("revoked_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  refreshApp();
+  return { ok: true, data: { groupId, code: inv?.code ?? null } };
+}
+
 const JOIN_ERRORS: Record<string, string> = {
   invalid: "Ese código no es válido. Revisa que esté bien escrito.",
   revoked: "Esta invitación ha sido revocada. Pide un enlace nuevo.",

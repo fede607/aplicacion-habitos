@@ -25,6 +25,7 @@ const SPECIFIC: [RegExp, string][] = [
   [/habit not available/, "Este hábito ya no está activo."],
   [/last admin/, "Eres el único admin: transfiere la administración antes."],
   [/cannot remove admin/, "No puedes expulsar a otro administrador."],
+  [/too many groups/, "Ya has creado 10 grupos, el máximo. Borra alguno para crear otro."],
   [/too many habits/, "Has alcanzado el máximo de hábitos del grupo."],
   [/too many workouts/, "Demasiados entrenamientos registrados ese día."],
   [/invalid timezone/, "Zona horaria no válida."],
