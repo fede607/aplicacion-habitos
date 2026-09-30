@@ -6,6 +6,7 @@ import { requireSession } from "@/lib/data/session";
 import { PAYPAL_ME_URL, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProManager, type ProMember } from "@/components/admin/pro-manager";
+import { ReviewsManager } from "@/components/admin/reviews-manager";
 
 export const metadata: Metadata = { title: "Pagos Pro" };
 
@@ -13,7 +14,20 @@ export default async function StaffPaymentsPage() {
   const { supabase, profile } = await requireSession();
   const { data: isStaff } = await supabase.rpc("am_i_staff");
   if (!isStaff) notFound();
-  const [{ data }, { data: metricsRows }] = await Promise.all([supabase.rpc("staff_pro_list"), supabase.rpc("staff_metrics")]);
+  const [{ data }, { data: metricsRows }, { data: reviewRows }] = await Promise.all([
+    supabase.rpc("staff_pro_list"),
+    supabase.rpc("staff_metrics"),
+    supabase.rpc("staff_reviews"),
+  ]);
+  const reviews = (reviewRows ?? []).map((r) => ({
+    id: r.id,
+    username: r.username,
+    name: r.display_name,
+    rating: r.rating,
+    body: r.body,
+    allowPublic: r.allow_public,
+    approved: r.approved,
+  }));
   const m = metricsRows?.[0];
   const members: ProMember[] = (data ?? []).map((r) => ({
     userId: r.user_id,
@@ -78,6 +92,19 @@ export default async function StaffPaymentsPage() {
         </CardHeader>
         <CardContent>
           <ProManager members={members} timeZone={profile.timezone} nowMs={new Date().getTime()} />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle className="text-base">Opiniones de usuarios</CardTitle>
+            <CardDescription>
+              Sólo aparecen en la web las que tú publiques, y sólo si su autor ha dado permiso. Si la edita, vuelve a revisión.
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ReviewsManager reviews={reviews} />
         </CardContent>
       </Card>
     </div>

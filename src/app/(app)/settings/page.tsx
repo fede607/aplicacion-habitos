@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bell, ChevronDown, ChevronRight, Mail, Palette, Plus, ShieldCheck, Smartphone, Sparkles, Trash2, UserRound, Users } from "lucide-react";
+import { Bell, Star, ChevronDown, ChevronRight, Mail, Palette, Plus, ShieldCheck, Smartphone, Sparkles, Trash2, UserRound, Users } from "lucide-react";
 import { requireSession } from "@/lib/data/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { DeleteAccountForm, SignOutButton } from "@/components/settings/account-
 import { LeaveGroupButton } from "@/components/admin/danger-zone";
 import { NotificationsForm } from "@/components/settings/notifications-form";
 import { isEmailConfigured } from "@/lib/email/mailer";
+import { ReviewForm } from "@/components/reviews/review-form";
 
 export const metadata: Metadata = { title: "Perfil" };
 
@@ -21,6 +22,7 @@ export default async function SettingsPage() {
   const { supabase, profile, settings, groups, activeGroup, email } = await requireSession();
   const { data: notify } = await supabase.rpc("my_notification_email");
   const n = notify?.[0];
+  const { data: review } = await supabase.from("reviews").select("rating, body, allow_public, approved").eq("user_id", profile.id).maybeSingle();
   return (
     <div className="mx-auto grid max-w-2xl gap-5">
       <header className="flex items-center gap-4">
@@ -101,6 +103,13 @@ export default async function SettingsPage() {
         </Section>
         <Section icon={<ShieldCheck />} title="Privacidad y recordatorios" hint="Quién ve tus datos">
           <PreferencesForm settings={settings} />
+        </Section>
+        <Section
+          icon={<Star />}
+          title="Valorar Year Arc"
+          hint={review ? `Tu opinión: ${review.rating}★${review.approved ? " · publicada en la web" : ""}` : "Cuéntanos qué te parece"}
+        >
+          <ReviewForm initial={review ? { rating: review.rating, body: review.body, allowPublic: review.allow_public } : null} />
         </Section>
         <Section icon={<Palette />} title="Apariencia" hint="Claro, oscuro o automático">
           <ThemeToggle />

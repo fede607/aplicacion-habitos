@@ -3,6 +3,11 @@ import { Check, Dumbbell, Flame, Medal, ShieldCheck, Smartphone, Swords, Users }
 import { Logo } from "@/components/layout/logo";
 import { Button } from "@/components/ui/button";
 import { PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
+import { getPublicProof } from "@/lib/data/public-proof";
+import { ReviewCards, StatsStrip } from "@/components/reviews/social-proof";
+
+// Opiniones y cifras reales: se refrescan cada 10 minutos.
+export const revalidate = 600;
 
 const FEATURES = [
   {
@@ -91,7 +96,8 @@ function PhoneMock() {
   );
 }
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const { reviews, stats } = await getPublicProof();
   return (
     <div className="aurora min-h-dvh">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
@@ -118,6 +124,7 @@ export default function LandingPage() {
               </Link>
             </div>
             <p className="mt-3 text-xs text-muted">1 mes de Pro gratis al empezar · sin tarjeta</p>
+            <StatsStrip stats={stats} className="mt-8 max-w-md" />
           </div>
           <PhoneMock />
         </section>
@@ -153,6 +160,15 @@ export default function LandingPage() {
             ))}
           </div>
         </section>
+
+        {reviews.length ? (
+          <section className="mt-24" aria-labelledby="opiniones">
+            <h2 id="opiniones" className="text-center text-2xl font-black tracking-tight sm:text-3xl">
+              Lo que dicen quienes ya lo usan
+            </h2>
+            <ReviewCards reviews={reviews} className="mt-8 lg:grid-cols-3" />
+          </section>
+        ) : null}
 
         <section className="mt-24" aria-labelledby="precio">
           <h2 id="precio" className="text-center text-2xl font-black tracking-tight sm:text-3xl">

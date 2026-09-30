@@ -17,6 +17,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { PasswordUpdatedToast } from "./password-updated-toast";
 import { ShareStreakButton } from "@/components/social/share-streak-button";
+import { ReviewPrompt } from "@/components/reviews/review-prompt";
 
 export const metadata: Metadata = { title: "Hoy" };
 
@@ -43,6 +44,11 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
   const full = isToday ? await hasFullAccess(session) : false;
   const trainingRow = full ? await loadTrainingProfile(supabase, userId) : null;
   const planToday = trainingRow ? todaysSession(planFromRow(trainingRow, today), today) : null;
+
+  // Pedir opinión tras una semana de uso, en un buen momento (día completado) y sólo una vez.
+  const weekOld = profile.created_at.slice(0, 10) <= addDays(today, -7);
+  const { data: myReview } = isToday && weekOld ? await supabase.from("reviews").select("id").eq("user_id", userId).maybeSingle() : { data: null };
+  const askReview = isToday && weekOld && !myReview;
 
   const statuses: Record<string, HabitLogStatus | null> = {};
   const weekDone: Record<string, number> = {};
@@ -104,6 +110,8 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
       ) : (
         <TodayTracker key={date} date={date} habits={trackerHabits} initialStatuses={statuses} editable />
       )}
+
+      {askReview && trackerHabits.length > 0 && pendingRequired === 0 ? <ReviewPrompt /> : null}
 
       {isToday && trackerHabits.length > 0 ? (
         <div className="flex justify-end">

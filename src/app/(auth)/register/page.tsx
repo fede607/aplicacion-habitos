@@ -7,6 +7,8 @@ import { inviteFromParams } from "@/lib/invite";
 import { safeNextPath } from "@/lib/validation";
 import { enabledOAuthProviders } from "@/lib/auth-providers";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
+import { getPublicProof } from "@/lib/data/public-proof";
+import { ReviewCards, StatsStrip } from "@/components/reviews/social-proof";
 
 export const metadata: Metadata = { title: "Crear cuenta" };
 
@@ -15,6 +17,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   const next = typeof params.next === "string" ? safeNextPath(params.next) : undefined;
   const code = inviteFromParams(params);
 
+  const proof = await getPublicProof();
   let invite: { code: string; groupName: string } | null = null;
   let inviteProblem = false;
   if (code) {
@@ -55,6 +58,8 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
         {invite ? <OAuthButtons providers={enabledOAuthProviders()} invite={invite.code} next={next} /> : null}
         <RegisterForm next={next} invite={invite?.code} />
       </div>
+      <StatsStrip stats={proof.stats} />
+      <ReviewCards reviews={proof.reviews} limit={2} className="sm:grid-cols-1" />
       <p className="text-center text-sm text-muted">
         ¿Ya tienes cuenta?{" "}
         <Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="font-semibold text-primary hover:underline">

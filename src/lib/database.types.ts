@@ -204,6 +204,17 @@ export type TrainingProfileRow = {
   updated_at: string;
 };
 
+export type ReviewRow = {
+  id: string;
+  user_id: string;
+  rating: number;
+  body: string;
+  allow_public: boolean;
+  approved: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type PushSubscriptionRow = {
   id: string;
   user_id: string;
@@ -284,6 +295,7 @@ export type Database = {
       duels: Table<DuelRow>;
       subscriptions: Table<SubscriptionRow>;
       training_profiles: Table<TrainingProfileRow>;
+      reviews: Table<ReviewRow>;
       push_subscriptions: Table<PushSubscriptionRow>;
       daily_entries: Table<DailyEntryRow>;
       workouts: Table<WorkoutRow>;
@@ -399,6 +411,36 @@ export type Database = {
         Args: { p_key: string; p_value: string };
         Returns: string | null;
       };
+      public_reviews: {
+        Args: Record<string, never>;
+        Returns: { name: string; avatar_emoji: string | null; avatar_color: string; rating: number; body: string; created_at: string }[];
+      };
+      public_stats: {
+        Args: Record<string, never>;
+        Returns: {
+          users: number;
+          habits_done: number;
+          habits_done_7d: number;
+          workouts: number;
+          workout_minutes: number;
+          avg_rating: number | null;
+          ratings: number;
+        }[];
+      };
+      staff_reviews: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          username: string;
+          display_name: string;
+          rating: number;
+          body: string;
+          allow_public: boolean;
+          approved: boolean;
+          updated_at: string;
+        }[];
+      };
+      staff_set_review_approved: { Args: { p_review_id: string; p_approved: boolean }; Returns: undefined };
       staff_metrics: {
         Args: Record<string, never>;
         Returns: {
