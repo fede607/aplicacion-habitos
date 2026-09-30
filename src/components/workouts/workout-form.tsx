@@ -23,17 +23,31 @@ type FormState = {
   nextGoal: string;
 };
 
-export function WorkoutForm({ workout, defaultDate, minDate, maxDate }: { workout?: WorkoutRow; defaultDate: string; minDate: string; maxDate: string }) {
+export type WorkoutPrefill = { type: WorkoutType; durationMin: number; exercises: string };
+
+export function WorkoutForm({
+  workout,
+  defaultDate,
+  minDate,
+  maxDate,
+  prefill,
+}: {
+  workout?: WorkoutRow;
+  defaultDate: string;
+  minDate: string;
+  maxDate: string;
+  prefill?: WorkoutPrefill;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState<FormState>({
     date: workout?.workout_date ?? defaultDate,
-    type: workout?.type ?? "gym",
-    durationMin: String(workout?.duration_min ?? 60),
+    type: workout?.type ?? prefill?.type ?? "gym",
+    durationMin: String(workout?.duration_min ?? prefill?.durationMin ?? 60),
     intensity: workout?.intensity ? String(workout.intensity) : "",
     feeling: workout?.feeling ? String(workout.feeling) : "",
-    exercises: workout?.exercises ?? "",
+    exercises: workout?.exercises ?? prefill?.exercises ?? "",
     notes: workout?.notes ?? "",
     nextGoal: workout?.next_goal ?? "",
   });

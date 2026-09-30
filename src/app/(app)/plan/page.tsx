@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { AlertTriangle, Apple, CalendarDays, Dumbbell, Flame, Moon, TrendingUp } from "lucide-react";
 import { requireFullAccess } from "@/lib/data/session";
-import { generatePlan } from "@/lib/training/engine";
-import type { TrainingProfile } from "@/lib/training/types";
+import Link from "next/link";
+import { planFromRow, todaysSession } from "@/lib/training/user-plan";
+import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrainingProfileForm, type TrainingFormValues } from "@/components/training/training-profile-form";
@@ -35,20 +36,8 @@ export default async function PlanPage() {
       }
     : null;
 
-  const plan = initial
-    ? generatePlan({
-        age: currentYear - initial.birthYear,
-        sex: initial.sex,
-        heightCm: initial.heightCm,
-        weightKg: initial.weightKg,
-        goal: initial.goal,
-        level: initial.level,
-        trainingType: initial.trainingType,
-        daysPerWeek: initial.daysPerWeek,
-        sessionMinutes: initial.sessionMinutes,
-        limitations: initial.limitations,
-      } satisfies TrainingProfile)
-    : null;
+  const plan = row ? planFromRow(row, today) : null;
+  const todayDay = plan ? todaysSession(plan, today) : null;
 
   return (
     <div className="mx-auto grid max-w-3xl gap-6">
@@ -69,6 +58,14 @@ export default async function PlanPage() {
               </p>
             </CardContent>
           </Card>
+
+          {todayDay ? (
+            <Link href="/workouts/new?from=plan" className={buttonVariants({ variant: "pro", size: "xl", className: "w-full" })}>
+              <Dumbbell aria-hidden="true" /> Hacer la sesión de hoy · {todayDay.title}
+            </Link>
+          ) : (
+            <p className="rounded-2xl bg-surface-2 p-4 text-center text-sm">😴 Hoy toca descanso. Recuperar también es entrenar.</p>
+          )}
 
           {plan.warnings.length > 1 ? (
             <div className="grid gap-2 rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-foreground">
