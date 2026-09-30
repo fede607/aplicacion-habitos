@@ -440,6 +440,7 @@ export type Database = {
           updated_at: string;
         }[];
       };
+      staff_signup_sources: { Args: Record<string, never>; Returns: { source: string; last_30d: number; total: number }[] };
       staff_set_review_approved: { Args: { p_review_id: string; p_approved: boolean }; Returns: undefined };
       staff_metrics: {
         Args: Record<string, never>;

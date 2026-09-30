@@ -19,6 +19,7 @@ export default async function StaffPaymentsPage() {
     supabase.rpc("staff_metrics"),
     supabase.rpc("staff_reviews"),
   ]);
+  const { data: sources } = await supabase.rpc("staff_signup_sources");
   const reviews = (reviewRows ?? []).map((r) => ({
     id: r.id,
     username: r.username,
@@ -75,6 +76,45 @@ export default async function StaffPaymentsPage() {
           ))}
         </section>
       ) : null}
+
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle className="text-base">¿De dónde vienen los registros?</CardTitle>
+            <CardDescription>
+              Comparte <b>winterarc-2026.vercel.app/w</b> en tus estados (o <b>/w?s=instagram</b>, <b>/w?s=tiktok</b>…). Imágenes y textos listos en{" "}
+              <Link href="/promo" className="font-medium text-primary underline">
+                /promo
+              </Link>
+              .
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {(sources ?? []).length ? (
+            <table className="w-full text-sm">
+              <thead className="text-left text-xs text-muted">
+                <tr>
+                  <th className="py-1 font-medium">Origen</th>
+                  <th className="py-1 text-right font-medium">Últimos 30 días</th>
+                  <th className="py-1 text-right font-medium">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sources!.map((r) => (
+                  <tr key={r.source} className="border-t border-border">
+                    <td className="py-2 font-semibold">{r.source}</td>
+                    <td className="tabular py-2 text-right">{r.last_30d}</td>
+                    <td className="tabular py-2 text-right">{r.total}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-sm text-muted">Aún no hay registros.</p>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

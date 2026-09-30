@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Lock, Users } from "lucide-react";
+import { cookies } from "next/headers";
+import { Sparkles, Users } from "lucide-react";
+import { SOURCE_COOKIE, cleanSource } from "@/lib/signup-source";
 import { RegisterForm } from "@/components/auth/register-form";
 import { createClient } from "@/lib/supabase/server";
 import { inviteFromParams } from "@/lib/invite";
@@ -16,6 +18,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   const params = await searchParams;
   const next = typeof params.next === "string" ? safeNextPath(params.next) : undefined;
   const code = inviteFromParams(params);
+  const source = cleanSource(typeof params.src === "string" ? params.src : (await cookies()).get(SOURCE_COOKIE)?.value);
 
   const proof = await getPublicProof();
   let invite: { code: string; groupName: string } | null = null;
@@ -33,7 +36,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
     <div className="grid gap-6">
       <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight">Empieza tu Year Arc</h1>
-        <p className="mt-1 text-sm text-muted">Un año de disciplina, con tus amigos.</p>
+        <p className="mt-1 text-sm text-muted">Crea tu cuenta, monta tu grupo con tus hábitos e invita a tus amigos.</p>
       </div>
 
       {invite ? (
@@ -44,19 +47,18 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
           </span>
         </p>
       ) : (
-        <p role="status" className="flex items-start gap-3 rounded-2xl border border-border bg-surface-2 px-4 py-3 text-sm text-muted">
-          <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        <p role="status" className="flex items-start gap-3 rounded-2xl border border-border bg-surface-2 px-4 py-3 text-sm">
+          <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
           <span>
-            {inviteProblem
-              ? "Esta invitación no es válida o ha caducado. Pide un enlace nuevo a tu grupo."
-              : "Year Arc es sólo por invitación: abre el enlace que te ha enviado tu grupo. Si eres el organizador, puedes registrarte aquí."}
+            {inviteProblem ? "Esta invitación no es válida o ha caducado, pero puedes registrarte igual y crear tu grupo. " : ""}
+            Gratis y con <b>1 mes de Pro</b> de regalo. Luego creas tu grupo en un toque.
           </span>
         </p>
       )}
 
       <div className="grid gap-4 rounded-3xl border border-border bg-surface p-5 shadow-card sm:p-6">
-        {invite ? <OAuthButtons providers={enabledOAuthProviders()} invite={invite.code} next={next} /> : null}
-        <RegisterForm next={next} invite={invite?.code} />
+        <OAuthButtons providers={enabledOAuthProviders()} invite={invite?.code} next={next} />
+        <RegisterForm next={next} invite={invite?.code} source={source} />
       </div>
       <StatsStrip stats={proof.stats} />
       <ReviewCards reviews={proof.reviews} limit={2} className="sm:grid-cols-1" />

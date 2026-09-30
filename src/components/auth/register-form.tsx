@@ -12,10 +12,10 @@ import { CAPTCHA_LOAD_ERROR, CAPTCHA_PENDING, useCaptcha } from "./use-captcha";
 const noop = () => () => {};
 
 /**
- * Registro sólo por invitación. Usa la Edge Function `register-user` para crear
- * la cuenta con email ya confirmado (sin envío de correo) y devolver la sesión.
+ * Registro abierto (con invitación opcional). Usa la Edge Function `register-user`
+ * para crear la cuenta con email ya confirmado y devolver la sesión.
  */
-export function RegisterForm({ next, invite }: { next?: string; invite?: string }) {
+export function RegisterForm({ next, invite, source }: { next?: string; invite?: string; source?: string }) {
   const router = useRouter();
   const timezone = useSyncExternalStore(
     noop,
@@ -73,6 +73,8 @@ export function RegisterForm({ next, invite }: { next?: string; invite?: string 
               displayName: parsed.data.displayName,
               timezone: parsed.data.timezone,
               inviteCode: invite,
+              source,
+              captchaToken: captcha.token ?? undefined,
             }),
           });
 
