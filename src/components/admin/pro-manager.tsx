@@ -17,9 +17,17 @@ export type ProMember = {
   color: string;
   active: boolean;
   proUntil: string | null;
+  trialUntil: string | null;
 };
 
-export function ProManager({ groupId, members, meId, timeZone }: { groupId: string; members: ProMember[]; meId: string; timeZone: string }) {
+function status(m: ProMember, timeZone: string, nowMs: number): string {
+  if (m.proUntil && new Date(m.proUntil).getTime() > nowMs) return `Pro pagado hasta el ${formatDateOnly(m.proUntil, timeZone)}`;
+  if (m.trialUntil && new Date(m.trialUntil).getTime() > nowMs) return `🎁 Mes gratis hasta el ${formatDateOnly(m.trialUntil, timeZone)}`;
+  if (m.trialUntil) return "Mes gratis terminado · versión gratis";
+  return "Versión gratis";
+}
+
+export function ProManager({ groupId, members, meId, timeZone, nowMs }: { groupId: string; members: ProMember[]; meId: string; timeZone: string; nowMs: number }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const run = (m: ProMember, months: number) => {
@@ -43,7 +51,7 @@ export function ProManager({ groupId, members, meId, timeZone }: { groupId: stri
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{m.name}</p>
               <p className="text-xs text-muted">
-                {m.active && m.proUntil ? `Pro hasta el ${formatDateOnly(m.proUntil, timeZone)}` : "Versión gratis"}
+                {status(m, timeZone, nowMs)}
               </p>
             </div>
             {m.active ? <Badge tone="success">Pro</Badge> : null}
@@ -51,7 +59,7 @@ export function ProManager({ groupId, members, meId, timeZone }: { groupId: stri
               <Button size="sm" disabled={pending} onClick={() => run(m, 1)}>
                 <Sparkles aria-hidden="true" /> +1 mes
               </Button>
-              {m.active ? (
+              {m.proUntil && new Date(m.proUntil).getTime() > nowMs ? (
                 <Button size="sm" variant="ghost" disabled={pending} onClick={() => run(m, 0)}>
                   Quitar
                 </Button>

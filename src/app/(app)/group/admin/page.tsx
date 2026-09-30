@@ -54,6 +54,7 @@ export default async function GroupAdminPage({ searchParams }: PageProps<"/group
     color: m.color,
     active: proById.get(m.userId)?.active ?? false,
     proUntil: proById.get(m.userId)?.pro_until ?? null,
+    trialUntil: proById.get(m.userId)?.trial_until ?? null,
   }));
 
   return (
@@ -125,12 +126,12 @@ export default async function GroupAdminPage({ searchParams }: PageProps<"/group
                 <a href={PAYPAL_ME_URL} target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline">
                   tu PayPal.me
                 </a>
-                , compruébalo en tu PayPal y pulsa «+1 mes». Sólo tú, como creador de la sala, puedes hacerlo.
+                , compruébalo en tu PayPal y pulsa «+1 mes» (si aún está en su mes gratis, se suma al final). Sólo tú, como creador de la sala, puedes hacerlo.
               </CardDescription>
             </div>
           </CardHeader>
           <CardContent>
-            <ProManager groupId={activeGroup.id} members={proMembers} meId={userId} timeZone={profile.timezone} />
+            <ProManager groupId={activeGroup.id} members={proMembers} meId={userId} timeZone={profile.timezone} nowMs={new Date().getTime()} />
           </CardContent>
         </Card>
       ) : null}

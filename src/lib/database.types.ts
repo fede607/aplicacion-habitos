@@ -307,7 +307,8 @@ export type Database = {
         Returns: { user_id: string; share_habits: boolean; share_workouts: boolean; show_in_comparison: boolean }[];
       };
       has_full_access: { Args: { p_group_id: string }; Returns: boolean };
-      group_pro_status: { Args: { p_group_id: string }; Returns: { user_id: string; pro_until: string | null; active: boolean }[] };
+      group_pro_status: { Args: { p_group_id: string }; Returns: { user_id: string; pro_until: string | null; active: boolean; trial_until: string | null }[] };
+      my_pro_trial_end: { Args: Record<string, never>; Returns: string | null };
       grant_manual_pro: { Args: { p_group_id: string; p_user_id: string; p_months: number }; Returns: string | null };
       billing_config_get: { Args: { p_key: string }; Returns: string | null };
       billing_config_set: { Args: { p_key: string; p_value: string }; Returns: undefined };

@@ -23,14 +23,19 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
 
   const session = await requireGroup();
   const { supabase, userId, activeGroup, profile } = session;
-  const [{ data: sub }, fullAccess] = await Promise.all([
+  const [{ data: sub }, fullAccess, { data: trialEnd }] = await Promise.all([
     supabase.from("subscriptions").select("status, current_period_end, cancel_at_period_end, paypal_subscription_id").eq("user_id", userId).maybeSingle(),
     hasFullAccess(session),
+    supabase.rpc("my_pro_trial_end"),
   ]);
   const active = !!sub && ["active", "trialing", "past_due"].includes(sub.status);
   const isCreator = activeGroup.created_by === userId;
   const nextDate = sub?.current_period_end ? formatDateOnly(sub.current_period_end, profile.timezone) : null;
   const manual = active && !sub.paypal_subscription_id;
+  const now = new Date();
+  const trialDate = trialEnd ? formatDateOnly(trialEnd, profile.timezone) : null;
+  const onTrial = !active && !!trialEnd && new Date(trialEnd) > now;
+  const trialOver = !active && !!trialEnd && new Date(trialEnd) <= now;
 
   const paypalMe = (
     <div className="grid gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
@@ -42,7 +47,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
           Envía <b className="text-foreground">2 €</b> y escribe en la nota tu usuario: <b className="text-foreground">@{profile.username}</b>
         </li>
         <li>El creador de la sala activará tu Pro en cuanto le llegue el pago.</li>
-        <li>Cada pago da 1 mes de Pro. Si no pagas el mes siguiente, vuelves a la versión gratis (hábitos, grupo y duelos).</li>
+        <li>Cada pago da 1 mes de Pro{onTrial ? ", que empieza cuando acabe tu mes gratis" : ""}. Si no pagas el mes siguiente, vuelves a la versión gratis (hábitos, grupo y duelos).</li>
       </ol>
     </div>
   );
@@ -61,6 +66,11 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
           ¡Pago completado! Ya eres Pro. Si aún no lo ves, recarga en unos segundos.
         </p>
       ) : null}
+      {trialOver && !fullAccess ? (
+        <p className="rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-warning" role="status">
+          Tu mes gratis de Pro terminó el {trialDate}. Para seguir con Pro son 2 € al mes.
+        </p>
+      ) : null}
       {params.locked && !fullAccess ? (
         <p className="flex items-start gap-2 rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-warning" role="status">
           <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -74,7 +84,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
             <p className="tabular text-4xl font-black tracking-tight">
               2 € <span className="text-base font-medium text-muted">/ mes</span>
             </p>
-            {active ? <Badge tone="success">Pro activo</Badge> : isCreator && activeGroup.requires_pro ? <Badge tone="primary">Creador: acceso gratis</Badge> : null}
+            {active ? <Badge tone="success">Pro activo</Badge> : onTrial ? <Badge tone="success">Mes gratis</Badge> : isCreator && activeGroup.requires_pro ? <Badge tone="primary">Creador: acceso gratis</Badge> : null}
           </div>
 
           <ul className="grid gap-2 text-sm">
@@ -92,6 +102,14 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
                 <Sparkles aria-hidden="true" /> Gestionar pagos Pro
               </Link>
             </div>
+          ) : onTrial ? (
+            <>
+              <p className="rounded-2xl border border-success/40 bg-success-soft p-4 text-sm text-foreground">
+                🎁 <b>Tienes Pro gratis hasta el {trialDate}.</b> Cuando acabe, si quieres seguir con Pro son <b>2 € al mes</b>. Si no pagas, sigues con la
+                versión gratis (hábitos, grupo y duelos).
+              </p>
+              {paypalMe}
+            </>
           ) : manual ? (
             <>
               <p className="rounded-2xl bg-surface-2 p-4 text-sm">
