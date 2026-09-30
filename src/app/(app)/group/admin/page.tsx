@@ -9,8 +9,6 @@ import { GroupSettingsForm } from "@/components/admin/group-settings-form";
 import { HabitsManager } from "@/components/admin/habits-manager";
 import { InvitationsManager } from "@/components/admin/invitations-manager";
 import { MembersManager, type AdminMember } from "@/components/admin/members-manager";
-import { ProManager, type ProMember } from "@/components/admin/pro-manager";
-import { PAYPAL_ME_URL } from "@/lib/billing/paypal-me";
 import { DeleteGroupButton, LeaveGroupButton } from "@/components/admin/danger-zone";
 
 export const metadata: Metadata = { title: "Administrar grupo" };
@@ -43,19 +41,6 @@ export default async function GroupAdminPage({ searchParams }: PageProps<"/group
       color: p?.avatar_color ?? "#64748b",
     };
   });
-
-  const isPaidRoomOwner = activeGroup.requires_pro && activeGroup.created_by === userId;
-  const { data: proRows } = isPaidRoomOwner ? await supabase.rpc("group_pro_status", { p_group_id: activeGroup.id }) : { data: null };
-  const proById = new Map((proRows ?? []).map((r) => [r.user_id, r]));
-  const proMembers: ProMember[] = members.map((m) => ({
-    userId: m.userId,
-    name: m.name,
-    emoji: m.emoji,
-    color: m.color,
-    active: proById.get(m.userId)?.active ?? false,
-    proUntil: proById.get(m.userId)?.pro_until ?? null,
-    trialUntil: proById.get(m.userId)?.trial_until ?? null,
-  }));
 
   return (
     <div className="grid gap-6">
@@ -116,25 +101,6 @@ export default async function GroupAdminPage({ searchParams }: PageProps<"/group
         </Card>
       </div>
 
-      {isPaidRoomOwner ? (
-        <Card>
-          <CardHeader>
-            <div>
-              <CardTitle className="text-base">Pagos Pro · PayPal.me</CardTitle>
-              <CardDescription>
-                Cuando alguien te pague 2 € en{" "}
-                <a href={PAYPAL_ME_URL} target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline">
-                  tu PayPal.me
-                </a>
-                , compruébalo en tu PayPal y pulsa «+1 mes» (si aún está en su mes gratis, se suma al final). Sólo tú, como creador de la sala, puedes hacerlo.
-              </CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ProManager groupId={activeGroup.id} members={proMembers} meId={userId} timeZone={profile.timezone} nowMs={new Date().getTime()} />
-          </CardContent>
-        </Card>
-      ) : null}
 
       <Card className="border-danger/40">
         <CardHeader>

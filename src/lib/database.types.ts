@@ -182,6 +182,21 @@ export type SubscriptionRow = {
   updated_at: string;
 };
 
+export type TrainingProfileRow = {
+  user_id: string;
+  birth_year: number;
+  sex: "male" | "female";
+  height_cm: number;
+  weight_kg: number;
+  goal: "fat_loss" | "muscle" | "strength" | "endurance" | "health";
+  level: "beginner" | "intermediate" | "advanced";
+  training_type: "gym" | "home_dumbbells" | "bodyweight" | "running" | "mixed";
+  days_per_week: number;
+  session_minutes: number;
+  limitations: ("knee" | "lower_back" | "shoulder")[];
+  updated_at: string;
+};
+
 export type DailyEntryRow = {
   user_id: string;
   entry_date: string;
@@ -251,6 +266,7 @@ export type Database = {
       activity_reactions: Table<ActivityReactionRow>;
       duels: Table<DuelRow>;
       subscriptions: Table<SubscriptionRow>;
+      training_profiles: Table<TrainingProfileRow>;
       daily_entries: Table<DailyEntryRow>;
       workouts: Table<WorkoutRow>;
       achievements: Table<AchievementRow>;
@@ -309,6 +325,22 @@ export type Database = {
       has_full_access: { Args: { p_group_id: string }; Returns: boolean };
       group_pro_status: { Args: { p_group_id: string }; Returns: { user_id: string; pro_until: string | null; active: boolean; trial_until: string | null }[] };
       my_pro_trial_end: { Args: Record<string, never>; Returns: string | null };
+      group_pro_members: { Args: { p_group_id: string }; Returns: string[] };
+      am_i_staff: { Args: Record<string, never>; Returns: boolean };
+      staff_pro_list: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          display_name: string;
+          username: string;
+          avatar_emoji: string | null;
+          avatar_color: string;
+          pro_until: string | null;
+          trial_until: string | null;
+          active: boolean;
+        }[];
+      };
+      staff_grant_pro: { Args: { p_user_id: string; p_months: number }; Returns: string | null };
       grant_manual_pro: { Args: { p_group_id: string; p_user_id: string; p_months: number }; Returns: string | null };
       billing_config_get: { Args: { p_key: string }; Returns: string | null };
       billing_config_set: { Args: { p_key: string; p_value: string }; Returns: undefined };

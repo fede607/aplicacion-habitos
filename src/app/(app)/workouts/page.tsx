@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Clock, Dumbbell, Plus } from "lucide-react";
+import { ChevronRight, ClipboardList, Clock, Dumbbell, Plus } from "lucide-react";
 import { requireFullAccess } from "@/lib/data/session";
 import { getWorkoutsPage, getWorkoutTotals } from "@/lib/data/queries";
 import { formatLongDate, formatMinutes, startOfMonth } from "@/lib/dates";
@@ -36,6 +36,15 @@ export default async function WorkoutsPage({ searchParams }: PageProps<"/workout
           </Link>
         </Button>
       </header>
+
+      <Link href="/plan" className="pro-gradient flex items-center gap-3 rounded-2xl p-4">
+        <ClipboardList className="size-6 shrink-0" aria-hidden="true" />
+        <span className="min-w-0 flex-1">
+          <span className="block font-bold">Mi plan personalizado</span>
+          <span className="block text-sm opacity-90">Rutina, series y calorías según tu físico y objetivo</span>
+        </span>
+        <ChevronRight className="size-5 shrink-0" aria-hidden="true" />
+      </Link>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="Este mes" icon={<Dumbbell />} tone="ember" value={month.count} />

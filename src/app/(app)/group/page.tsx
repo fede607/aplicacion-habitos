@@ -25,6 +25,7 @@ const PAGE_SIZE = 24;
 
 type MemberView = {
   userId: string;
+  isPro: boolean;
   name: string;
   username: string;
   emoji: string | null;
@@ -73,6 +74,8 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
     getGroupDuels(supabase, { group: activeGroup, userId, today }),
     inviteQuery,
   ]);
+  const { data: proIds } = await supabase.rpc("group_pro_members", { p_group_id: activeGroup.id });
+  const proSet = new Set(proIds ?? []);
   const nowIso = new Date().toISOString();
   const inviteCode =
     (invitesRes.data ?? []).find((i) => (!i.expires_at || i.expires_at > nowIso) && (i.max_uses === null || i.use_count < i.max_uses))?.code ?? null;
@@ -103,6 +106,7 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
     const todayStat = series?.find((s) => s.day === today);
     return {
       userId: m.user_id,
+      isPro: proSet.has(m.user_id),
       name: p?.display_name ?? "Miembro",
       username: p?.username ?? "",
       emoji: p?.avatar_emoji ?? null,
@@ -264,7 +268,7 @@ function MemberCard({ member: m, rank }: { member: MemberView; rank: number | nu
     <div className={cn("relative h-full rounded-2xl border border-border bg-surface p-4 shadow-card transition-colors hover:bg-surface-2", m.isMe && "border-primary/50")}>
       <div className="flex items-center gap-3">
         {rank ? <span className="tabular w-6 text-center text-sm font-bold text-muted">{rank}</span> : null}
-        <Avatar name={m.name} emoji={m.emoji} color={m.color} />
+        <Avatar name={m.name} emoji={m.emoji} color={m.color} pro={m.isPro} />
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold">
             <Link href={`/group/members/${m.userId}`} className="after:absolute after:inset-0 hover:underline">
@@ -274,6 +278,7 @@ function MemberCard({ member: m, rank }: { member: MemberView; rank: number | nu
           </p>
           <p className="truncate text-xs text-muted">@{m.username}</p>
         </div>
+        {m.isPro ? <span className="pro-gradient rounded-full px-2 py-0.5 text-[10px] font-black tracking-wider">PRO</span> : null}
         {m.role === "admin" ? <Badge tone="primary">Admin</Badge> : null}
       </div>
       {m.sharesHabits ? (

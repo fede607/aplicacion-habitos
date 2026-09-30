@@ -4,7 +4,7 @@ import { CheckCircle2, CreditCard, Lock, ShieldCheck, Sparkles } from "lucide-re
 import { hasFullAccess, requireGroup } from "@/lib/data/session";
 import { confirmPaypal } from "@/app/actions/billing";
 import { isPaypalConfigured } from "@/lib/billing/paypal";
-import { PAYPAL_ME_PAY_URL } from "@/lib/billing/paypal-me";
+import { PAYPAL_ME_PAY_URL, PAYPAL_ME_YEAR_URL, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDateOnly } from "@/lib/dates";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,14 @@ import { CancelButton, SubscribeButton } from "@/components/billing/billing-butt
 
 export const metadata: Metadata = { title: "Winter Arc Pro" };
 
-const FEATURES = ["Rangos y score de disciplina", "Panel, calendario y progreso", "Entrenamientos y estadísticas completas"];
+const FEATURES = [
+  "Plan de entrenamiento personalizado a tu físico y objetivo",
+  "Analíticas avanzadas: mes a mes, patrones y exportar tus datos",
+  "Rangos y score de disciplina",
+  "Panel, calendario, progreso y entrenamientos",
+  "Insignia y marco Pro exclusivos en tu grupo",
+  "Hasta 10 grupos propios (sin Pro, 1)",
+];
 
 export default async function ProPage({ searchParams }: PageProps<"/pro">) {
   const params = await searchParams;
@@ -23,13 +30,13 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
 
   const session = await requireGroup();
   const { supabase, userId, activeGroup, profile } = session;
-  const [{ data: sub }, fullAccess, { data: trialEnd }] = await Promise.all([
+  const [{ data: sub }, fullAccess, { data: trialEnd }, { data: isStaff }] = await Promise.all([
     supabase.from("subscriptions").select("status, current_period_end, cancel_at_period_end, paypal_subscription_id").eq("user_id", userId).maybeSingle(),
     hasFullAccess(session),
     supabase.rpc("my_pro_trial_end"),
+    supabase.rpc("am_i_staff"),
   ]);
   const active = !!sub && ["active", "trialing", "past_due"].includes(sub.status);
-  const isCreator = activeGroup.created_by === userId;
   const nextDate = sub?.current_period_end ? formatDateOnly(sub.current_period_end, profile.timezone) : null;
   const manual = active && !sub.paypal_subscription_id;
   const now = new Date();
@@ -39,15 +46,22 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
 
   const paypalMe = (
     <div className="grid gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
-      <a href={PAYPAL_ME_PAY_URL} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "pro", size: "xl", className: "w-full" })}>
-        <Sparkles aria-hidden="true" /> {manual ? "Renovar: pagar 2 € con PayPal" : "Pagar 2 € con PayPal"}
+      <a href={PAYPAL_ME_YEAR_URL} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "pro", size: "xl", className: "relative w-full" })}>
+        <Sparkles aria-hidden="true" /> Year Pro · {PRO_YEAR_EUR} € al año
+        <span className="absolute -top-2.5 right-3 rounded-full bg-success px-2 py-0.5 text-[11px] font-bold text-white">2 meses gratis</span>
+      </a>
+      <a href={PAYPAL_ME_PAY_URL} target="_blank" rel="noopener noreferrer" className={buttonVariants({ variant: "outline", size: "lg", className: "w-full" })}>
+        {manual ? `Renovar 1 mes · ${PRO_MONTH_EUR} €` : `Mensual · ${PRO_MONTH_EUR} € al mes`}
       </a>
       <ol className="grid list-decimal gap-1 pl-5 text-muted">
         <li>
-          Envía <b className="text-foreground">2 €</b> y escribe en la nota tu usuario: <b className="text-foreground">@{profile.username}</b>
+          Paga por PayPal y escribe en la nota tu usuario: <b className="text-foreground">@{profile.username}</b>
         </li>
-        <li>El creador de la sala activará tu Pro en cuanto le llegue el pago.</li>
-        <li>Cada pago da 1 mes de Pro{onTrial ? ", que empieza cuando acabe tu mes gratis" : ""}. Si no pagas el mes siguiente, vuelves a la versión gratis (hábitos, grupo y duelos).</li>
+        <li>Activamos tu Pro en cuanto llega el pago (normalmente el mismo día).</li>
+        <li>
+          {PRO_MONTH_EUR} € = 1 mes · {PRO_YEAR_EUR} € = 1 año{onTrial ? ", que empiezan cuando acabe tu mes gratis" : ""}. Si no renuevas, vuelves a la versión gratis
+          (hábitos, grupo y duelos).
+        </li>
       </ol>
     </div>
   );
@@ -68,7 +82,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
       ) : null}
       {trialOver && !fullAccess ? (
         <p className="rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-warning" role="status">
-          Tu mes gratis de Pro terminó el {trialDate}. Para seguir con Pro son 2 € al mes.
+          Tu mes gratis de Pro terminó el {trialDate}. Para seguir con Pro: {PRO_MONTH_EUR} € al mes o {PRO_YEAR_EUR} € al año.
         </p>
       ) : null}
       {params.locked && !fullAccess ? (
@@ -82,9 +96,9 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
         <CardContent className="grid gap-5 p-5 sm:p-6">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <p className="tabular text-4xl font-black tracking-tight">
-              2 € <span className="text-base font-medium text-muted">/ mes</span>
+              {PRO_MONTH_EUR} € <span className="text-base font-medium text-muted">/ mes · o {PRO_YEAR_EUR} € / año</span>
             </p>
-            {active ? <Badge tone="success">Pro activo</Badge> : onTrial ? <Badge tone="success">Mes gratis</Badge> : isCreator && activeGroup.requires_pro ? <Badge tone="primary">Creador: acceso gratis</Badge> : null}
+            {active ? <Badge tone="success">Pro activo</Badge> : onTrial ? <Badge tone="success">Mes gratis</Badge> : isStaff ? <Badge tone="primary">Propietario: acceso total</Badge> : null}
           </div>
 
           <ul className="grid gap-2 text-sm">
@@ -95,17 +109,17 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
             ))}
           </ul>
 
-          {isCreator && activeGroup.requires_pro && !active ? (
+          {isStaff ? (
             <div className="grid gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
-              <p>Eres el creador de esta sala: tienes todo gratis. Cuando alguien te pague, actívale el Pro desde la administración del grupo.</p>
-              <Link href="/group/admin" className={buttonVariants({ variant: "pro", size: "xl", className: "w-full" })}>
+              <p>Eres el propietario de Winter Arc: tienes todo gratis. Cuando alguien te pague, actívale el Pro desde tu panel de pagos.</p>
+              <Link href="/pro/pagos" className={buttonVariants({ variant: "pro", size: "xl", className: "w-full" })}>
                 <Sparkles aria-hidden="true" /> Gestionar pagos Pro
               </Link>
             </div>
           ) : onTrial ? (
             <>
               <p className="rounded-2xl border border-success/40 bg-success-soft p-4 text-sm text-foreground">
-                🎁 <b>Tienes Pro gratis hasta el {trialDate}.</b> Cuando acabe, si quieres seguir con Pro son <b>2 € al mes</b>. Si no pagas, sigues con la
+                🎁 <b>Tienes Pro gratis hasta el {trialDate}.</b> Cuando acabe, si quieres seguir con Pro son <b>{PRO_MONTH_EUR} € al mes</b> o <b>{PRO_YEAR_EUR} € al año</b>. Si no pagas, sigues con la
                 versión gratis (hábitos, grupo y duelos).
               </p>
               {paypalMe}
@@ -113,7 +127,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
           ) : manual ? (
             <>
               <p className="rounded-2xl bg-surface-2 p-4 text-sm">
-                Pro pagado hasta el <b>{nextDate}</b>. Para seguir siendo Pro, paga otros 2 € antes de esa fecha.
+                Pro pagado hasta el <b>{nextDate}</b>. Para seguir siendo Pro, renueva antes de esa fecha.
               </p>
               {paypalMe}
             </>
@@ -152,9 +166,9 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
           <CreditCard className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {paypalOn
             ? "Se cobra cada mes el mismo día en que te suscribiste (p. ej. del 5 de enero al 5 de febrero). Puedes cancelar cuando quieras desde aquí o desde tu cuenta de PayPal."
-            : "Pagas mes a mes: no hay cobros automáticos ni nada que cancelar. Si dejas de pagar, vuelves a la versión gratis (hábitos, grupo y duelos)."}
+            : "Pagas por adelantado (1 mes o 1 año): no hay cobros automáticos ni nada que cancelar. Si no renuevas, vuelves a la versión gratis (hábitos, grupo y duelos)."}
         </p>
-        <p>Las salas gratuitas siguen siendo gratis. Pro sólo es necesario en salas de pago.</p>
+        <p>Cada persona tiene 1 mes de Pro gratis al entrar en su primer grupo de pago. Las salas gratuitas siguen siendo gratis.</p>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { CalendarDays, Dumbbell, LayoutDashboard, ListChecks, Medal, Settings, Sparkles, TrendingUp, Users, type LucideIcon } from "lucide-react";
+import { CalendarDays, ClipboardList, Dumbbell, LayoutDashboard, ListChecks, Medal, Settings, Sparkles, TrendingUp, Users, type LucideIcon } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon; mobile: boolean; free?: boolean };
 
@@ -7,6 +7,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Panel", icon: LayoutDashboard, mobile: true },
   { href: "/calendar", label: "Calendario", icon: CalendarDays, mobile: true },
   { href: "/workouts", label: "Entrenos", icon: Dumbbell, mobile: true },
+  { href: "/plan", label: "Mi plan", icon: ClipboardList, mobile: false },
   { href: "/rank", label: "Rango", icon: Medal, mobile: false },
   { href: "/progress", label: "Progreso", icon: TrendingUp, mobile: false },
   { href: "/group", label: "Grupo", icon: Users, mobile: true, free: true },

@@ -182,3 +182,17 @@ export function fieldErrors(error: z.ZodError): Record<string, string> {
   }
   return out;
 }
+
+// Perfil de entrenamiento (plan personalizado)
+export const trainingProfileSchema = z.object({
+  birthYear: z.coerce.number().int().min(1920).max(2020),
+  sex: z.enum(["male", "female"]),
+  heightCm: z.coerce.number().int().min(120, "Mínimo 120 cm").max(230, "Máximo 230 cm"),
+  weightKg: z.coerce.number().min(30, "Mínimo 30 kg").max(250, "Máximo 250 kg"),
+  goal: z.enum(["fat_loss", "muscle", "strength", "endurance", "health"]),
+  level: z.enum(["beginner", "intermediate", "advanced"]),
+  trainingType: z.enum(["gym", "home_dumbbells", "bodyweight", "running", "mixed"]),
+  daysPerWeek: z.coerce.number().int().min(2).max(6),
+  sessionMinutes: z.coerce.number().int().refine((v) => [30, 45, 60, 75, 90].includes(v), "Duración no válida"),
+  limitations: z.array(z.enum(["knee", "lower_back", "shoulder"])).max(3),
+});

@@ -84,18 +84,15 @@ export async function cancelSubscription(): Promise<ActionResult> {
 }
 
 /**
- * El creador de la sala de pago da (o quita, con 0) meses de Pro a quien le ha
- * pagado por PayPal.me. La BD comprueba que es el creador y que es miembro.
+ * Sólo el propietario de Winter Arc (staff) activa Pro a quien le ha pagado por
+ * PayPal.me: 1 = un mes, 12 = un año, 0 = quitar. La BD comprueba que es staff.
  */
-export async function grantManualPro(input: { groupId: string; userId: string; months: number }): Promise<ActionResult> {
-  const uuid = /^[0-9a-f-]{36}$/i;
-  if (!uuid.test(input.groupId) || !uuid.test(input.userId) || !Number.isInteger(input.months) || input.months < 0 || input.months > 12) {
-    return { ok: false, error: "Datos no válidos." };
-  }
+export async function staffGrantPro(input: { userId: string; months: 0 | 1 | 12 }): Promise<ActionResult> {
+  if (!/^[0-9a-f-]{36}$/i.test(input.userId) || ![0, 1, 12].includes(input.months)) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
-  const { error } = await supabase.rpc("grant_manual_pro", { p_group_id: input.groupId, p_user_id: input.userId, p_months: input.months });
-  if (error) return fail(error, "grantManualPro");
+  const { error } = await supabase.rpc("staff_grant_pro", { p_user_id: input.userId, p_months: input.months });
+  if (error) return fail(error, "staffGrantPro");
   revalidatePath("/", "layout");
   return { ok: true, data: undefined };
 }

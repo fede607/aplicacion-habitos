@@ -5,12 +5,15 @@ export function Avatar({
   emoji,
   color,
   size = "md",
+  pro = false,
   className,
 }: {
   name: string;
   emoji: string | null;
   color: string;
   size?: "sm" | "md" | "lg";
+  /** Marco Pro exclusivo (anillo degradado). */
+  pro?: boolean;
   className?: string;
 }) {
   const initials = name
@@ -19,7 +22,7 @@ export function Avatar({
     .slice(0, 2)
     .map((p) => p[0]?.toUpperCase())
     .join("");
-  return (
+  const inner = (
     <span
       aria-hidden="true"
       className={cn(
@@ -32,6 +35,12 @@ export function Avatar({
       style={{ backgroundColor: color }}
     >
       {emoji ? <span className={size === "lg" ? "text-3xl" : "text-lg"}>{emoji}</span> : initials || "?"}
+    </span>
+  );
+  if (!pro) return inner;
+  return (
+    <span aria-hidden="true" className="pro-gradient inline-grid shrink-0 place-items-center rounded-full p-[2px]">
+      {inner}
     </span>
   );
 }

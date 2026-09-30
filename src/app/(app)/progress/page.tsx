@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Flame, Sparkles, Trophy } from "lucide-react";
+import { BarChart3, Download, Flame, Sparkles, Trophy } from "lucide-react";
 import { requireFullAccess } from "@/lib/data/session";
 import { getPersonalStats } from "@/lib/data/personal-stats";
 import { getActiveHabits, getMyLogs, getXpInputs, indexLogs } from "@/lib/data/queries";
@@ -13,6 +13,8 @@ import { Stat } from "@/components/ui/stat";
 import { HabitIcon } from "@/components/habits/habit-icon";
 import { NewAchievementsToast } from "./new-achievements-toast";
 import { cn } from "@/lib/utils";
+import { compareMonths, habitTrends, weekdayPattern } from "@/lib/analytics";
+import { WEEKDAY_NAMES } from "@/lib/dates";
 
 export const metadata: Metadata = { title: "Progreso" };
 
@@ -48,6 +50,13 @@ export default async function ProgressPage() {
     return { start, totals: summarize(stats.series, start, end) };
   });
 
+  const months = compareMonths(stats.series, today);
+  const pattern = weekdayPattern(stats.series, addDays(today, -83), today);
+  const withData = pattern.filter((p) => p.percent !== null);
+  const bestDay = withData.length ? withData.reduce((a, b) => ((b.percent ?? 0) > (a.percent ?? 0) ? b : a)) : null;
+  const worstDay = withData.length ? withData.reduce((a, b) => ((b.percent ?? 0) < (a.percent ?? 0) ? b : a)) : null;
+  const trends = habitTrends(habits, logIndex, today);
+
   return (
     <div className="grid gap-6">
       <NewAchievementsToast codes={newlyUnlocked} names={Object.fromEntries(achievements.map((a) => [a.code, `${a.emoji} ${a.name}`]))} />
@@ -55,6 +64,83 @@ export default async function ProgressPage() {
         <p className="text-xs font-semibold tracking-widest text-primary uppercase">Progreso</p>
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Constancia y logros</h1>
       </header>
+
+      <Card className="aurora">
+        <CardHeader>
+          <div className="flex w-full flex-wrap items-center justify-between gap-2">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <BarChart3 className="size-4 text-primary" aria-hidden="true" /> Analíticas avanzadas
+            </CardTitle>
+            <a href="/api/export" className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border bg-surface px-3 text-sm font-semibold hover:bg-surface-2">
+              <Download className="size-4" aria-hidden="true" /> Exportar mis datos (CSV)
+            </a>
+          </div>
+        </CardHeader>
+        <CardContent className="grid gap-5">
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-xl bg-surface-2 p-3">
+              <p className="text-[11px] text-muted">Este mes</p>
+              <p className="tabular text-2xl font-bold">{months.current.percent === null ? "—" : `${months.current.percent}%`}</p>
+            </div>
+            <div className="rounded-xl bg-surface-2 p-3">
+              <p className="text-[11px] text-muted">Mismo tramo mes anterior</p>
+              <p className="tabular text-2xl font-bold">{months.previous.percent === null ? "—" : `${months.previous.percent}%`}</p>
+            </div>
+            <div className="rounded-xl bg-surface-2 p-3">
+              <p className="text-[11px] text-muted">Diferencia</p>
+              <p className={cn("tabular text-2xl font-bold", (months.deltaPoints ?? 0) > 0 && "text-success", (months.deltaPoints ?? 0) < 0 && "text-danger")}>
+                {months.deltaPoints === null ? "—" : `${months.deltaPoints > 0 ? "+" : ""}${months.deltaPoints}`}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-2 text-sm font-medium">Tu patrón semanal (últimas 12 semanas)</p>
+            <div className="grid grid-cols-7 items-end gap-1.5" role="img" aria-label="Cumplimiento por día de la semana">
+              {pattern.map((p) => (
+                <div key={p.weekday} className="grid gap-1 text-center">
+                  <div className="flex h-24 items-end rounded-lg bg-surface-2">
+                    <div
+                      className={cn("w-full rounded-lg", p.weekday === bestDay?.weekday ? "bg-success" : p.weekday === worstDay?.weekday ? "bg-danger" : "bg-primary")}
+                      style={{ height: `${Math.max(4, p.percent ?? 0)}%` }}
+                    />
+                  </div>
+                  <span className="tabular text-[11px] text-muted">{p.percent === null ? "—" : `${p.percent}%`}</span>
+                  <span className="text-[11px] font-semibold">{WEEKDAY_NAMES[p.weekday - 1].slice(0, 2)}</span>
+                </div>
+              ))}
+            </div>
+            {bestDay && worstDay && bestDay.weekday !== worstDay.weekday ? (
+              <p className="mt-2 text-sm text-muted">
+                Tu mejor día es el <b className="text-foreground">{WEEKDAY_NAMES[bestDay.weekday - 1].toLowerCase()}</b> y el que más te cuesta, el{" "}
+                <b className="text-foreground">{WEEKDAY_NAMES[worstDay.weekday - 1].toLowerCase()}</b>. Prepara ese día la noche anterior.
+              </p>
+            ) : null}
+          </div>
+
+          {trends.length ? (
+            <div>
+              <p className="mb-2 text-sm font-medium">Cada hábito: este mes vs. el anterior</p>
+              <ul className="grid gap-1.5">
+                {trends.map((t) => (
+                  <li key={t.habitId} className="flex items-center justify-between gap-3 rounded-xl bg-surface-2 px-3 py-2 text-sm">
+                    <span className="min-w-0 truncate">{t.name}</span>
+                    <span className="tabular flex shrink-0 items-center gap-2">
+                      <span className="text-muted">{t.previous === null ? "—" : `${t.previous}%`}</span>→
+                      <b>{t.current === null ? "—" : `${t.current}%`}</b>
+                      {t.delta !== null && t.delta !== 0 ? (
+                        <span className={cn("text-xs font-semibold", t.delta > 0 ? "text-success" : "text-danger")}>
+                          {t.delta > 0 ? "▲" : "▼"} {Math.abs(t.delta)}
+                        </span>
+                      ) : null}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
 
       <section className="grid gap-3 sm:grid-cols-3" aria-label="Rachas y nivel">
         <Stat label="Racha actual" icon={<Flame />} tone="ember" value={`🔥 ${stats.streaks.current} días`} sub="consecutivos cumpliendo el objetivo" />
