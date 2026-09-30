@@ -110,7 +110,7 @@ describe("habitSchema", () => {
 
 describe("createGroupSchema", () => {
   it("la fecha de fin debe ser posterior", () => {
-    const base = { name: "WINTER ARC 2026", description: "", startDate: "2026-10-01", endDate: "2026-12-30", seedDefaults: true };
+    const base = { name: "YEAR ARC 2026", description: "", startDate: "2026-10-01", endDate: "2026-12-30", seedDefaults: true };
     expect(createGroupSchema.safeParse(base).success).toBe(true);
     expect(createGroupSchema.safeParse({ ...base, endDate: "2026-09-01" }).success).toBe(false);
   });

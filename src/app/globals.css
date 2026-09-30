@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Winter Arc — tokens de diseño.
+ * Year Arc — tokens de diseño.
  * Paleta "noche polar": fondos azul-negro, acento hielo y brasas para rachas.
  */
 :root {

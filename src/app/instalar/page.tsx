@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Descarga la app",
-  description: "Instala Winter Arc en la pantalla de inicio de tu móvil, gratis y sin tienda de apps.",
+  description: "Instala Year Arc en la pantalla de inicio de tu móvil, gratis y sin tienda de apps.",
 };
 
 const PERKS = [
@@ -21,7 +21,7 @@ export default function InstallPage() {
   return (
     <div className="aurora min-h-dvh">
       <header className="mx-auto flex max-w-xl items-center justify-between px-4 py-5">
-        <Link href="/" aria-label="Winter Arc, inicio">
+        <Link href="/" aria-label="Year Arc, inicio">
           <Logo />
         </Link>
       </header>
@@ -29,7 +29,7 @@ export default function InstallPage() {
         <section className="text-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- icono estático de la app */}
           <img src="/icons/icon-192.png" alt="" width={96} height={96} className="mx-auto size-24 rounded-[1.6rem] shadow-card" />
-          <h1 className="mt-5 text-3xl font-bold tracking-tight text-balance">Descarga Winter Arc</h1>
+          <h1 className="mt-5 text-3xl font-bold tracking-tight text-balance">Descarga Year Arc</h1>
           <p className="mt-2 text-muted text-pretty">Gratis, sin App Store ni Play Store. Tenla en tu pantalla de inicio en 10 segundos.</p>
         </section>
 

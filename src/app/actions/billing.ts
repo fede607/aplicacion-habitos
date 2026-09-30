@@ -33,7 +33,7 @@ export async function startPaypalCheckout(): Promise<ActionResult<never>> {
         plan_id: planId,
         custom_id: userId,
         application_context: {
-          brand_name: "Winter Arc",
+          brand_name: "Year Arc",
           locale: "es-ES",
           user_action: "SUBSCRIBE_NOW",
           shipping_preference: "NO_SHIPPING",
@@ -84,7 +84,7 @@ export async function cancelSubscription(): Promise<ActionResult> {
 }
 
 /**
- * Sólo el propietario de Winter Arc (staff) activa Pro a quien le ha pagado por
+ * Sólo el propietario de Year Arc (staff) activa Pro a quien le ha pagado por
  * PayPal.me: 1 = un mes, 12 = un año, 0 = quitar. La BD comprueba que es staff.
  */
 export async function staffGrantPro(input: { userId: string; months: 0 | 1 | 12 }): Promise<ActionResult> {

@@ -99,7 +99,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
           title="Tu grupo aún no tiene hábitos"
           description={
             activeGroup.role === "admin"
-              ? "Configura los hábitos del Winter Arc desde la administración del grupo."
+              ? "Configura los hábitos del Year Arc desde la administración del grupo."
               : "Pide al administrador del grupo que configure los hábitos."
           }
           action={

@@ -19,7 +19,7 @@ export default async function OnboardingPage() {
           {groups.length ? "Crea o únete a otro grupo" : `Hola, ${profile.display_name}`}
         </h1>
         <p className="mt-1 text-muted">
-          El Winter Arc se hace en grupo. Crea uno e invita a tus amigos con su código, o únete con el código que te hayan pasado.
+          El Year Arc se hace en grupo. Crea uno e invita a tus amigos con su código, o únete con el código que te hayan pasado.
         </p>
       </header>
       <div className="grid gap-5 lg:grid-cols-2">

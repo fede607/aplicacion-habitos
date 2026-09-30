@@ -21,7 +21,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
     <div className="grid gap-6">
       <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight">Bienvenido de vuelta</h1>
-        <p className="mt-1 text-sm text-muted">Tu Winter Arc te está esperando.</p>
+        <p className="mt-1 text-sm text-muted">Tu Year Arc te está esperando.</p>
       </div>
       {oauthError ? (
         <p role="alert" className="rounded-2xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm">

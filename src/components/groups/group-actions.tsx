@@ -18,7 +18,7 @@ export function InviteCodeBox({ code, siteUrl }: { code: string; siteUrl: string
   const [copied, setCopied] = useState(false);
   const pretty = formatInviteCode(code);
   const link = `${siteUrl}/join/${code}`;
-  const message = `Únete a mi grupo de Winter Arc 💪\nCódigo: ${pretty}\n${link}`;
+  const message = `Únete a mi grupo de Year Arc 💪\nCódigo: ${pretty}\n${link}`;
 
   const copy = async () => {
     try {
@@ -33,7 +33,7 @@ export function InviteCodeBox({ code, siteUrl }: { code: string; siteUrl: string
   const share = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Winter Arc", text: message });
+        await navigator.share({ title: "Year Arc", text: message });
       } catch {
         // Cancelado por el usuario.
       }

@@ -26,7 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </a>
 
       <aside className="sticky top-0 hidden h-dvh flex-col gap-6 border-r border-border bg-surface p-4 lg:flex">
-        <Link href="/today" className="px-2 pt-2" aria-label="Winter Arc, inicio">
+        <Link href="/today" className="px-2 pt-2" aria-label="Year Arc, inicio">
           <Logo />
         </Link>
         {activeGroup ? (
@@ -51,7 +51,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <div className="flex min-w-0 flex-col">
         <header className="pt-safe sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-lg">
           <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
-            <Link href="/today" className="lg:hidden" aria-label="Winter Arc, inicio">
+            <Link href="/today" className="lg:hidden" aria-label="Year Arc, inicio">
               <Logo className="[&_span]:text-base" />
             </Link>
             <div className="hidden truncate text-sm text-muted lg:block">

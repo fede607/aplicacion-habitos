@@ -14,7 +14,7 @@ export default async function UnsubscribePage({ searchParams }: PageProps<"/unsu
   return (
     <AuthShell>
       <div className="grid gap-4 rounded-3xl border border-border bg-surface p-6 text-center shadow-card">
-        <h1 className="text-xl font-bold">Emails del Winter Arc</h1>
+        <h1 className="text-xl font-bold">Emails del Year Arc</h1>
         {token.success ? (
           <>
             <p className="text-sm text-muted">Dejarás de recibir el recordatorio diario y el resumen semanal. Puedes reactivarlos en Ajustes.</p>

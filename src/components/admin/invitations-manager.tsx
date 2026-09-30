@@ -70,7 +70,7 @@ export function InvitationsManager({
   const share = async (url: string) => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Únete a mi Winter Arc", text: "Te invito a mi grupo de Winter Arc", url });
+        await navigator.share({ title: "Únete a mi Year Arc", text: "Te invito a mi grupo de Year Arc", url });
         return;
       } catch {
         return;

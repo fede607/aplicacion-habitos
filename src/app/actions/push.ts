@@ -53,7 +53,7 @@ export async function sendTestPush(): Promise<ActionResult<{ delivered: number }
   if (!userId) return NOT_AUTHENTICATED;
   try {
     const delivered = await sendPushToUser(userId, {
-      title: "🔥 Winter Arc",
+      title: "🔥 Year Arc",
       body: "¡Así te llegarán los recordatorios para no perder tu racha!",
       url: "/today",
       tag: "test",

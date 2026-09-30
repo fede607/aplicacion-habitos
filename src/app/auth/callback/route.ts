@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 /**
  * Vuelta de Google/Apple. Canjea el código (PKCE), une a la persona al grupo de
  * la invitación si la había y, si es una cuenta NUEVA sin invitación válida, la
- * elimina en el acto: Winter Arc sigue siendo sólo por invitación.
+ * elimina en el acto: Year Arc sigue siendo sólo por invitación.
  */
 export async function GET(request: NextRequest) {
   const site = getSiteUrl();

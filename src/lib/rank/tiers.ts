@@ -1,5 +1,5 @@
 /**
- * Escalera de rangos de Winter Arc: 8 rangos × 3 divisiones + Leyenda.
+ * Escalera de rangos de Year Arc: 8 rangos × 3 divisiones + Leyenda.
  * Los umbrales no son lineales: arriba cada división cuesta más.
  * Anchura mínima de división = 2,5 puntos (> MAX_DAILY_RISE), lo que impide
  * cruzar más de una división en un solo día.

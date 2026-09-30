@@ -21,17 +21,17 @@ export default function LandingPage() {
       </header>
       <main className="mx-auto max-w-5xl px-4 pt-10 pb-20 sm:px-6 sm:pt-20">
         <section className="max-w-2xl">
-          <p className="text-sm font-semibold tracking-widest text-primary uppercase">90 días · tus reglas · tu gente</p>
+          <p className="text-sm font-semibold tracking-widest text-primary uppercase">Tu año · tus reglas · tu gente</p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-balance sm:text-6xl">
-            El invierno es para construirte.
+            Este año es para construirte.
           </h1>
           <p className="mt-5 max-w-xl text-lg text-muted text-pretty">
-            Winter Arc es tu tracker de hábitos y entrenamiento para hacer el reto con tus amigos: entrena, estudia, lee y
+            Year Arc es tu tracker de hábitos y entrenamiento para hacer el reto con tus amigos: entrena, estudia, lee y
             mejora cada día. Juntos es más fácil no fallar.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild size="lg">
-              <Link href="/register">Empezar mi Winter Arc</Link>
+              <Link href="/register">Empezar mi Year Arc</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link href="/login">Ya tengo cuenta</Link>

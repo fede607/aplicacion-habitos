@@ -1,5 +1,5 @@
 /**
- * Rank Engine de Winter Arc: ÚNICA fuente de verdad del score de disciplina y
+ * Rank Engine de Year Arc: ÚNICA fuente de verdad del score de disciplina y
  * del rango. Puro y determinista (sin BD, sin reloj): mismas entradas → mismo
  * resultado, así el histórico siempre se puede reconstruir desde los registros.
  *

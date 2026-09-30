@@ -19,7 +19,7 @@ export function layout({ preheader, title, body, ctaText, ctaUrl, unsubscribeUrl
 <span style="display:none;max-height:0;overflow:hidden">${esc(preheader)}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f7fb;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #dde4ee;border-radius:20px">
-<tr><td style="padding:24px 24px 8px"><div style="font-size:13px;font-weight:700;letter-spacing:.12em;color:#0369a1;text-transform:uppercase">❄️ Winter Arc</div>
+<tr><td style="padding:24px 24px 8px"><div style="font-size:13px;font-weight:700;letter-spacing:.12em;color:#0369a1;text-transform:uppercase">❄️ Year Arc</div>
 <h1 style="margin:8px 0 0;font-size:22px;line-height:1.3">${esc(title)}</h1></td></tr>
 <tr><td style="padding:8px 24px 8px;font-size:15px;line-height:1.55">${body}</td></tr>
 <tr><td style="padding:12px 24px 28px"><a href="${esc(ctaUrl)}" style="display:inline-block;background:#0369a1;color:#ffffff;text-decoration:none;font-weight:600;padding:12px 20px;border-radius:12px">${esc(ctaText)}</a></td></tr>
@@ -39,14 +39,14 @@ export function statTable(rows: string[]): string {
 export function verificationEmail(input: { name: string; url: string }) {
   const title = "Confirma tu email de notificaciones";
   return {
-    subject: "Confirma tu email · Winter Arc",
+    subject: "Confirma tu email · Year Arc",
     html: layout({
-      preheader: "Confirma que este correo es tuyo para recibir avisos del Winter Arc.",
+      preheader: "Confirma que este correo es tuyo para recibir avisos del Year Arc.",
       title,
-      body: `<p>Hola ${esc(input.name)}, has pedido recibir las notificaciones del Winter Arc en este correo.</p><p>Si no has sido tú, ignora este mensaje: no te enviaremos nada.</p><p style="color:#5a6a82;font-size:13px">El enlace caduca en 24 horas.</p>`,
+      body: `<p>Hola ${esc(input.name)}, has pedido recibir las notificaciones del Year Arc en este correo.</p><p>Si no has sido tú, ignora este mensaje: no te enviaremos nada.</p><p style="color:#5a6a82;font-size:13px">El enlace caduca en 24 horas.</p>`,
       ctaText: "Confirmar email",
       ctaUrl: input.url,
     }),
-    text: `Hola ${input.name}, confirma tu email de notificaciones del Winter Arc: ${input.url}\n\nSi no has sido tú, ignora este mensaje. El enlace caduca en 24 horas.`,
+    text: `Hola ${input.name}, confirma tu email de notificaciones del Year Arc: ${input.url}\n\nSi no has sido tú, ignora este mensaje. El enlace caduca en 24 horas.`,
   };
 }

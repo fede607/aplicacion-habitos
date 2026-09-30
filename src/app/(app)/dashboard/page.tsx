@@ -99,7 +99,7 @@ export default async function DashboardPage() {
             value={`${stats.streaks.current} ${stats.streaks.current === 1 ? "día" : "días"}`}
             sub={`Mejor: ${stats.streaks.best} · objetivo ≥ ${activeGroup.streak_threshold}%`}
           />
-          <Stat label="Entrenamientos" icon={<Dumbbell />} tone="ember" value={workouts.count} sub="en este Winter Arc" />
+          <Stat label="Entrenamientos" icon={<Dumbbell />} tone="ember" value={workouts.count} sub="en este Year Arc" />
           <Stat label="Tiempo entrenando" icon={<Clock />} tone="ember" value={formatMinutes(workouts.minutes)} />
           <Stat label="Total del arc" icon={<Target />} tone="success" value={stats.arc.percent === null ? "—" : `${stats.arc.percent}%`} sub={`${stats.arc.activeDays} días activos`} />
         </div>
@@ -216,7 +216,7 @@ function ArcBadge({
       <p className="tabular text-right text-sm font-semibold">
         Día {arcDay} de {arcLength} <span className="font-normal text-muted">· quedan {daysLeft}</span>
       </p>
-      <ProgressBar value={(arcDay / Math.max(arcLength, 1)) * 100} tone="ember" label="Progreso del Winter Arc" />
+      <ProgressBar value={(arcDay / Math.max(arcLength, 1)) * 100} tone="ember" label="Progreso del Year Arc" />
     </div>
   );
 }

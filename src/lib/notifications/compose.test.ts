@@ -44,7 +44,7 @@ describe("composeWeeklySummary", () => {
     ...base,
     to: "a@test.com",
     name: "Fede",
-    groupName: "WINTER ARC 2026",
+    groupName: "YEAR ARC 2026",
     week: { completed: 30, required: 40, percent: 75 },
     streak: { current: 5, best: 9 },
     workouts: { count: 3, minutes: 200 },
@@ -60,7 +60,7 @@ describe("composeWeeklySummary", () => {
 
   it("incluye estadísticas personales, del grupo y miembros privados", () => {
     const email = composeWeeklySummary(input);
-    expect(email.subject).toBe("Tu semana en el Winter Arc: 75% · 🔥 5");
+    expect(email.subject).toBe("Tu semana en el Year Arc: 75% · 🔥 5");
     expect(email.html).toContain("30 / 40 (75%)");
     expect(email.html).toContain("3 h 20 min");
     expect(email.html).toContain("4 / 4 ✅");

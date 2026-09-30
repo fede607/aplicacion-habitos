@@ -73,13 +73,13 @@ export async function ensurePaypalSetup(): Promise<string> {
   if (!planId) {
     const product = await paypal<{ id: string }>("/v1/catalogs/products", {
       method: "POST",
-      body: { name: "Winter Arc Pro", type: "SERVICE", category: "SOFTWARE" },
+      body: { name: "Year Arc Pro", type: "SERVICE", category: "SOFTWARE" },
     });
     const plan = await paypal<{ id: string }>("/v1/billing/plans", {
       method: "POST",
       body: {
         product_id: product.id,
-        name: "Winter Arc Pro mensual",
+        name: "Year Arc Pro mensual",
         status: "ACTIVE",
         billing_cycles: [
           {

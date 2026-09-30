@@ -27,7 +27,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   return (
     <div className="grid gap-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold tracking-tight">Empieza tu Winter Arc</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Empieza tu Year Arc</h1>
         <p className="mt-1 text-sm text-muted">90 días de disciplina, con tus amigos.</p>
       </div>
 
@@ -44,7 +44,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
           <span>
             {inviteProblem
               ? "Esta invitación no es válida o ha caducado. Pide un enlace nuevo a tu grupo."
-              : "Winter Arc es sólo por invitación: abre el enlace que te ha enviado tu grupo. Si eres el organizador, puedes registrarte aquí."}
+              : "Year Arc es sólo por invitación: abre el enlace que te ha enviado tu grupo. Si eres el organizador, puedes registrarte aquí."}
           </span>
         </p>
       )}

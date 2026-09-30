@@ -73,7 +73,7 @@ export default async function GroupAdminPage({ searchParams }: PageProps<"/group
       <Card>
         <CardHeader>
           <div>
-            <CardTitle className="text-base">Hábitos del Winter Arc</CardTitle>
+            <CardTitle className="text-base">Hábitos del Year Arc</CardTitle>
             <CardDescription>Se aplican a todos los miembros del grupo.</CardDescription>
           </div>
         </CardHeader>

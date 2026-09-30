@@ -6,10 +6,10 @@ import { Providers } from "@/components/providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Winter Arc", template: "%s · Winter Arc" },
-  description: "Seguimiento de hábitos y entrenamiento para tu Winter Arc con amigos.",
-  applicationName: "Winter Arc",
-  appleWebApp: { capable: true, title: "Winter Arc", statusBarStyle: "black-translucent" },
+  title: { default: "Year Arc", template: "%s · Year Arc" },
+  description: "Seguimiento de hábitos y entrenamiento para tu Year Arc con amigos.",
+  applicationName: "Year Arc",
+  appleWebApp: { capable: true, title: "Year Arc", statusBarStyle: "black-translucent" },
   icons: {
     icon: [{ url: "/icons/icon.svg", type: "image/svg+xml" }, { url: "/icons/icon-192.png", sizes: "192x192" }],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],

@@ -19,7 +19,7 @@ export default async function VerifyNotificationEmailPage({ searchParams }: Page
         </p>
         <h1 className="text-xl font-bold">{ok ? "Email verificado" : "Enlace no válido"}</h1>
         <p className="text-sm text-muted">
-          {ok ? "Recibirás aquí las notificaciones del Winter Arc." : "El enlace ha caducado o ya se ha usado. Solicita uno nuevo desde Ajustes."}
+          {ok ? "Recibirás aquí las notificaciones del Year Arc." : "El enlace ha caducado o ya se ha usado. Solicita uno nuevo desde Ajustes."}
         </p>
         <Button asChild>
           <Link href="/settings">Ir a Ajustes</Link>

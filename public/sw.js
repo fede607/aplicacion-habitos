@@ -1,5 +1,5 @@
 /*
- * Service worker de Winter Arc.
+ * Service worker de Year Arc.
  * Política deliberadamente conservadora (seguridad > offline):
  *  - NUNCA se cachean páginas HTML autenticadas, datos RSC ni llamadas a Supabase.
  *  - Sólo se cachean recursos estáticos inmutables (/_next/static, /icons).
@@ -61,7 +61,7 @@ self.addEventListener("push", (event) => {
   } catch {
     data = { body: event.data ? event.data.text() : "" };
   }
-  const title = typeof data.title === "string" ? data.title.slice(0, 80) : "Winter Arc";
+  const title = typeof data.title === "string" ? data.title.slice(0, 80) : "Year Arc";
   const body = typeof data.body === "string" ? data.body.slice(0, 240) : "";
   const url = typeof data.url === "string" && data.url.startsWith("/") && !data.url.startsWith("//") ? data.url : "/today";
   event.waitUntil(
@@ -69,7 +69,7 @@ self.addEventListener("push", (event) => {
       body,
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",
-      tag: typeof data.tag === "string" ? data.tag : "winter-arc",
+      tag: typeof data.tag === "string" ? data.tag : "year-arc",
       renotify: true,
       data: { url },
     }),

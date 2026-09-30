@@ -15,7 +15,7 @@ export function CreateGroupForm({ today }: { today: string }) {
   const [pending, startTransition] = useTransition();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
-    name: `WINTER ARC ${today.slice(0, 4)}`,
+    name: `YEAR ARC ${today.slice(0, 4)}`,
     description: "",
     startDate: today,
     endDate: addDays(today, 90),
@@ -39,7 +39,7 @@ export function CreateGroupForm({ today }: { today: string }) {
         });
       }}
     >
-      <Field label="Nombre del Winter Arc" htmlFor="group-name" error={errors.name}>
+      <Field label="Nombre del Year Arc" htmlFor="group-name" error={errors.name}>
         <Input
           id="group-name"
           value={form.name}
@@ -81,7 +81,7 @@ export function CreateGroupForm({ today }: { today: string }) {
       </div>
       <label className="flex items-start justify-between gap-4 rounded-xl bg-surface-2 p-3" htmlFor="group-seed">
         <span>
-          <span className="block text-sm font-medium">Usar los hábitos del Winter Arc</span>
+          <span className="block text-sm font-medium">Usar los hábitos del Year Arc</span>
           <span className="block text-xs text-muted">
             Entrenamiento, despertar temprano, ducha fría, agua, alimentación limpia, sueño, lectura, reflexión, foco digital y estudio. Podrás
             editarlos.

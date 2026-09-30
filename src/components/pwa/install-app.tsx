@@ -76,14 +76,14 @@ export function InstallAppCard() {
   const { platform, promptable } = useInstall();
   if (platform === "unknown") return null;
   if (platform === "installed") {
-    return <p className="rounded-2xl bg-success-soft p-4 text-sm font-medium text-success">✅ Ya tienes Winter Arc instalada en este dispositivo.</p>;
+    return <p className="rounded-2xl bg-success-soft p-4 text-sm font-medium text-success">✅ Ya tienes Year Arc instalada en este dispositivo.</p>;
   }
   return (
     <div className="grid gap-4">
       <Steps platform={platform} promptable={promptable} />
       {promptable ? (
         <Button variant="pro" size="xl" className="w-full" onClick={() => void promptInstall()}>
-          <Download aria-hidden="true" /> Instalar Winter Arc
+          <Download aria-hidden="true" /> Instalar Year Arc
         </Button>
       ) : null}
     </div>
@@ -108,7 +108,7 @@ export function InstallAppBanner() {
         <X className="size-4" aria-hidden="true" />
       </button>
       <p className="flex items-center gap-2 font-semibold">
-        <Download className="size-5 text-primary" aria-hidden="true" /> Instala Winter Arc en tu móvil
+        <Download className="size-5 text-primary" aria-hidden="true" /> Instala Year Arc en tu móvil
       </p>
       <Steps platform={platform} promptable={promptable} />
       {promptable ? (

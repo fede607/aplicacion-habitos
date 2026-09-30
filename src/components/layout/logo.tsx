@@ -9,7 +9,7 @@ export function Logo({ className, withText = true }: { className?: string; withT
         <path d="M26 22 L30 28 L27 30 L23 27 Z" fill="#e6f6ff" />
         <path d="M14 18 A22 22 0 0 1 50 18" fill="none" stroke="#fb923c" strokeWidth="3.5" strokeLinecap="round" />
       </svg>
-      {withText ? <span className="text-lg">Winter Arc</span> : null}
+      {withText ? <span className="text-lg">Year Arc</span> : null}
     </span>
   );
 }

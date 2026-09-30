@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CancelButton, SubscribeButton } from "@/components/billing/billing-buttons";
 
-export const metadata: Metadata = { title: "Winter Arc Pro" };
+export const metadata: Metadata = { title: "Year Arc Pro" };
 
 const FEATURES = [
   "Plan de entrenamiento personalizado a tu físico y objetivo",
@@ -72,7 +72,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
       <header>
         <p className="text-xs font-semibold tracking-widest text-primary uppercase">Suscripción</p>
         <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight sm:text-3xl">
-          Winter Arc Pro <Sparkles className="size-6 text-primary" aria-hidden="true" />
+          Year Arc Pro <Sparkles className="size-6 text-primary" aria-hidden="true" />
         </h1>
       </header>
 
@@ -112,14 +112,14 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
 
           {isStaff ? (
             <div className="grid gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
-              <p>Eres el propietario de Winter Arc: tienes todo gratis. Cuando alguien te pague, actívale el Pro desde tu panel de pagos.</p>
+              <p>Eres el propietario de Year Arc: tienes todo gratis. Cuando alguien te pague, actívale el Pro desde tu panel de pagos.</p>
               <Link href="/pro/pagos" className={buttonVariants({ variant: "pro", size: "xl", className: "w-full" })}>
                 <Sparkles aria-hidden="true" /> Gestionar pagos Pro
               </Link>
             </div>
           ) : lifetime ? (
             <p className="rounded-2xl border border-success/40 bg-success-soft p-4 text-sm text-foreground">
-              ⭐ <b>Tienes Pro para siempre</b>, regalo de Winter Arc. No tienes que pagar nada nunca.
+              ⭐ <b>Tienes Pro para siempre</b>, regalo de Year Arc. No tienes que pagar nada nunca.
             </p>
           ) : onTrial ? (
             <>
@@ -165,7 +165,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
       <div className="grid gap-2 text-xs text-muted">
         <p className="flex items-start gap-2">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" aria-hidden="true" />
-          Pago seguro con PayPal (certificado PCI DSS nivel 1). Pagas en la página de PayPal: Winter Arc nunca ve ni guarda tu cuenta ni tu tarjeta.
+          Pago seguro con PayPal (certificado PCI DSS nivel 1). Pagas en la página de PayPal: Year Arc nunca ve ni guarda tu cuenta ni tu tarjeta.
         </p>
         <p className="flex items-start gap-2">
           <CreditCard className="mt-0.5 size-4 shrink-0" aria-hidden="true" />

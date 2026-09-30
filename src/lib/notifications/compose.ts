@@ -80,7 +80,7 @@ ${i.hiddenMembers > 0 ? `<p style="font-size:12px;color:#5a6a82">${i.hiddenMembe
 
   return {
     to: i.to,
-    subject: `Tu semana en el Winter Arc: ${pct(i.week.percent)} · 🔥 ${i.streak.current}`,
+    subject: `Tu semana en el Year Arc: ${pct(i.week.percent)} · 🔥 ${i.streak.current}`,
     unsubscribeUrl: i.unsubscribeUrl,
     html: layout({
       preheader: `Semana: ${i.week.completed}/${i.week.required} hábitos. Grupo: ${pct(collectivePct)}.`,

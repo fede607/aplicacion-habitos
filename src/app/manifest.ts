@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Winter Arc",
-    short_name: "Winter Arc",
+    name: "Year Arc",
+    short_name: "Year Arc",
     description: "Hábitos, entrenamiento y constancia con tus amigos.",
     start_url: "/today",
     scope: "/",
