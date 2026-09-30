@@ -342,6 +342,7 @@ export type Database = {
         Returns: { user_id: string; display_name: string; group_id: string; local_date: string; period_key: string }[];
       };
       billing_config_set_if_absent: { Args: { p_key: string; p_value: string }; Returns: string | null };
+      my_referral_status: { Args: Record<string, never>; Returns: { referrals: number; bonus_until: string | null }[] };
       my_pro_lifetime: { Args: Record<string, never>; Returns: boolean };
       am_i_staff: { Args: Record<string, never>; Returns: boolean };
       staff_pro_list: {
