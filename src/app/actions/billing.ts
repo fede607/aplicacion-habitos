@@ -16,22 +16,30 @@ async function mySubscription(userId: string) {
 }
 
 /** Abre PayPal para aprobar la suscripción de 2 €/mes (la cuenta/tarjeta sólo la ve PayPal). */
-export async function startPaypalCheckout(): Promise<ActionResult<never>> {
+export async function startPaypalCheckout(period: "month" | "year" = "month"): Promise<ActionResult<never>> {
+  if (period !== "month" && period !== "year") return { ok: false, error: "Datos no válidos." };
   if (!isPaypalConfigured()) return NOT_READY;
-  const { userId } = await authed();
+  const { supabase: supabaseForUser, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
 
   let url: string | undefined;
   try {
     const existing = await mySubscription(userId);
-    if (existing && ["active", "trialing", "past_due"].includes(existing.status)) redirect("/pro");
-    const planId = await ensurePaypalSetup();
+    // Una suscripción automática ya activa: nada que hacer.
+    if (existing?.paypal_subscription_id && ["active", "trialing", "past_due"].includes(existing.status) && !existing.cancel_at_period_end) redirect("/pro");
+    const planId = await ensurePaypalSetup(period);
     const site = getSiteUrl();
+    // Si aún tiene Pro (prueba o pago manual), el primer cobro llega cuando se acaba: no pierde días.
+    const { data: trialEnd } = await supabaseForUser.rpc("my_pro_trial_end");
+    const paidEnd = existing && ["active", "trialing", "past_due"].includes(existing.status) ? existing.current_period_end : null;
+    const startMs = Math.max(trialEnd ? Date.parse(trialEnd) : 0, paidEnd ? Date.parse(paidEnd) : 0);
+    const startTime = startMs > Date.now() + 60 * 60 * 1000 ? new Date(startMs).toISOString() : undefined;
     const sub = await paypal<{ links: { rel: string; href: string }[] }>("/v1/billing/subscriptions", {
       method: "POST",
       body: {
         plan_id: planId,
         custom_id: userId,
+        ...(startTime ? { start_time: startTime } : {}),
         application_context: {
           brand_name: "Year Arc",
           locale: "es-ES",

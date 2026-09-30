@@ -7,23 +7,23 @@ import { LoaderCircle, Sparkles } from "lucide-react";
 import { cancelSubscription, startPaypalCheckout } from "@/app/actions/billing";
 import { Button } from "@/components/ui/button";
 
-export function SubscribeButton() {
+export function SubscribeButton({ period = "month", label }: { period?: "month" | "year"; label: string }) {
   const [pending, start] = useTransition();
   return (
     <Button
-      variant="pro"
+      variant={period === "year" ? "pro" : "outline"}
       size="xl"
       className="w-full"
       disabled={pending}
       onClick={() =>
         start(async () => {
-          const res = await startPaypalCheckout();
+          const res = await startPaypalCheckout(period);
           if (res && !res.ok) toast.error(res.error);
         })
       }
     >
       {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Sparkles aria-hidden="true" />}
-      Hacerse Pro con PayPal · 2 €/mes
+      {label}
     </Button>
   );
 }

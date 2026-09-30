@@ -67,35 +67,46 @@ async function setCfg(key: string, value: string) {
   if (error) throw error;
 }
 
-/** Producto + plan de 2 €/mes y webhook: se crean solos la primera vez. */
-export async function ensurePaypalSetup(): Promise<string> {
-  let planId = await getCfg("plan_id");
-  if (!planId) {
+export type PaypalPeriod = "month" | "year";
+
+async function ensurePlan(productId: string, period: PaypalPeriod): Promise<string> {
+  const key = period === "month" ? "plan_id" : "plan_year_id";
+  const existing = await getCfg(key);
+  if (existing) return existing;
+  const plan = await paypal<{ id: string }>("/v1/billing/plans", {
+    method: "POST",
+    body: {
+      product_id: productId,
+      name: period === "month" ? "Year Arc Pro mensual" : "Year Arc Pro anual",
+      status: "ACTIVE",
+      billing_cycles: [
+        {
+          frequency: { interval_unit: period === "month" ? "MONTH" : "YEAR", interval_count: 1 },
+          tenure_type: "REGULAR",
+          sequence: 1,
+          total_cycles: 0,
+          pricing_scheme: { fixed_price: { value: period === "month" ? "2.00" : "20.00", currency_code: "EUR" } },
+        },
+      ],
+      payment_preferences: { auto_bill_outstanding: true, payment_failure_threshold: 3 },
+    },
+  });
+  await setCfg(key, plan.id);
+  return plan.id;
+}
+
+/** Producto, planes (2 €/mes y 20 €/año) y webhook: se crean solos la primera vez. */
+export async function ensurePaypalSetup(period: PaypalPeriod = "month"): Promise<string> {
+  let productId = await getCfg("product_id");
+  if (!productId) {
     const product = await paypal<{ id: string }>("/v1/catalogs/products", {
       method: "POST",
       body: { name: "Year Arc Pro", type: "SERVICE", category: "SOFTWARE" },
     });
-    const plan = await paypal<{ id: string }>("/v1/billing/plans", {
-      method: "POST",
-      body: {
-        product_id: product.id,
-        name: "Year Arc Pro mensual",
-        status: "ACTIVE",
-        billing_cycles: [
-          {
-            frequency: { interval_unit: "MONTH", interval_count: 1 },
-            tenure_type: "REGULAR",
-            sequence: 1,
-            total_cycles: 0,
-            pricing_scheme: { fixed_price: { value: "2.00", currency_code: "EUR" } },
-          },
-        ],
-        payment_preferences: { auto_bill_outstanding: true, payment_failure_threshold: 3 },
-      },
-    });
-    planId = plan.id;
-    await setCfg("plan_id", planId);
+    productId = product.id;
+    await setCfg("product_id", productId);
   }
+  const planId = await ensurePlan(productId, period);
   if (!(await getCfg("webhook_id"))) {
     const url = `${getSiteUrl()}${PAYPAL_WEBHOOK_PATH}`;
     const list = await paypal<{ webhooks: { id: string; url: string }[] }>("/v1/notifications/webhooks");

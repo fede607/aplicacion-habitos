@@ -67,6 +67,19 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
     </div>
   );
 
+  // Con PayPal configurado: suscripción automática (sin nada que hacer a mano). Si no, PayPal.me.
+  const payBox = paypalOn ? (
+    <div className="grid gap-3">
+      <SubscribeButton period="year" label={`Year Pro · ${PRO_YEAR_EUR} € al año (2 meses gratis)`} />
+      <SubscribeButton period="month" label={`Mensual · ${PRO_MONTH_EUR} € al mes`} />
+      <p className="text-xs text-muted">
+        Se renueva sola hasta que canceles.{onTrial || manual ? " El primer cobro llega cuando se acabe el Pro que ya tienes: no pierdes días." : ""}
+      </p>
+    </div>
+  ) : (
+    paypalMe
+  );
+
   return (
     <div className="mx-auto grid max-w-2xl gap-6">
       <header>
@@ -127,14 +140,14 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
                 🎁 <b>Tienes Pro gratis hasta el {trialDate}.</b> Cuando acabe, si quieres seguir con Pro son <b>{PRO_MONTH_EUR} € al mes</b> o <b>{PRO_YEAR_EUR} € al año</b>. Si no pagas, sigues con la
                 versión gratis (hábitos, grupo y duelos).
               </p>
-              {paypalMe}
+              {payBox}
             </>
           ) : manual ? (
             <>
               <p className="rounded-2xl bg-surface-2 p-4 text-sm">
                 Pro pagado hasta el <b>{nextDate}</b>. Para seguir siendo Pro, renueva antes de esa fecha.
               </p>
-              {paypalMe}
+              {payBox}
             </>
           ) : active ? (
             <div className="grid gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
@@ -144,7 +157,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
                 </p>
               ) : (
                 <p>
-                  Próximo cobro: <b>{nextDate}</b> · 2,00 €. Se renueva cada mes el mismo día hasta que canceles.
+                  Próxima renovación: <b>{nextDate}</b>. Se renueva sola (mensual o anual, según tu plan) hasta que canceles.
                 </p>
               )}
               {sub.status === "past_due" ? <p className="text-warning">El último cobro falló: se reintentará. Revisa tu método de pago.</p> : null}
@@ -154,10 +167,8 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
                 </div>
               )}
             </div>
-          ) : paypalOn ? (
-            <SubscribeButton />
           ) : (
-            paypalMe
+            payBox
           )}
         </CardContent>
       </Card>
