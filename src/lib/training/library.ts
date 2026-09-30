@@ -3,19 +3,7 @@ import type { Level, Limitation } from "./types";
 /** Material disponible según el tipo de entrenamiento. */
 export type Equipment = "gym" | "dumbbells" | "bodyweight";
 
-export type Pattern =
-  | "squat"
-  | "hinge"
-  | "hpush"
-  | "vpush"
-  | "hpull"
-  | "vpull"
-  | "lunge"
-  | "core"
-  | "calves"
-  | "biceps"
-  | "triceps"
-  | "lateral";
+export type Pattern = "squat" | "hinge" | "hpush" | "vpush" | "hpull" | "vpull" | "lunge" | "core" | "calves" | "biceps" | "triceps" | "lateral";
 
 type Variant = {
   name: string;
@@ -447,36 +435,17 @@ const LEVEL_RANK: Record<Level, number> = {
   advanced: 2,
 };
 
-const fits = (
-  v: Variant,
-  equipment: Equipment,
-  level: Level,
-  limitations: readonly Limitation[],
-) =>
-  v.equipment.includes(equipment) &&
-  v.levels.includes(level) &&
-  !(v.avoid ?? []).some((a) => limitations.includes(a));
+const fits = (v: Variant, equipment: Equipment, level: Level, limitations: readonly Limitation[]) =>
+  v.equipment.includes(equipment) && v.levels.includes(level) && !(v.avoid ?? []).some((a) => limitations.includes(a));
 
 /** Primera variante compatible con el material, el nivel y las lesiones (+ hasta 2 alternativas). */
-export function pickExercise(
-  pattern: Pattern,
-  equipment: Equipment,
-  level: Level,
-  limitations: readonly Limitation[],
-): ChosenExercise {
+export function pickExercise(pattern: Pattern, equipment: Equipment, level: Level, limitations: readonly Limitation[]): ChosenExercise {
   const options = LIBRARY[pattern];
-  const compatible = options.filter((v) =>
-    fits(v, equipment, level, limitations),
-  );
+  const compatible = options.filter((v) => fits(v, equipment, level, limitations));
   const chosen = compatible[0] ?? options[options.length - 1];
   // Alternativas: mismo material y lesiones; el nivel puede ser inferior (siempre es seguro bajar).
   const alternatives = options
-    .filter(
-      (v) =>
-        v.name !== chosen.name &&
-        v.equipment.includes(equipment) &&
-        !(v.avoid ?? []).some((a) => limitations.includes(a)),
-    )
+    .filter((v) => v.name !== chosen.name && v.equipment.includes(equipment) && !(v.avoid ?? []).some((a) => limitations.includes(a)))
     .filter((v) => v.levels.some((l) => LEVEL_RANK[l] <= LEVEL_RANK[level]))
     .slice(0, 2)
     .map((v) => v.name);
@@ -492,14 +461,6 @@ export function pickExercise(
 }
 
 /** Para los tests: ¿esta variante está desaconsejada con alguna de estas lesiones? */
-export function isContraindicated(
-  name: string,
-  limitations: readonly Limitation[],
-): boolean {
-  return Object.values(LIBRARY).some((vs) =>
-    vs.some(
-      (v) =>
-        v.name === name && (v.avoid ?? []).some((a) => limitations.includes(a)),
-    ),
-  );
+export function isContraindicated(name: string, limitations: readonly Limitation[]): boolean {
+  return Object.values(LIBRARY).some((vs) => vs.some((v) => v.name === name && (v.avoid ?? []).some((a) => limitations.includes(a))));
 }

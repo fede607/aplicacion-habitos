@@ -6,13 +6,7 @@ import { LoaderCircle, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /** Comparte la imagen de tu racha (Instagram, WhatsApp…) o la descarga si el navegador no permite compartir archivos. */
-export function ShareStreakButton({
-  className,
-  compact,
-}: {
-  className?: string;
-  compact?: boolean;
-}) {
+export function ShareStreakButton({ className, compact }: { className?: string; compact?: boolean }) {
   const [pending, start] = useTransition();
   const share = () =>
     start(async () => {
@@ -39,8 +33,7 @@ export function ShareStreakButton({
         setTimeout(() => URL.revokeObjectURL(url), 5000);
         toast.success("Imagen descargada: súbela a tu historia");
       } catch (e) {
-        if ((e as Error)?.name !== "AbortError")
-          toast.error("No se ha podido crear la imagen.");
+        if ((e as Error)?.name !== "AbortError") toast.error("No se ha podido crear la imagen.");
       }
     });
   return (
@@ -52,11 +45,7 @@ export function ShareStreakButton({
       className={className}
       aria-label="Compartir mi racha"
     >
-      {pending ? (
-        <LoaderCircle className="animate-spin" aria-hidden="true" />
-      ) : (
-        <Share2 aria-hidden="true" />
-      )}
+      {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Share2 aria-hidden="true" />}
       {compact ? "Compartir" : "Compartir mi racha"}
     </Button>
   );

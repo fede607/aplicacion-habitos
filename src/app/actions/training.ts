@@ -6,9 +6,7 @@ import { fieldErrors, trainingProfileSchema } from "@/lib/validation";
 import type { z } from "zod";
 import { authed, NOT_AUTHENTICATED } from "./_helpers";
 
-export async function saveTrainingProfile(
-  input: z.input<typeof trainingProfileSchema>,
-): Promise<ActionResult> {
+export async function saveTrainingProfile(input: z.input<typeof trainingProfileSchema>): Promise<ActionResult> {
   const parsed = trainingProfileSchema.safeParse(input);
   if (!parsed.success)
     return {

@@ -36,16 +36,7 @@ describe("inviteCodeSchema", () => {
 });
 
 describe("workoutSchema", () => {
-  const base = {
-    date: "2026-09-28",
-    type: "boxing",
-    durationMin: "60",
-    intensity: "",
-    feeling: "8",
-    exercises: "",
-    notes: "",
-    nextGoal: "",
-  };
+  const base = { date: "2026-09-28", type: "boxing", durationMin: "60", intensity: "", feeling: "8", exercises: "", notes: "", nextGoal: "" };
   it("acepta un entrenamiento válido y convierte números", () => {
     const r = workoutSchema.parse(base);
     expect(r).toMatchObject({ durationMin: 60, feeling: 8, intensity: null });
@@ -64,37 +55,19 @@ describe("workoutSchema", () => {
 });
 
 describe("registerSchema", () => {
-  const base = {
-    email: "Test@Example.com",
-    password: "abc12345",
-    displayName: " Fede ",
-    username: "Fede_01",
-    timezone: "Europe/Madrid",
-  };
+  const base = { email: "Test@Example.com", password: "abc12345", displayName: " Fede ", username: "Fede_01", timezone: "Europe/Madrid" };
   it("normaliza email/username y recorta el nombre", () => {
-    expect(registerSchema.parse(base)).toMatchObject({
-      email: "test@example.com",
-      username: "fede_01",
-      displayName: "Fede",
-    });
+    expect(registerSchema.parse(base)).toMatchObject({ email: "test@example.com", username: "fede_01", displayName: "Fede" });
   });
   it("exige contraseña con letras y números", () => {
-    expect(
-      registerSchema.safeParse({ ...base, password: "abcdefgh" }).success,
-    ).toBe(false);
-    expect(
-      registerSchema.safeParse({ ...base, password: "12345678" }).success,
-    ).toBe(false);
+    expect(registerSchema.safeParse({ ...base, password: "abcdefgh" }).success).toBe(false);
+    expect(registerSchema.safeParse({ ...base, password: "12345678" }).success).toBe(false);
   });
   it("zona horaria inválida cae al valor por defecto", () => {
-    expect(
-      registerSchema.parse({ ...base, timezone: "Mars/Base" }).timezone,
-    ).toBe("Europe/Madrid");
+    expect(registerSchema.parse({ ...base, timezone: "Mars/Base" }).timezone).toBe("Europe/Madrid");
   });
   it("username inválido", () => {
-    expect(registerSchema.safeParse({ ...base, username: "a b" }).success).toBe(
-      false,
-    );
+    expect(registerSchema.safeParse({ ...base, username: "a b" }).success).toBe(false);
   });
 });
 
@@ -115,25 +88,11 @@ describe("habitSchema", () => {
   };
   it("días concretos requiere al menos un día", () => {
     expect(habitSchema.safeParse(base).success).toBe(true);
-    expect(habitSchema.safeParse({ ...base, weekdays: [] }).success).toBe(
-      false,
-    );
+    expect(habitSchema.safeParse({ ...base, weekdays: [] }).success).toBe(false);
   });
   it("objetivo semanal requiere objetivo", () => {
-    expect(
-      habitSchema.safeParse({
-        ...base,
-        frequency: "weekly_target",
-        weeklyTarget: null,
-      }).success,
-    ).toBe(false);
-    expect(
-      habitSchema.safeParse({
-        ...base,
-        frequency: "weekly_target",
-        weeklyTarget: 3,
-      }).success,
-    ).toBe(true);
+    expect(habitSchema.safeParse({ ...base, frequency: "weekly_target", weeklyTarget: null }).success).toBe(false);
+    expect(habitSchema.safeParse({ ...base, frequency: "weekly_target", weeklyTarget: 3 }).success).toBe(true);
   });
 
   it("peso: sólo 1, 1,5 o 2 (por defecto 1)", () => {
@@ -144,28 +103,15 @@ describe("habitSchema", () => {
     expect(habitSchema.safeParse({ ...base, weight: 0.5 }).success).toBe(false);
   });
   it("rechaza iconos o colores arbitrarios (inyección)", () => {
-    expect(habitSchema.safeParse({ ...base, icon: "<script>" }).success).toBe(
-      false,
-    );
-    expect(
-      habitSchema.safeParse({ ...base, color: "red;background:url(x)" })
-        .success,
-    ).toBe(false);
+    expect(habitSchema.safeParse({ ...base, icon: "<script>" }).success).toBe(false);
+    expect(habitSchema.safeParse({ ...base, color: "red;background:url(x)" }).success).toBe(false);
   });
 });
 
 describe("createGroupSchema", () => {
   it("la fecha de fin debe ser posterior", () => {
-    const base = {
-      name: "YEAR ARC 2026",
-      description: "",
-      startDate: "2026-10-01",
-      endDate: "2026-12-30",
-      seedDefaults: true,
-    };
+    const base = { name: "YEAR ARC 2026", description: "", startDate: "2026-10-01", endDate: "2026-12-30", seedDefaults: true };
     expect(createGroupSchema.safeParse(base).success).toBe(true);
-    expect(
-      createGroupSchema.safeParse({ ...base, endDate: "2026-09-01" }).success,
-    ).toBe(false);
+    expect(createGroupSchema.safeParse({ ...base, endDate: "2026-09-01" }).success).toBe(false);
   });
 });

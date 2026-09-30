@@ -1,12 +1,4 @@
-import {
-  ChartNoAxesColumn,
-  Dumbbell,
-  House,
-  Sparkles,
-  UserRound,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
+import { ChartNoAxesColumn, Dumbbell, House, Sparkles, UserRound, Users, type LucideIcon } from "lucide-react";
 
 export type NavItem = {
   href: string;

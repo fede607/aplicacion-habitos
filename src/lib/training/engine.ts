@@ -1,16 +1,5 @@
 import { pickExercise, type Equipment, type Pattern } from "./library";
-import type {
-  CyclePhase,
-  Focus,
-  Goal,
-  Level,
-  Limitation,
-  Nutrition,
-  PlannedDay,
-  PlannedExercise,
-  TrainingPlan,
-  TrainingProfile,
-} from "./types";
+import type { CyclePhase, Focus, Goal, Level, Limitation, Nutrition, PlannedDay, PlannedExercise, TrainingPlan, TrainingProfile } from "./types";
 
 /**
  * Generador de planes de entrenamiento. Puro y determinista: el mismo perfil
@@ -73,58 +62,22 @@ const T = {
   fullA: {
     title: "Cuerpo completo A",
     focus: "piernas, pecho y espalda",
-    patterns: [
-      "squat",
-      "hpush",
-      "hpull",
-      "hinge",
-      "core",
-      "biceps",
-      "calves",
-      "lateral",
-    ],
+    patterns: ["squat", "hpush", "hpull", "hinge", "core", "biceps", "calves", "lateral"],
   },
   fullB: {
     title: "Cuerpo completo B",
     focus: "cadera, hombros y espalda",
-    patterns: [
-      "hinge",
-      "vpush",
-      "vpull",
-      "lunge",
-      "core",
-      "triceps",
-      "lateral",
-      "calves",
-    ],
+    patterns: ["hinge", "vpush", "vpull", "lunge", "core", "triceps", "lateral", "calves"],
   },
   fullC: {
     title: "Cuerpo completo C",
     focus: "piernas, pecho y dorsales",
-    patterns: [
-      "squat",
-      "hpush",
-      "vpull",
-      "lunge",
-      "core",
-      "lateral",
-      "biceps",
-      "triceps",
-    ],
+    patterns: ["squat", "hpush", "vpull", "lunge", "core", "lateral", "biceps", "triceps"],
   },
   upper: {
     title: "Torso",
     focus: "pecho, espalda y hombros",
-    patterns: [
-      "hpush",
-      "hpull",
-      "vpush",
-      "vpull",
-      "lateral",
-      "biceps",
-      "triceps",
-      "core",
-    ],
+    patterns: ["hpush", "hpull", "vpush", "vpull", "lateral", "biceps", "triceps", "core"],
   },
   lower: {
     title: "Pierna",
@@ -134,16 +87,7 @@ const T = {
   upperB: {
     title: "Torso B",
     focus: "hombros, espalda y pecho",
-    patterns: [
-      "vpush",
-      "vpull",
-      "hpush",
-      "hpull",
-      "triceps",
-      "biceps",
-      "lateral",
-      "core",
-    ],
+    patterns: ["vpush", "vpull", "hpush", "hpull", "triceps", "biceps", "lateral", "core"],
   },
   lowerB: {
     title: "Pierna B",
@@ -225,11 +169,7 @@ function dose(goal: Goal, main: boolean, level: Level, minor: boolean): Dose {
   if (level === "beginner") {
     d.sets = Math.max(2, d.sets - 1);
     d.rir = Math.min(4, d.rir + 1);
-  } else if (
-    level === "advanced" &&
-    main &&
-    (goal === "muscle" || goal === "strength")
-  ) {
+  } else if (level === "advanced" && main && (goal === "muscle" || goal === "strength")) {
     d.sets = Math.min(5, d.sets + 1);
   }
   // Menores: nada de rangos casi máximos; técnica y reserva siempre.
@@ -241,11 +181,7 @@ function dose(goal: Goal, main: boolean, level: Level, minor: boolean): Dose {
 }
 
 function timedReps(level: Level): string {
-  return level === "beginner"
-    ? "20-30 s"
-    : level === "intermediate"
-      ? "30-45 s"
-      : "45-60 s";
+  return level === "beginner" ? "20-30 s" : level === "intermediate" ? "30-45 s" : "45-60 s";
 }
 
 /** Pone los patrones de la zona prioritaria justo tras los dos principales (no se recortan por tiempo). */
@@ -257,30 +193,13 @@ function withFocus(patterns: Pattern[], focus: Focus): Pattern[] {
 }
 
 /** Minutos estimados: ~40 s por serie + descansos + 8 min de calentamiento. */
-export function estimateMinutes(
-  exercises: PlannedExercise[],
-  cardio?: string,
-): number {
-  const work =
-    exercises.reduce((acc, e) => acc + e.sets * (40 + e.restSec), 0) / 60;
-  const cardioMin = cardio
-    ? Number(
-        /(\d+)(?:-(\d+))? min/.exec(cardio)?.[2] ??
-          /(\d+)(?:-(\d+))? min/.exec(cardio)?.[1] ??
-          0,
-      )
-    : 0;
+export function estimateMinutes(exercises: PlannedExercise[], cardio?: string): number {
+  const work = exercises.reduce((acc, e) => acc + e.sets * (40 + e.restSec), 0) / 60;
+  const cardioMin = cardio ? Number(/(\d+)(?:-(\d+))? min/.exec(cardio)?.[2] ?? /(\d+)(?:-(\d+))? min/.exec(cardio)?.[1] ?? 0) : 0;
   return Math.max(15, Math.round((8 + work + cardioMin) / 5) * 5);
 }
 
-function buildStrengthDay(
-  tpl: DayTemplate,
-  weekday: number,
-  p: TrainingProfile,
-  equipment: Equipment,
-  maxExercises: number,
-  minor: boolean,
-): PlannedDay {
+function buildStrengthDay(tpl: DayTemplate, weekday: number, p: TrainingProfile, equipment: Equipment, maxExercises: number, minor: boolean): PlannedDay {
   const focusPatterns = FOCUS_PATTERNS[p.focus ?? "balanced"];
   const seen = new Set<string>();
   const exercises: PlannedExercise[] = [];
@@ -289,9 +208,7 @@ function buildStrengthDay(
     const ex = pickExercise(pattern, equipment, p.level, p.limitations);
     if (seen.has(ex.name)) continue; // p. ej. el mismo remo como sustituto de dos patrones
     seen.add(ex.name);
-    const main =
-      exercises.length < 2 &&
-      !["core", "calves", "biceps", "triceps", "lateral"].includes(pattern);
+    const main = exercises.length < 2 && !["core", "calves", "biceps", "triceps", "lateral"].includes(pattern);
     const d = dose(p.goal, main, p.level, minor);
     const isFocus = focusPatterns.includes(pattern);
     exercises.push({
@@ -315,10 +232,7 @@ function buildStrengthDay(
     warmup: `5 min de cardio suave + movilidad de ${tpl.focus} + 2 series ligeras del primer ejercicio.`,
     exercises,
     cardio,
-    estMinutes: Math.min(
-      p.sessionMinutes + 15,
-      estimateMinutes(exercises, cardio),
-    ),
+    estMinutes: Math.min(p.sessionMinutes + 15, estimateMinutes(exercises, cardio)),
   };
 }
 
@@ -327,19 +241,12 @@ function finisher(goal: Goal, level: Level): string | undefined {
     return level === "beginner"
       ? "Al acabar: 15-20 min de caminata rápida o bici suave."
       : "Al acabar: 20-30 min de cardio en zona 2 (puedes hablar con frases cortas).";
-  if (goal === "endurance")
-    return "Al acabar: 10 min de intervalos — 5 × (1 min fuerte / 1 min suave).";
+  if (goal === "endurance") return "Al acabar: 10 min de intervalos — 5 × (1 min fuerte / 1 min suave).";
   if (goal === "health") return "Al acabar: 10-15 min de caminata rápida.";
   return undefined;
 }
 
-function runningDays(
-  p: TrainingProfile,
-  slots: number[],
-  equipment: Equipment,
-  maxExercises: number,
-  minor: boolean,
-): PlannedDay[] {
+function runningDays(p: TrainingProfile, slots: number[], equipment: Equipment, maxExercises: number, minor: boolean): PlannedDay[] {
   const lvl = p.level;
   const easy =
     lvl === "beginner"
@@ -364,8 +271,7 @@ function runningDays(
     weekday,
     title,
     focus: "carrera",
-    warmup:
-      "5 min andando rápido + movilidad de tobillo y cadera + 3 aceleraciones suaves.",
+    warmup: "5 min andando rápido + movilidad de tobillo y cadera + 3 aceleraciones suaves.",
     exercises: [],
     cardio: text,
     estMinutes: estimateMinutes([], text),
@@ -373,49 +279,18 @@ function runningDays(
   const runStrength = {
     ...T.fullA,
     title: "Fuerza para corredores",
-    patterns: [
-      "squat",
-      "hinge",
-      "lunge",
-      "calves",
-      "core",
-      "hpull",
-    ] as Pattern[],
+    patterns: ["squat", "hinge", "lunge", "calves", "core", "hpull"] as Pattern[],
   };
   const runStrengthB = {
     ...T.fullB,
     title: "Fuerza para corredores B",
-    patterns: [
-      "lunge",
-      "hinge",
-      "hpush",
-      "calves",
-      "core",
-      "vpull",
-    ] as Pattern[],
+    patterns: ["lunge", "hinge", "hpush", "calves", "core", "vpull"] as Pattern[],
   };
-  const s = (weekday: number, tpl: DayTemplate) =>
-    buildStrengthDay(
-      tpl,
-      weekday,
-      { ...p, goal: "endurance" },
-      equipment,
-      Math.min(maxExercises, 5),
-      minor,
-    );
+  const s = (weekday: number, tpl: DayTemplate) => buildStrengthDay(tpl, weekday, { ...p, goal: "endurance" }, equipment, Math.min(maxExercises, 5), minor);
   const byCount: Record<number, ((d: number) => PlannedDay)[]> = {
     2: [(d) => run(d, "Rodaje", easy), (d) => s(d, runStrength)],
-    3: [
-      (d) => run(d, "Rodaje", easy),
-      (d) => s(d, runStrength),
-      (d) => run(d, "Tirada larga", long),
-    ],
-    4: [
-      (d) => run(d, "Rodaje", easy),
-      (d) => s(d, runStrength),
-      (d) => run(d, "Series", intervals),
-      (d) => run(d, "Tirada larga", long),
-    ],
+    3: [(d) => run(d, "Rodaje", easy), (d) => s(d, runStrength), (d) => run(d, "Tirada larga", long)],
+    4: [(d) => run(d, "Rodaje", easy), (d) => s(d, runStrength), (d) => run(d, "Series", intervals), (d) => run(d, "Tirada larga", long)],
     5: [
       (d) => run(d, "Rodaje", easy),
       (d) => s(d, runStrength),
@@ -458,8 +333,7 @@ function recoveryDay(weekday: number): PlannedDay {
     focus: "recuperación activa",
     warmup: "Empieza muy suave.",
     exercises: [],
-    cardio:
-      "30-40 min de caminata rápida, bici o natación suave + 10 min de estiramientos.",
+    cardio: "30-40 min de caminata rápida, bici o natación suave + 10 min de estiramientos.",
     estMinutes: 50,
   };
 }
@@ -468,13 +342,8 @@ export function computeNutrition(p: TrainingProfile, goal: Goal): Nutrition {
   const minor = p.age < 18;
   const h = p.heightCm / 100;
   const bmi = p.weightKg / (h * h);
-  const bmr =
-    10 * p.weightKg +
-    6.25 * p.heightCm -
-    5 * p.age +
-    (p.sex === "male" ? 5 : -161);
-  const activity =
-    p.daysPerWeek <= 2 ? 1.375 : p.daysPerWeek <= 4 ? 1.55 : 1.725;
+  const bmr = 10 * p.weightKg + 6.25 * p.heightCm - 5 * p.age + (p.sex === "male" ? 5 : -161);
+  const activity = p.daysPerWeek <= 2 ? 1.375 : p.daysPerWeek <= 4 ? 1.55 : 1.725;
   const maintenance = bmr * activity;
   let target = maintenance;
   let note: string;
@@ -483,35 +352,22 @@ export function computeNutrition(p: TrainingProfile, goal: Goal): Nutrition {
       "Estás en edad de crecimiento: come a tu gasto (sin dietas de déficit) y prioriza comida real, fruta, verdura y proteína en cada comida. Para cambiar tu peso, habla antes con tu médico.";
   } else if (goal === "fat_loss") {
     target = maintenance * 0.8;
-    note =
-      "Déficit moderado (~20%): perderás ~0,5-1% de tu peso por semana sin perder músculo. No bajes de estas calorías.";
+    note = "Déficit moderado (~20%): perderás ~0,5-1% de tu peso por semana sin perder músculo. No bajes de estas calorías.";
   } else if (goal === "recomp") {
     target = maintenance * 0.9;
-    note =
-      "Déficit suave (~10%) con mucha proteína: bajas grasa despacio mientras ganas músculo. Mira la cinta métrica y las fotos, no sólo la báscula.";
+    note = "Déficit suave (~10%) con mucha proteína: bajas grasa despacio mientras ganas músculo. Mira la cinta métrica y las fotos, no sólo la báscula.";
   } else if (goal === "muscle") {
     target = maintenance * 1.1;
-    note =
-      "Superávit ligero (~10%): gana 0,25-0,5% de peso por semana. Si subes más rápido, reduce 150 kcal.";
+    note = "Superávit ligero (~10%): gana 0,25-0,5% de peso por semana. Si subes más rápido, reduce 150 kcal.";
   } else {
-    note =
-      "Calorías de mantenimiento: tu peso debería mantenerse estable. Ajusta ±150 kcal si cambia más de 1 kg en 2 semanas.";
+    note = "Calorías de mantenimiento: tu peso debería mantenerse estable. Ajusta ±150 kcal si cambia más de 1 kg en 2 semanas.";
   }
   // Proteína sobre peso ajustado si hay obesidad (evita cifras disparadas).
   const proteinWeight = bmi > 30 ? 25 * h * h : p.weightKg;
-  const perKg = minor
-    ? 1.5
-    : goal === "fat_loss" || goal === "recomp"
-      ? 2.0
-      : goal === "muscle" || goal === "strength"
-        ? 1.8
-        : 1.4;
+  const perKg = minor ? 1.5 : goal === "fat_loss" || goal === "recomp" ? 2.0 : goal === "muscle" || goal === "strength" ? 1.8 : 1.4;
   const proteinG = Math.round(proteinWeight * perKg);
   const fatG = Math.round(Math.max(0.6 * p.weightKg, (target * 0.25) / 9));
-  const carbsG = Math.max(
-    0,
-    Math.round((target - proteinG * 4 - fatG * 9) / 4),
-  );
+  const carbsG = Math.max(0, Math.round((target - proteinG * 4 - fatG * 9) / 4));
   const round50 = (n: number) => Math.round(n / 50) * 50;
   return {
     bmr: Math.round(bmr),
@@ -527,33 +383,18 @@ export function computeNutrition(p: TrainingProfile, goal: Goal): Nutrition {
 }
 
 export function equipmentFor(type: TrainingProfile["trainingType"]): Equipment {
-  return type === "gym" || type === "mixed"
-    ? "gym"
-    : type === "home_dumbbells"
-      ? "dumbbells"
-      : "bodyweight";
+  return type === "gym" || type === "mixed" ? "gym" : type === "home_dumbbells" ? "dumbbells" : "bodyweight";
 }
 
 /** Días de entreno: los que elija la persona si cuadran; si no, un reparto con descansos intercalados. */
 export function pickSlots(daysPerWeek: number, preferred?: number[]): number[] {
-  const clean = [
-    ...new Set(
-      (preferred ?? []).filter((d) => Number.isInteger(d) && d >= 1 && d <= 7),
-    ),
-  ].sort((a, b) => a - b);
+  const clean = [...new Set((preferred ?? []).filter((d) => Number.isInteger(d) && d >= 1 && d <= 7))].sort((a, b) => a - b);
   return clean.length === daysPerWeek ? clean : WEEKDAY_SLOTS[daysPerWeek];
 }
 
 /** Semana del ciclo de 4 (3 de progresión + 1 de descarga) contada desde que se generó el plan. */
 export function cyclePhase(startIso: string, todayIso: string): CyclePhase {
-  const days = Math.max(
-    0,
-    Math.floor(
-      (Date.parse(`${todayIso}T00:00:00Z`) -
-        Date.parse(`${startIso.slice(0, 10)}T00:00:00Z`)) /
-        86_400_000,
-    ),
-  );
+  const days = Math.max(0, Math.floor((Date.parse(`${todayIso}T00:00:00Z`) - Date.parse(`${startIso.slice(0, 10)}T00:00:00Z`)) / 86_400_000));
   const week = ((Math.floor(days / 7) % 4) + 1) as CyclePhase["week"];
   const phases: Record<CyclePhase["week"], Omit<CyclePhase, "week">> = {
     1: {
@@ -596,9 +437,7 @@ export function generatePlan(input: TrainingProfile): TrainingPlan {
   const p: TrainingProfile = {
     ...input,
     daysPerWeek: Math.min(6, Math.max(2, Math.round(input.daysPerWeek))),
-    sessionMinutes: [30, 45, 60, 75, 90].includes(input.sessionMinutes)
-      ? input.sessionMinutes
-      : 60,
+    sessionMinutes: [30, 45, 60, 75, 90].includes(input.sessionMinutes) ? input.sessionMinutes : 60,
     focus: input.focus ?? "balanced",
   };
   const minor = p.age < 18;
@@ -614,9 +453,7 @@ export function generatePlan(input: TrainingProfile): TrainingPlan {
     );
   }
   if (bmi >= 30 && p.trainingType === "running" && p.level === "beginner") {
-    warnings.push(
-      "Para cuidar tus articulaciones, empieza caminando rápido y alternando con bici o elíptica; introduce el trote poco a poco.",
-    );
+    warnings.push("Para cuidar tus articulaciones, empieza caminando rápido y alternando con bici o elíptica; introduce el trote poco a poco.");
   }
   if (p.limitations.length) {
     warnings.push(
@@ -629,9 +466,7 @@ export function generatePlan(input: TrainingProfile): TrainingPlan {
     );
   }
   if (minor) {
-    warnings.push(
-      "Eres menor de edad: aprende la técnica con pesos cómodos, pide supervisión la primera vez con pesos libres y no hagas máximos (1RM).",
-    );
+    warnings.push("Eres menor de edad: aprende la técnica con pesos cómodos, pide supervisión la primera vez con pesos libres y no hagas máximos (1RM).");
   }
 
   const pg: TrainingProfile = { ...p, goal };
@@ -644,26 +479,11 @@ export function generatePlan(input: TrainingProfile): TrainingPlan {
     days = runningDays(pg, slots, "bodyweight", maxExercises, minor);
   } else {
     // Principiantes: máximo 4 días de fuerza; el resto, recuperación activa.
-    const strengthDays =
-      p.trainingType === "mixed"
-        ? Math.min(4, p.daysPerWeek - 1)
-        : p.level === "beginner"
-          ? Math.min(4, p.daysPerWeek)
-          : p.daysPerWeek;
+    const strengthDays = p.trainingType === "mixed" ? Math.min(4, p.daysPerWeek - 1) : p.level === "beginner" ? Math.min(4, p.daysPerWeek) : p.daysPerWeek;
     const split = strengthSplit(strengthDays);
     days = slots.map((weekday, i) => {
-      if (i < split.length)
-        return buildStrengthDay(
-          split[i],
-          weekday,
-          pg,
-          equipment,
-          maxExercises,
-          minor,
-        );
-      return p.trainingType === "mixed"
-        ? conditioningDay(weekday, pg)
-        : recoveryDay(weekday);
+      if (i < split.length) return buildStrengthDay(split[i], weekday, pg, equipment, maxExercises, minor);
+      return p.trainingType === "mixed" ? conditioningDay(weekday, pg) : recoveryDay(weekday);
     });
   }
 
@@ -682,14 +502,9 @@ export function generatePlan(input: TrainingProfile): TrainingPlan {
     "RIR = repeticiones en reserva: RIR 2 significa que acabas la serie pudiendo hacer 2 más con buena técnica.",
     "Apunta cada sesión en Entrenos y actualiza tu peso cada 4 semanas para recalcular el plan.",
   ];
-  if (p.level === "beginner")
-    progression.unshift(
-      "Las 2 primeras semanas son de técnica: pesos cómodos y movimientos controlados.",
-    );
+  if (p.level === "beginner") progression.unshift("Las 2 primeras semanas son de técnica: pesos cómodos y movimientos controlados.");
   if (p.trainingType === "running") {
-    progression.push(
-      "No aumentes tu volumen de carrera más de un 10% por semana.",
-    );
+    progression.push("No aumentes tu volumen de carrera más de un 10% por semana.");
   }
 
   const tips = [
@@ -700,14 +515,10 @@ export function generatePlan(input: TrainingProfile): TrainingPlan {
       : "Reparte la proteína en 3-4 comidas (unos 20-40 g en cada una).",
   ];
   if (goal === "muscle" || goal === "strength")
-    tips.push(
-      "Añade 1-2 sesiones de 20 min de cardio suave a la semana: mejora la recuperación sin quitarte músculo.",
-    );
+    tips.push("Añade 1-2 sesiones de 20 min de cardio suave a la semana: mejora la recuperación sin quitarte músculo.");
 
   if (p.focus && p.focus !== "balanced") {
-    tips.unshift(
-      `Prioridad ${FOCUS_LABELS[p.focus].toLowerCase()}: esos ejercicios van al principio (con más energía) y llevan una serie extra.`,
-    );
+    tips.unshift(`Prioridad ${FOCUS_LABELS[p.focus].toLowerCase()}: esos ejercicios van al principio (con más energía) y llevan una serie extra.`);
   }
 
   const summary = `${GOAL_LABELS[goal]} · ${typeLabel[p.trainingType]} · ${p.daysPerWeek} días/semana · ${p.sessionMinutes} min · nivel ${LEVEL_LABELS[p.level].toLowerCase()}`;

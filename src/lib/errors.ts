@@ -4,12 +4,7 @@
  */
 export type ActionResult<T = undefined> =
   | { ok: true; data: T }
-  | {
-      ok: false;
-      error: string;
-      fieldErrors?: Record<string, string>;
-      code?: string;
-    };
+  | { ok: false; error: string; fieldErrors?: Record<string, string>; code?: string };
 
 type DbError = { code?: string; message?: string } | null | undefined;
 
@@ -26,25 +21,13 @@ const MESSAGES: Record<string, string> = {
 };
 
 const SPECIFIC: [RegExp, string][] = [
-  [
-    /date not editable/,
-    "Ese día ya no se puede editar (sólo los últimos 7 días).",
-  ],
+  [/date not editable/, "Ese día ya no se puede editar (sólo los últimos 7 días)."],
   [/habit not available/, "Este hábito ya no está activo."],
   [/last admin/, "Eres el único admin: transfiere la administración antes."],
   [/cannot remove admin/, "No puedes expulsar a otro administrador."],
-  [
-    /group created too fast/,
-    "Espera unos segundos: ya acabas de crear un grupo.",
-  ],
-  [
-    /group limit free/,
-    "Sin Pro puedes tener 1 grupo propio. Hazte Pro para crear más (o únete a los de tus amigos).",
-  ],
-  [
-    /too many groups/,
-    "Ya has creado 10 grupos, el máximo. Borra alguno para crear otro.",
-  ],
+  [/group created too fast/, "Espera unos segundos: ya acabas de crear un grupo."],
+  [/group limit free/, "Sin Pro puedes tener 1 grupo propio. Hazte Pro para crear más (o únete a los de tus amigos)."],
+  [/too many groups/, "Ya has creado 10 grupos, el máximo. Borra alguno para crear otro."],
   [/too many habits/, "Has alcanzado el máximo de hábitos del grupo."],
   [/too many workouts/, "Demasiados entrenamientos registrados ese día."],
   [/invalid timezone/, "Zona horaria no válida."],
@@ -52,26 +35,16 @@ const SPECIFIC: [RegExp, string][] = [
   [/already subscribed/, "Ya tiene una suscripción de PayPal activa."],
   [/not a member/, "Esa persona no es miembro de la sala."],
   [/duel exists/, "Ya tenéis un duelo esa semana."],
-  [
-    /habits not shared/,
-    "Los dos tenéis que compartir vuestros hábitos con el grupo para batiros en duelo.",
-  ],
+  [/habits not shared/, "Los dos tenéis que compartir vuestros hábitos con el grupo para batiros en duelo."],
   [/too many duels/, "Como máximo 3 retos por semana."],
   [/duel closed/, "Este duelo ya no admite cambios."],
   [/invalid week/, "Sólo puedes retar para esta semana o la próxima."],
-  [
-    /profiles_username_key|duplicate key.*username/,
-    "Ese nombre de usuario ya está cogido.",
-  ],
+  [/profiles_username_key|duplicate key.*username/, "Ese nombre de usuario ya está cogido."],
 ];
 
-export const GENERIC_ERROR =
-  "Ha ocurrido un error al guardar. Inténtalo de nuevo.";
+export const GENERIC_ERROR = "Ha ocurrido un error al guardar. Inténtalo de nuevo.";
 
-export function dbErrorMessage(
-  error: DbError,
-  fallback = GENERIC_ERROR,
-): string {
+export function dbErrorMessage(error: DbError, fallback = GENERIC_ERROR): string {
   if (!error) return fallback;
   const msg = error.message ?? "";
   for (const [re, text] of SPECIFIC) if (re.test(msg)) return text;
@@ -82,21 +55,10 @@ export function dbErrorMessage(
 /** Log interno sin secretos: sólo código y mensaje del error y el contexto. */
 export function logServerError(context: string, error: unknown): void {
   const e = error as { code?: string; message?: string } | undefined;
-  console.error(`[winter-arc] ${context}`, {
-    code: e?.code,
-    message: e?.message?.slice(0, 300),
-  });
+  console.error(`[winter-arc] ${context}`, { code: e?.code, message: e?.message?.slice(0, 300) });
 }
 
-export function fail(
-  error: DbError,
-  context: string,
-  fallback?: string,
-): ActionResult<never> {
+export function fail(error: DbError, context: string, fallback?: string): ActionResult<never> {
   logServerError(context, error);
-  return {
-    ok: false,
-    error: dbErrorMessage(error, fallback),
-    code: error?.code,
-  };
+  return { ok: false, error: dbErrorMessage(error, fallback), code: error?.code };
 }

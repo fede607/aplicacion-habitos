@@ -16,12 +16,7 @@ export function Stat({
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "rounded-2xl border border-border bg-surface p-4 shadow-card",
-        className,
-      )}
-    >
+    <div className={cn("rounded-2xl border border-border bg-surface p-4 shadow-card", className)}>
       <div className="flex items-center justify-between gap-2 text-xs font-medium tracking-wide text-muted uppercase">
         <span>{label}</span>
         {icon ? (
@@ -37,9 +32,7 @@ export function Stat({
           </span>
         ) : null}
       </div>
-      <div className="tabular mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
-        {value}
-      </div>
+      <div className="tabular mt-2 text-2xl font-bold tracking-tight sm:text-3xl">{value}</div>
       {sub ? <div className="mt-1 text-xs text-muted">{sub}</div> : null}
     </div>
   );

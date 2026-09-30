@@ -11,23 +11,9 @@ export function esc(value: string | number): string {
     .replace(/'/g, "&#39;");
 }
 
-type Layout = {
-  preheader: string;
-  title: string;
-  body: string;
-  ctaText: string;
-  ctaUrl: string;
-  unsubscribeUrl?: string;
-};
+type Layout = { preheader: string; title: string; body: string; ctaText: string; ctaUrl: string; unsubscribeUrl?: string };
 
-export function layout({
-  preheader,
-  title,
-  body,
-  ctaText,
-  ctaUrl,
-  unsubscribeUrl,
-}: Layout): string {
+export function layout({ preheader, title, body, ctaText, ctaUrl, unsubscribeUrl }: Layout): string {
   return `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title></head>
 <body style="margin:0;padding:0;background:#f5f7fb;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0b1220">
 <span style="display:none;max-height:0;overflow:hidden">${esc(preheader)}</span>
@@ -55,8 +41,7 @@ export function verificationEmail(input: { name: string; url: string }) {
   return {
     subject: "Confirma tu email · Year Arc",
     html: layout({
-      preheader:
-        "Confirma que este correo es tuyo para recibir avisos del Year Arc.",
+      preheader: "Confirma que este correo es tuyo para recibir avisos del Year Arc.",
       title,
       body: `<p>Hola ${esc(input.name)}, has pedido recibir las notificaciones del Year Arc en este correo.</p><p>Si no has sido tú, ignora este mensaje: no te enviaremos nada.</p><p style="color:#5a6a82;font-size:13px">El enlace caduca en 24 horas.</p>`,
       ctaText: "Confirmar email",

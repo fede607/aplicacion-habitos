@@ -15,17 +15,9 @@ const noop = () => () => {};
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const mounted = useSyncExternalStore(
-    noop,
-    () => true,
-    () => false,
-  );
+  const mounted = useSyncExternalStore(noop, () => true, () => false);
   return (
-    <div
-      role="radiogroup"
-      aria-label="Tema"
-      className="inline-flex rounded-xl border border-border bg-surface-2 p-1"
-    >
+    <div role="radiogroup" aria-label="Tema" className="inline-flex rounded-xl border border-border bg-surface-2 p-1">
       {OPTIONS.map(({ value, label, icon: Icon }) => {
         const active = mounted && theme === value;
         return (

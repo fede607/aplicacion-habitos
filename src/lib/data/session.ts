@@ -3,12 +3,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient, type ServerSupabase } from "../supabase/server";
 import { todayInTimeZone, type IsoDate } from "../dates";
-import type {
-  GroupRole,
-  GroupRow,
-  ProfileRow,
-  UserSettingsRow,
-} from "../database.types";
+import type { GroupRole, GroupRow, ProfileRow, UserSettingsRow } from "../database.types";
 import { logServerError } from "../errors";
 
 export type Membership = GroupRow & { role: GroupRole; joined_at: string };
@@ -39,43 +34,22 @@ export const getSession = cache(async (): Promise<Session | null> => {
   const [profileRes, settingsRes, membersRes, groupsRes] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", userId).single(),
     supabase.from("user_settings").select("*").eq("user_id", userId).single(),
-    supabase
-      .from("group_members")
-      .select("group_id, role, joined_at")
-      .eq("user_id", userId),
-    supabase
-      .from("groups")
-      .select("*")
-      .is("deleted_at", null)
-      .order("created_at"),
+    supabase.from("group_members").select("group_id, role, joined_at").eq("user_id", userId),
+    supabase.from("groups").select("*").is("deleted_at", null).order("created_at"),
   ]);
 
-  if (
-    profileRes.error ||
-    settingsRes.error ||
-    !profileRes.data ||
-    !settingsRes.data
-  ) {
-    logServerError(
-      "session: profile/settings",
-      profileRes.error ?? settingsRes.error,
-    );
+  if (profileRes.error || settingsRes.error || !profileRes.data || !settingsRes.data) {
+    logServerError("session: profile/settings", profileRes.error ?? settingsRes.error);
     return null;
   }
 
   const roles = new Map((membersRes.data ?? []).map((m) => [m.group_id, m]));
   const groups: Membership[] = (groupsRes.data ?? [])
     .filter((g) => roles.has(g.id))
-    .map((g) => ({
-      ...g,
-      role: roles.get(g.id)!.role,
-      joined_at: roles.get(g.id)!.joined_at,
-    }));
+    .map((g) => ({ ...g, role: roles.get(g.id)!.role, joined_at: roles.get(g.id)!.joined_at }));
 
   const activeGroup =
-    groups.find((g) => g.id === settingsRes.data.active_group_id) ??
-    groups[0] ??
-    null;
+    groups.find((g) => g.id === settingsRes.data.active_group_id) ?? groups[0] ?? null;
 
   return {
     supabase,
@@ -108,16 +82,12 @@ export async function requireGroupAdmin(): Promise<GroupSession> {
 }
 
 /** ¿Acceso completo al grupo activo? (sala gratis, creador o Pro). Lo decide la BD. */
-export const hasFullAccess = cache(
-  async (session: GroupSession): Promise<boolean> => {
-    if (!session.activeGroup.requires_pro) return true;
-    const { data, error } = await session.supabase.rpc("has_full_access", {
-      p_group_id: session.activeGroup.id,
-    });
-    if (error) logServerError("hasFullAccess", error);
-    return data === true;
-  },
-);
+export const hasFullAccess = cache(async (session: GroupSession): Promise<boolean> => {
+  if (!session.activeGroup.requires_pro) return true;
+  const { data, error } = await session.supabase.rpc("has_full_access", { p_group_id: session.activeGroup.id });
+  if (error) logServerError("hasFullAccess", error);
+  return data === true;
+});
 
 /** Páginas Pro: en una sala de pago, sin suscripción sólo se ven los hábitos de hoy. */
 export async function requireFullAccess(): Promise<GroupSession> {

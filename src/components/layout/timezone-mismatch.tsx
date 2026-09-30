@@ -9,11 +9,7 @@ import { Button } from "@/components/ui/button";
 const noop = () => () => {};
 
 /** Avisa si el dispositivo está en otra zona horaria distinta a la del perfil. */
-export function TimezoneMismatch({
-  profileTimezone,
-}: {
-  profileTimezone: string;
-}) {
+export function TimezoneMismatch({ profileTimezone }: { profileTimezone: string }) {
   const deviceTz = useSyncExternalStore(
     noop,
     () => Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -28,9 +24,8 @@ export function TimezoneMismatch({
       <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2 text-sm sm:px-6">
         <Globe className="size-4 text-primary" aria-hidden="true" />
         <p className="min-w-0 flex-1">
-          Tu dispositivo está en <strong>{deviceTz}</strong> y tu perfil en{" "}
-          <strong>{profileTimezone}</strong>. Los días se cuentan con la zona
-          del perfil.
+          Tu dispositivo está en <strong>{deviceTz}</strong> y tu perfil en <strong>{profileTimezone}</strong>. Los días se
+          cuentan con la zona del perfil.
         </p>
         <div className="flex gap-2">
           <Button

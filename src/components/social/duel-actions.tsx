@@ -7,13 +7,7 @@ import { LoaderCircle, Swords } from "lucide-react";
 import { cancelDuel, createDuel, respondDuel } from "@/app/actions/social";
 import { Button } from "@/components/ui/button";
 
-export function DuelResponse({
-  duelId,
-  mine,
-}: {
-  duelId: string;
-  mine: "challenger" | "opponent";
-}) {
+export function DuelResponse({ duelId, mine }: { duelId: string; mine: "challenger" | "opponent" }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const run = (fn: () => ReturnType<typeof cancelDuel>, ok: string) =>
@@ -27,43 +21,18 @@ export function DuelResponse({
 
   if (mine === "challenger") {
     return (
-      <Button
-        size="sm"
-        variant="ghost"
-        disabled={pending}
-        onClick={() => run(() => cancelDuel(duelId), "Reto retirado")}
-      >
+      <Button size="sm" variant="ghost" disabled={pending} onClick={() => run(() => cancelDuel(duelId), "Reto retirado")}>
         Retirar reto
       </Button>
     );
   }
   return (
     <div className="flex gap-2">
-      <Button
-        size="sm"
-        disabled={pending}
-        onClick={() =>
-          run(
-            () => respondDuel({ duelId, accept: true }),
-            "¡Duelo aceptado! ⚔️",
-          )
-        }
-      >
-        {pending ? (
-          <LoaderCircle className="animate-spin" aria-hidden="true" />
-        ) : (
-          <Swords aria-hidden="true" />
-        )}
+      <Button size="sm" disabled={pending} onClick={() => run(() => respondDuel({ duelId, accept: true }), "¡Duelo aceptado! ⚔️")}>
+        {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Swords aria-hidden="true" />}
         Aceptar
       </Button>
-      <Button
-        size="sm"
-        variant="ghost"
-        disabled={pending}
-        onClick={() =>
-          run(() => respondDuel({ duelId, accept: false }), "Reto rechazado")
-        }
-      >
+      <Button size="sm" variant="ghost" disabled={pending} onClick={() => run(() => respondDuel({ duelId, accept: false }), "Reto rechazado")}>
         Rechazar
       </Button>
     </div>
@@ -71,15 +40,7 @@ export function DuelResponse({
 }
 
 /** Botón «Retar» del perfil de un miembro. */
-export function ChallengeButton({
-  groupId,
-  opponentId,
-  name,
-}: {
-  groupId: string;
-  opponentId: string;
-  name: string;
-}) {
+export function ChallengeButton({ groupId, opponentId, name }: { groupId: string; opponentId: string; name: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, start] = useTransition();
@@ -103,27 +64,16 @@ export function ChallengeButton({
   return (
     <div className="grid gap-2 rounded-2xl border border-border bg-surface-2 p-3">
       <p className="text-sm">
-        Gana quien tenga mejor <b>% diario</b> de media en la semana (mismo
-        cálculo que el rango).
+        Gana quien tenga mejor <b>% diario</b> de media en la semana (mismo cálculo que el rango).
       </p>
       <div className="flex flex-wrap gap-2">
         <Button size="sm" disabled={pending} onClick={() => send("this")}>
           Esta semana
         </Button>
-        <Button
-          size="sm"
-          variant="secondary"
-          disabled={pending}
-          onClick={() => send("next")}
-        >
+        <Button size="sm" variant="secondary" disabled={pending} onClick={() => send("next")}>
           La próxima semana
         </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          disabled={pending}
-          onClick={() => setOpen(false)}
-        >
+        <Button size="sm" variant="ghost" disabled={pending} onClick={() => setOpen(false)}>
           Cancelar
         </Button>
       </div>

@@ -9,19 +9,11 @@ import type { Database } from "../database.types";
  */
 export function createAdminClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY;
-  if (!url || !key)
-    throw new Error(
-      "Falta SUPABASE_SERVICE_ROLE_KEY (sólo servidor) para las notificaciones.",
-    );
-  return createClient<Database>(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY;
+  if (!url || !key) throw new Error("Falta SUPABASE_SERVICE_ROLE_KEY (sólo servidor) para las notificaciones.");
+  return createClient<Database>(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
 export function isAdminConfigured(): boolean {
-  return Boolean(
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY,
-  );
+  return Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY);
 }

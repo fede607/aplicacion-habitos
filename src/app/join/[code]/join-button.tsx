@@ -26,9 +26,7 @@ export function JoinButton({ code }: { code: string }) {
         })
       }
     >
-      {pending ? (
-        <LoaderCircle className="animate-spin" aria-hidden="true" />
-      ) : null}
+      {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
       Unirme al grupo
     </Button>
   );

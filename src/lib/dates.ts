@@ -27,10 +27,7 @@ export function isValidTimeZone(tz: string): boolean {
 }
 
 /** Día de calendario actual en la zona horaria dada. */
-export function todayInTimeZone(
-  timeZone: string,
-  now: Date = new Date(),
-): IsoDate {
+export function todayInTimeZone(timeZone: string, now: Date = new Date()): IsoDate {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone,
     year: "numeric",
@@ -42,10 +39,7 @@ export function todayInTimeZone(
 }
 
 /** Hora local "HH:MM" en la zona horaria dada. */
-export function timeInTimeZone(
-  timeZone: string,
-  now: Date = new Date(),
-): string {
+export function timeInTimeZone(timeZone: string, now: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-GB", {
     timeZone,
     hour: "2-digit",
@@ -114,10 +108,7 @@ export function eachDay(from: IsoDate, to: IsoDate): IsoDate[] {
 export function monthGrid(month: string): (IsoDate | null)[][] {
   const first = `${month}-01`;
   const last = endOfMonth(first);
-  const cells: (IsoDate | null)[] = Array.from(
-    { length: isoWeekday(first) - 1 },
-    () => null,
-  );
+  const cells: (IsoDate | null)[] = Array.from({ length: isoWeekday(first) - 1 }, () => null);
   for (const d of eachDay(first, last)) cells.push(d);
   while (cells.length % 7 !== 0) cells.push(null);
   const weeks: (IsoDate | null)[][] = [];
@@ -137,38 +128,21 @@ export function formatLongDate(date: IsoDate): string {
 }
 
 export function formatShortDate(date: IsoDate): string {
-  return new Intl.DateTimeFormat(LOCALE, {
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  }).format(toUtc(date));
+  return new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "short", timeZone: "UTC" }).format(toUtc(date));
 }
 
 export function formatMonth(month: string): string {
-  return new Intl.DateTimeFormat(LOCALE, {
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(toUtc(`${month}-01`));
+  return new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric", timeZone: "UTC" }).format(
+    toUtc(`${month}-01`),
+  );
 }
 
 export function formatWeekdayShort(date: IsoDate): string {
-  return new Intl.DateTimeFormat(LOCALE, {
-    weekday: "short",
-    timeZone: "UTC",
-  }).format(toUtc(date));
+  return new Intl.DateTimeFormat(LOCALE, { weekday: "short", timeZone: "UTC" }).format(toUtc(date));
 }
 
 export const WEEKDAY_LABELS = ["L", "M", "X", "J", "V", "S", "D"] as const;
-export const WEEKDAY_NAMES = [
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
-  "Domingo",
-] as const;
+export const WEEKDAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"] as const;
 
 export function formatMinutes(total: number): string {
   const h = Math.floor(total / 60);
@@ -179,16 +153,9 @@ export function formatMinutes(total: number): string {
 
 /** Fecha y hora de un timestamp en la zona del usuario (idéntico en servidor y cliente). */
 export function formatDateTime(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat(LOCALE, {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone,
-  }).format(new Date(iso));
+  return new Intl.DateTimeFormat(LOCALE, { dateStyle: "medium", timeStyle: "short", timeZone }).format(new Date(iso));
 }
 
 export function formatDateOnly(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat(LOCALE, {
-    dateStyle: "medium",
-    timeZone,
-  }).format(new Date(iso));
+  return new Intl.DateTimeFormat(LOCALE, { dateStyle: "medium", timeZone }).format(new Date(iso));
 }

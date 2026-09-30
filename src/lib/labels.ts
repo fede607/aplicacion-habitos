@@ -1,8 +1,4 @@
-import type {
-  HabitCategory,
-  HabitFrequency,
-  WorkoutType,
-} from "./database.types";
+import type { HabitCategory, HabitFrequency, WorkoutType } from "./database.types";
 import { WEEKDAY_NAMES } from "./dates";
 
 export const CATEGORY_LABELS: Record<HabitCategory, string> = {
@@ -43,14 +39,8 @@ export function describeFrequency(h: {
 }): string {
   let text: string;
   if (h.frequency === "daily") text = "Diario";
-  else if (h.frequency === "weekly_target")
-    text = `${h.weekly_target ?? 1}× por semana`;
-  else if (
-    h.weekdays.length === 5 &&
-    [1, 2, 3, 4, 5].every((d) => h.weekdays.includes(d))
-  )
-    text = "Lunes a viernes";
-  else
-    text = h.weekdays.map((d) => WEEKDAY_NAMES[d - 1]?.slice(0, 3)).join(" · ");
+  else if (h.frequency === "weekly_target") text = `${h.weekly_target ?? 1}× por semana`;
+  else if (h.weekdays.length === 5 && [1, 2, 3, 4, 5].every((d) => h.weekdays.includes(d))) text = "Lunes a viernes";
+  else text = h.weekdays.map((d) => WEEKDAY_NAMES[d - 1]?.slice(0, 3)).join(" · ");
   return h.is_optional ? `${text} · opcional` : text;
 }

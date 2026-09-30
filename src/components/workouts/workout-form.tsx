@@ -23,11 +23,7 @@ type FormState = {
   nextGoal: string;
 };
 
-export type WorkoutPrefill = {
-  type: WorkoutType;
-  durationMin: number;
-  exercises: string;
-};
+export type WorkoutPrefill = { type: WorkoutType; durationMin: number; exercises: string };
 
 export function WorkoutForm({
   workout,
@@ -55,8 +51,7 @@ export function WorkoutForm({
     notes: workout?.notes ?? "",
     nextGoal: workout?.next_goal ?? "",
   });
-  const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
-    setForm((f) => ({ ...f, [key]: value }));
+  const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }));
 
   return (
     <form
@@ -88,18 +83,10 @@ export function WorkoutForm({
               key={t}
               className={cn(
                 "flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-border bg-surface p-3 text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
-                form.type === t &&
-                  "border-primary bg-primary-soft text-primary",
+                form.type === t && "border-primary bg-primary-soft text-primary",
               )}
             >
-              <input
-                type="radio"
-                name="type"
-                value={t}
-                checked={form.type === t}
-                onChange={() => set("type", t)}
-                className="sr-only"
-              />
+              <input type="radio" name="type" value={t} checked={form.type === t} onChange={() => set("type", t)} className="sr-only" />
               <span className="text-xl" aria-hidden="true">
                 {WORKOUT_EMOJI[t]}
               </span>
@@ -107,28 +94,14 @@ export function WorkoutForm({
             </label>
           ))}
         </div>
-        {errors.type ? (
-          <p className="text-sm text-danger">{errors.type}</p>
-        ) : null}
+        {errors.type ? <p className="text-sm text-danger">{errors.type}</p> : null}
       </fieldset>
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Fecha" htmlFor="w-date" error={errors.date}>
-          <Input
-            id="w-date"
-            type="date"
-            value={form.date}
-            min={minDate}
-            max={maxDate}
-            onChange={(e) => set("date", e.target.value)}
-            required
-          />
+          <Input id="w-date" type="date" value={form.date} min={minDate} max={maxDate} onChange={(e) => set("date", e.target.value)} required />
         </Field>
-        <Field
-          label="Duración (min)"
-          htmlFor="w-duration"
-          error={errors.durationMin}
-        >
+        <Field label="Duración (min)" htmlFor="w-duration" error={errors.durationMin}>
           <Input
             id="w-duration"
             type="number"
@@ -144,68 +117,23 @@ export function WorkoutForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <ScalePicker
-          id="w-feeling"
-          label="Sensación"
-          value={form.feeling}
-          onChange={(v) => set("feeling", v)}
-          error={errors.feeling}
-        />
-        <ScalePicker
-          id="w-intensity"
-          label="Intensidad (opcional)"
-          value={form.intensity}
-          onChange={(v) => set("intensity", v)}
-          error={errors.intensity}
-        />
+        <ScalePicker id="w-feeling" label="Sensación" value={form.feeling} onChange={(v) => set("feeling", v)} error={errors.feeling} />
+        <ScalePicker id="w-intensity" label="Intensidad (opcional)" value={form.intensity} onChange={(v) => set("intensity", v)} error={errors.intensity} />
       </div>
 
-      <Field
-        label="Ejercicios realizados"
-        htmlFor="w-exercises"
-        error={errors.exercises}
-      >
-        <Textarea
-          id="w-exercises"
-          value={form.exercises}
-          maxLength={2000}
-          placeholder="Ej.: 5×5 sentadilla 80 kg, 3×10 dominadas…"
-          onChange={(e) => set("exercises", e.target.value)}
-        />
+      <Field label="Ejercicios realizados" htmlFor="w-exercises" error={errors.exercises}>
+        <Textarea id="w-exercises" value={form.exercises} maxLength={2000} placeholder="Ej.: 5×5 sentadilla 80 kg, 3×10 dominadas…" onChange={(e) => set("exercises", e.target.value)} />
       </Field>
       <Field label="Observaciones" htmlFor="w-notes" error={errors.notes}>
-        <Textarea
-          id="w-notes"
-          value={form.notes}
-          maxLength={2000}
-          placeholder="Ej.: Buenas sensaciones, subí peso en sentadilla."
-          onChange={(e) => set("notes", e.target.value)}
-        />
+        <Textarea id="w-notes" value={form.notes} maxLength={2000} placeholder="Ej.: Buenas sensaciones, subí peso en sentadilla." onChange={(e) => set("notes", e.target.value)} />
       </Field>
-      <Field
-        label="Objetivo del siguiente entrenamiento"
-        htmlFor="w-next"
-        error={errors.nextGoal}
-      >
-        <Input
-          id="w-next"
-          value={form.nextGoal}
-          maxLength={500}
-          placeholder="Ej.: Subir 2,5 kg en press banca"
-          onChange={(e) => set("nextGoal", e.target.value)}
-        />
+      <Field label="Objetivo del siguiente entrenamiento" htmlFor="w-next" error={errors.nextGoal}>
+        <Input id="w-next" value={form.nextGoal} maxLength={500} placeholder="Ej.: Subir 2,5 kg en press banca" onChange={(e) => set("nextGoal", e.target.value)} />
       </Field>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button
-          type="submit"
-          size="lg"
-          disabled={pending}
-          className="flex-1 sm:flex-none"
-        >
-          {pending ? (
-            <LoaderCircle className="animate-spin" aria-hidden="true" />
-          ) : null}
+        <Button type="submit" size="lg" disabled={pending} className="flex-1 sm:flex-none">
+          {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
           Guardar
         </Button>
         {workout ? <DeleteWorkoutButton id={workout.id} /> : null}
@@ -214,32 +142,13 @@ export function WorkoutForm({
   );
 }
 
-function ScalePicker({
-  id,
-  label,
-  value,
-  onChange,
-  error,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  error?: string;
-}) {
+function ScalePicker({ id, label, value, onChange, error }: { id: string; label: string; value: string; onChange: (v: string) => void; error?: string }) {
   return (
     <fieldset className="grid gap-2">
       <legend id={id} className="text-sm font-medium">
-        {label}{" "}
-        {value ? (
-          <span className="tabular text-primary">{value}/10</span>
-        ) : null}
+        {label} {value ? <span className="tabular text-primary">{value}/10</span> : null}
       </legend>
-      <div
-        className="grid grid-cols-10 gap-1"
-        role="radiogroup"
-        aria-labelledby={id}
-      >
+      <div className="grid grid-cols-10 gap-1" role="radiogroup" aria-labelledby={id}>
         {Array.from({ length: 10 }, (_, i) => String(i + 1)).map((n) => (
           <button
             key={n}
@@ -250,8 +159,7 @@ function ScalePicker({
             onClick={() => onChange(value === n ? "" : n)}
             className={cn(
               "tabular h-10 rounded-lg border border-border bg-surface text-sm font-semibold transition-colors hover:bg-surface-2",
-              value === n &&
-                "border-primary bg-primary text-primary-foreground hover:bg-primary",
+              value === n && "border-primary bg-primary text-primary-foreground hover:bg-primary",
             )}
           >
             {n}
@@ -272,10 +180,7 @@ function DeleteWorkoutButton({ id }: { id: string }) {
       className="text-danger"
       disabled={pending}
       onClick={() => {
-        if (
-          !window.confirm("¿Borrar este entrenamiento? No se puede deshacer.")
-        )
-          return;
+        if (!window.confirm("¿Borrar este entrenamiento? No se puede deshacer.")) return;
         startTransition(async () => {
           const res = await deleteWorkout(id);
           if (res.ok) {

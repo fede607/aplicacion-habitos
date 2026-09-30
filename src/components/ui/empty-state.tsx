@@ -20,13 +20,9 @@ export function EmptyState({
         className,
       )}
     >
-      {icon ? (
-        <div className="mb-1 text-muted [&_svg]:size-8">{icon}</div>
-      ) : null}
+      {icon ? <div className="mb-1 text-muted [&_svg]:size-8">{icon}</div> : null}
       <p className="font-semibold">{title}</p>
-      {description ? (
-        <p className="max-w-sm text-sm text-muted">{description}</p>
-      ) : null}
+      {description ? <p className="max-w-sm text-sm text-muted">{description}</p> : null}
       {action ? <div className="mt-3">{action}</div> : null}
     </div>
   );

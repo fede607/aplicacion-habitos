@@ -7,32 +7,21 @@ import { authed, NOT_AUTHENTICATED } from "./_helpers";
 
 const subscriptionSchema = z.object({
   endpoint: z.url().startsWith("https://").max(1000),
-  keys: z.object({
-    p256dh: z.string().min(10).max(200),
-    auth: z.string().min(4).max(100),
-  }),
+  keys: z.object({ p256dh: z.string().min(10).max(200), auth: z.string().min(4).max(100) }),
 });
 
-export async function getPushPublicKey(): Promise<
-  ActionResult<{ publicKey: string }>
-> {
+export async function getPushPublicKey(): Promise<ActionResult<{ publicKey: string }>> {
   const { userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
   try {
     return { ok: true, data: { publicKey: (await getVapidKeys()).publicKey } };
   } catch (e) {
     logServerError("getPushPublicKey", e);
-    return {
-      ok: false,
-      error: "Las notificaciones no están disponibles ahora mismo.",
-    };
+    return { ok: false, error: "Las notificaciones no están disponibles ahora mismo." };
   }
 }
 
-export async function savePushSubscription(
-  input: unknown,
-  userAgent: string,
-): Promise<ActionResult> {
+export async function savePushSubscription(input: unknown, userAgent: string): Promise<ActionResult> {
   const parsed = subscriptionSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Suscripción no válida." };
   const { supabase, userId } = await authed();
@@ -51,22 +40,15 @@ export async function savePushSubscription(
   return { ok: true, data: undefined };
 }
 
-export async function deletePushSubscription(
-  endpoint: string,
-): Promise<ActionResult> {
+export async function deletePushSubscription(endpoint: string): Promise<ActionResult> {
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
-  const { error } = await supabase
-    .from("push_subscriptions")
-    .delete()
-    .eq("endpoint", endpoint.slice(0, 1000));
+  const { error } = await supabase.from("push_subscriptions").delete().eq("endpoint", endpoint.slice(0, 1000));
   if (error) return fail(error, "deletePushSubscription");
   return { ok: true, data: undefined };
 }
 
-export async function sendTestPush(): Promise<
-  ActionResult<{ delivered: number }>
-> {
+export async function sendTestPush(): Promise<ActionResult<{ delivered: number }>> {
   const { userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
   try {
@@ -76,9 +58,7 @@ export async function sendTestPush(): Promise<
       url: "/today",
       tag: "test",
     });
-    return delivered
-      ? { ok: true, data: { delivered } }
-      : { ok: false, error: "No hay ningún dispositivo activado." };
+    return delivered ? { ok: true, data: { delivered } } : { ok: false, error: "No hay ningún dispositivo activado." };
   } catch (e) {
     logServerError("sendTestPush", e);
     return { ok: false, error: "No se ha podido enviar la prueba." };

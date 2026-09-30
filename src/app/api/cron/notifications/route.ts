@@ -14,20 +14,14 @@ function authorized(request: NextRequest): boolean {
   const header = request.headers.get("authorization") ?? "";
   const expected = Buffer.from(`Bearer ${secret}`);
   const received = Buffer.from(header);
-  return (
-    expected.length === received.length && timingSafeEqual(expected, received)
-  );
+  return expected.length === received.length && timingSafeEqual(expected, received);
 }
 
 /** Lo llama un cron cada hora (GitHub Actions, Vercel Cron o pg_cron). */
 async function handle(request: NextRequest) {
-  if (!authorized(request))
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!authorized(request)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   if (!isEmailConfigured() || !isAdminConfigured()) {
-    return NextResponse.json(
-      { error: "email or service role not configured" },
-      { status: 503 },
-    );
+    return NextResponse.json({ error: "email or service role not configured" }, { status: 503 });
   }
   try {
     const result = await runNotifications();

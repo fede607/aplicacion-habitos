@@ -3,16 +3,10 @@
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { BellOff, BellRing, LoaderCircle, Send } from "lucide-react";
-import {
-  deletePushSubscription,
-  getPushPublicKey,
-  savePushSubscription,
-  sendTestPush,
-} from "@/app/actions/push";
+import { deletePushSubscription, getPushPublicKey, savePushSubscription, sendTestPush } from "@/app/actions/push";
 import { Button } from "@/components/ui/button";
 
-type State =
-  "loading" | "unsupported" | "ios-install" | "denied" | "off" | "on";
+type State = "loading" | "unsupported" | "ios-install" | "denied" | "off" | "on";
 
 function base64UrlToUint8Array(b64: string): Uint8Array<ArrayBuffer> {
   const pad = "=".repeat((4 - (b64.length % 4)) % 4);
@@ -24,17 +18,9 @@ function base64UrlToUint8Array(b64: string): Uint8Array<ArrayBuffer> {
 
 function detect(): Promise<State> {
   if (typeof window === "undefined") return Promise.resolve("loading");
-  const ios =
-    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.userAgent.includes("Macintosh") && navigator.maxTouchPoints > 1);
-  const standalone =
-    window.matchMedia?.("(display-mode: standalone)").matches ||
-    (navigator as Navigator & { standalone?: boolean }).standalone === true;
-  if (
-    !("serviceWorker" in navigator) ||
-    !("PushManager" in window) ||
-    !("Notification" in window)
-  ) {
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.userAgent.includes("Macintosh") && navigator.maxTouchPoints > 1);
+  const standalone = window.matchMedia?.("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
     return Promise.resolve(ios && !standalone ? "ios-install" : "unsupported");
   }
   if (Notification.permission === "denied") return Promise.resolve("denied");
@@ -52,9 +38,7 @@ export function PushToggle() {
   useEffect(() => {
     let alive = true;
     // Sin service worker registrado (desarrollo) no hay push: se detecta con timeout.
-    const timeout = new Promise<State>((r) =>
-      setTimeout(() => r("unsupported"), 4000),
-    );
+    const timeout = new Promise<State>((r) => setTimeout(() => r("unsupported"), 4000));
     void Promise.race([detect(), timeout]).then((s) => alive && setState(s));
     return () => {
       alive = false;
@@ -75,14 +59,8 @@ export function PushToggle() {
       }
       try {
         const reg = await navigator.serviceWorker.ready;
-        const sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: base64UrlToUint8Array(key.data.publicKey),
-        });
-        const res = await savePushSubscription(
-          sub.toJSON(),
-          navigator.userAgent,
-        );
+        const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: base64UrlToUint8Array(key.data.publicKey) });
+        const res = await savePushSubscription(sub.toJSON(), navigator.userAgent);
         if (!res.ok) {
           await sub.unsubscribe();
           toast.error(res.error);
@@ -114,28 +92,19 @@ export function PushToggle() {
       else toast.error(res.error);
     });
 
-  if (state === "loading")
-    return <p className="text-sm text-muted">Comprobando tu dispositivo…</p>;
+  if (state === "loading") return <p className="text-sm text-muted">Comprobando tu dispositivo…</p>;
   if (state === "ios-install")
     return (
       <p className="text-sm text-muted">
-        En iPhone los avisos sólo funcionan con la app instalada: instálala
-        (Compartir → «Añadir a pantalla de inicio») y ábrela desde el icono para
+        En iPhone los avisos sólo funcionan con la app instalada: instálala (Compartir → «Añadir a pantalla de inicio») y ábrela desde el icono para
         activarlos.
       </p>
     );
-  if (state === "unsupported")
-    return (
-      <p className="text-sm text-muted">
-        Este navegador no admite avisos. Prueba con Chrome, Edge, Firefox o la
-        app instalada.
-      </p>
-    );
+  if (state === "unsupported") return <p className="text-sm text-muted">Este navegador no admite avisos. Prueba con Chrome, Edge, Firefox o la app instalada.</p>;
   if (state === "denied")
     return (
       <p className="text-sm text-muted">
-        Has bloqueado los avisos para esta web. Actívalos en los ajustes del
-        navegador (icono del candado junto a la dirección → Notificaciones →
+        Has bloqueado los avisos para esta web. Actívalos en los ajustes del navegador (icono del candado junto a la dirección → Notificaciones →
         Permitir) y vuelve aquí.
       </p>
     );
@@ -151,12 +120,7 @@ export function PushToggle() {
         {state === "on" ? (
           <>
             <Button variant="outline" disabled={pending} onClick={disable}>
-              {pending ? (
-                <LoaderCircle className="animate-spin" aria-hidden="true" />
-              ) : (
-                <BellOff aria-hidden="true" />
-              )}{" "}
-              Desactivar
+              {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <BellOff aria-hidden="true" />} Desactivar
             </Button>
             <Button variant="secondary" disabled={pending} onClick={test}>
               <Send aria-hidden="true" /> Enviar prueba
@@ -164,12 +128,7 @@ export function PushToggle() {
           </>
         ) : (
           <Button variant="pro" size="lg" disabled={pending} onClick={enable}>
-            {pending ? (
-              <LoaderCircle className="animate-spin" aria-hidden="true" />
-            ) : (
-              <BellRing aria-hidden="true" />
-            )}{" "}
-            Activar avisos
+            {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <BellRing aria-hidden="true" />} Activar avisos
           </Button>
         )}
       </div>

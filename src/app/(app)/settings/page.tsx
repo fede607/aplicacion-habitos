@@ -1,19 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Bell,
-  ChevronDown,
-  ChevronRight,
-  Mail,
-  Palette,
-  Plus,
-  ShieldCheck,
-  Smartphone,
-  Sparkles,
-  Trash2,
-  UserRound,
-  Users,
-} from "lucide-react";
+import { Bell, ChevronDown, ChevronRight, Mail, Palette, Plus, ShieldCheck, Smartphone, Sparkles, Trash2, UserRound, Users } from "lucide-react";
 import { requireSession } from "@/lib/data/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,10 +10,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { PreferencesForm } from "@/components/settings/preferences-form";
-import {
-  DeleteAccountForm,
-  SignOutButton,
-} from "@/components/settings/account-actions";
+import { DeleteAccountForm, SignOutButton } from "@/components/settings/account-actions";
 import { LeaveGroupButton } from "@/components/admin/danger-zone";
 import { NotificationsForm } from "@/components/settings/notifications-form";
 import { isEmailConfigured } from "@/lib/email/mailer";
@@ -34,23 +18,15 @@ import { isEmailConfigured } from "@/lib/email/mailer";
 export const metadata: Metadata = { title: "Perfil" };
 
 export default async function SettingsPage() {
-  const { supabase, profile, settings, groups, activeGroup, email } =
-    await requireSession();
+  const { supabase, profile, settings, groups, activeGroup, email } = await requireSession();
   const { data: notify } = await supabase.rpc("my_notification_email");
   const n = notify?.[0];
   return (
     <div className="mx-auto grid max-w-2xl gap-5">
       <header className="flex items-center gap-4">
-        <Avatar
-          name={profile.display_name}
-          emoji={profile.avatar_emoji}
-          color={profile.avatar_color}
-          size="lg"
-        />
+        <Avatar name={profile.display_name} emoji={profile.avatar_emoji} color={profile.avatar_color} size="lg" />
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-2xl font-black tracking-tight">
-            {profile.display_name}
-          </h1>
+          <h1 className="truncate text-2xl font-black tracking-tight">{profile.display_name}</h1>
           <p className="truncate text-sm text-muted">@{profile.username}</p>
         </div>
         <SignOutButton />
@@ -65,47 +41,30 @@ export default async function SettingsPage() {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block font-bold">Year Arc Pro</span>
-          <span className="block text-sm text-muted">
-            Tu plan, estado de suscripción e invitar amigos
-          </span>
+          <span className="block text-sm text-muted">Tu plan, estado de suscripción e invitar amigos</span>
         </span>
         <ChevronRight className="size-5 text-muted" aria-hidden="true" />
       </Link>
 
       <div className="grid gap-2">
-        <Section
-          icon={<UserRound />}
-          title="Editar perfil"
-          hint="Nombre, avatar y color"
-        >
+        <Section icon={<UserRound />} title="Editar perfil" hint="Nombre, avatar y color">
           <ProfileForm profile={profile} />
         </Section>
-        <Section
-          icon={<Users />}
-          title="Mis grupos"
-          hint={`${groups.length} ${groups.length === 1 ? "grupo" : "grupos"}`}
-        >
+        <Section icon={<Users />} title="Mis grupos" hint={`${groups.length} ${groups.length === 1 ? "grupo" : "grupos"}`}>
           <div className="grid gap-3">
             {groups.length === 0 ? (
-              <p className="text-sm text-muted">
-                Aún no perteneces a ningún grupo.
-              </p>
+              <p className="text-sm text-muted">Aún no perteneces a ningún grupo.</p>
             ) : (
               <ul className="grid gap-2">
                 {groups.map((g) => (
-                  <li
-                    key={g.id}
-                    className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-3"
-                  >
+                  <li key={g.id} className="flex flex-wrap items-center gap-3 rounded-2xl border border-border p-3">
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold">{g.name}</p>
                       <p className="text-xs text-muted">
                         {g.start_date} → {g.end_date}
                       </p>
                     </div>
-                    {g.id === activeGroup?.id ? (
-                      <Badge tone="primary">Activo</Badge>
-                    ) : null}
+                    {g.id === activeGroup?.id ? <Badge tone="primary">Activo</Badge> : null}
                     {g.role === "admin" ? <Badge>Admin</Badge> : null}
                     <LeaveGroupButton groupId={g.id} groupName={g.name} />
                   </li>
@@ -119,25 +78,13 @@ export default async function SettingsPage() {
             </Button>
           </div>
         </Section>
-        <Section
-          icon={<Smartphone />}
-          title="App en tu móvil"
-          hint="Instálala en la pantalla de inicio"
-        >
+        <Section icon={<Smartphone />} title="App en tu móvil" hint="Instálala en la pantalla de inicio">
           <InstallAppCard />
         </Section>
-        <Section
-          icon={<Bell />}
-          title="Avisos push"
-          hint="Recordatorio si te quedan hábitos"
-        >
+        <Section icon={<Bell />} title="Avisos push" hint="Recordatorio si te quedan hábitos">
           <PushToggle />
         </Section>
-        <Section
-          icon={<Mail />}
-          title="Emails"
-          hint="Recordatorio diario y resumen semanal"
-        >
+        <Section icon={<Mail />} title="Emails" hint="Recordatorio diario y resumen semanal">
           <NotificationsForm
             state={{
               accountEmail: n?.account_email ?? email,
@@ -152,30 +99,16 @@ export default async function SettingsPage() {
             }}
           />
         </Section>
-        <Section
-          icon={<ShieldCheck />}
-          title="Privacidad y recordatorios"
-          hint="Quién ve tus datos"
-        >
+        <Section icon={<ShieldCheck />} title="Privacidad y recordatorios" hint="Quién ve tus datos">
           <PreferencesForm settings={settings} />
         </Section>
-        <Section
-          icon={<Palette />}
-          title="Apariencia"
-          hint="Claro, oscuro o automático"
-        >
+        <Section icon={<Palette />} title="Apariencia" hint="Claro, oscuro o automático">
           <ThemeToggle />
         </Section>
-        <Section
-          icon={<Trash2 />}
-          title="Eliminar cuenta"
-          hint={email ?? ""}
-          danger
-        >
+        <Section icon={<Trash2 />} title="Eliminar cuenta" hint={email ?? ""} danger>
           <p className="mb-3 text-sm text-muted">
-            Se borran tu perfil, registros, notas y entrenamientos de forma
-            permanente. Si eres el único admin de un grupo, la administración
-            pasa al miembro más antiguo.
+            Se borran tu perfil, registros, notas y entrenamientos de forma permanente. Si eres el único admin de un grupo, la administración pasa al miembro
+            más antiguo.
           </p>
           <DeleteAccountForm />
         </Section>
@@ -206,19 +139,10 @@ function Section({
           {icon}
         </span>
         <span className="min-w-0 flex-1">
-          <span
-            className={`block font-semibold ${danger ? "text-danger" : ""}`}
-          >
-            {title}
-          </span>
-          {hint ? (
-            <span className="block truncate text-xs text-muted">{hint}</span>
-          ) : null}
+          <span className={`block font-semibold ${danger ? "text-danger" : ""}`}>{title}</span>
+          {hint ? <span className="block truncate text-xs text-muted">{hint}</span> : null}
         </span>
-        <ChevronDown
-          className="size-5 shrink-0 text-muted transition-transform group-open:rotate-180"
-          aria-hidden="true"
-        />
+        <ChevronDown className="size-5 shrink-0 text-muted transition-transform group-open:rotate-180" aria-hidden="true" />
       </summary>
       <div className="border-t border-border p-4">{children}</div>
     </details>

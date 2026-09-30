@@ -59,11 +59,7 @@ export function DailyNotes({
     async (force = false) => {
       if (saving.current) return;
       const snapshot = { ...latest.current };
-      if (
-        !force &&
-        snapshot.didToday === saved.current.didToday &&
-        snapshot.improve === saved.current.improve
-      ) {
+      if (!force && snapshot.didToday === saved.current.didToday && snapshot.improve === saved.current.improve) {
         setState((s) => (s === "dirty" ? "saved" : s));
         return;
       }
@@ -80,12 +76,9 @@ export function DailyNotes({
           updatedAt.current = res.data.updatedAt;
           saved.current = snapshot;
           setError(null);
-          const stillDirty =
-            latest.current.didToday !== snapshot.didToday ||
-            latest.current.improve !== snapshot.improve;
+          const stillDirty = latest.current.didToday !== snapshot.didToday || latest.current.improve !== snapshot.improve;
           setState(stillDirty ? "dirty" : "saved");
-          if (stillDirty)
-            timer.current = setTimeout(() => saveRef.current(), DEBOUNCE_MS);
+          if (stillDirty) timer.current = setTimeout(() => saveRef.current(), DEBOUNCE_MS);
         } else if (res.code === "conflict") {
           if ("conflict" in res && res.conflict) setConflict(res.conflict);
           setState("conflict");
@@ -159,15 +152,9 @@ export function DailyNotes({
         </div>
       ) : null}
       {conflict ? (
-        <div
-          role="alert"
-          className="grid gap-3 rounded-xl border border-warning/40 bg-warning-soft p-3 text-sm"
-        >
+        <div role="alert" className="grid gap-3 rounded-xl border border-warning/40 bg-warning-soft p-3 text-sm">
           <p className="flex items-start gap-2 font-medium text-warning">
-            <TriangleAlert
-              className="mt-0.5 size-4 shrink-0"
-              aria-hidden="true"
-            />
+            <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             Estas notas se han modificado en otro dispositivo o pestaña.
           </p>
           <div className="flex flex-wrap gap-2">
@@ -211,9 +198,7 @@ export function DailyNotes({
           {error}
         </p>
       ) : null}
-      <p className="text-xs text-muted">
-        🔒 Tus notas son privadas: nadie del grupo puede verlas.
-      </p>
+      <p className="text-xs text-muted">🔒 Tus notas son privadas: nadie del grupo puede verlas.</p>
     </>
   );
   if (bare) return <div className="grid gap-4 p-2">{body}</div>;
@@ -269,11 +254,7 @@ function NoteField({
 function NotesStatus({ state }: { state: State }) {
   if (state === "saving" || state === "dirty") {
     return (
-      <span
-        className="inline-flex items-center gap-1 text-xs text-muted"
-        role="status"
-        aria-live="polite"
-      >
+      <span className="inline-flex items-center gap-1 text-xs text-muted" role="status" aria-live="polite">
         <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
         {state === "saving" ? "Guardando…" : "Cambios sin guardar"}
       </span>
@@ -281,11 +262,7 @@ function NotesStatus({ state }: { state: State }) {
   }
   if (state === "saved") {
     return (
-      <span
-        className="inline-flex items-center gap-1 text-xs font-medium text-success"
-        role="status"
-        aria-live="polite"
-      >
+      <span className="inline-flex items-center gap-1 text-xs font-medium text-success" role="status" aria-live="polite">
         <CircleCheck className="size-3.5" aria-hidden="true" />
         Guardado
       </span>

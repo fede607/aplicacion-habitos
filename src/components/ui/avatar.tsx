@@ -34,19 +34,12 @@ export function Avatar({
       )}
       style={{ backgroundColor: color }}
     >
-      {emoji ? (
-        <span className={size === "lg" ? "text-3xl" : "text-lg"}>{emoji}</span>
-      ) : (
-        initials || "?"
-      )}
+      {emoji ? <span className={size === "lg" ? "text-3xl" : "text-lg"}>{emoji}</span> : initials || "?"}
     </span>
   );
   if (!pro) return inner;
   return (
-    <span
-      aria-hidden="true"
-      className="pro-gradient inline-grid shrink-0 place-items-center rounded-full p-[2px]"
-    >
+    <span aria-hidden="true" className="pro-gradient inline-grid shrink-0 place-items-center rounded-full p-[2px]">
       {inner}
     </span>
   );

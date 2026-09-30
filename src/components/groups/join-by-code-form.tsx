@@ -8,10 +8,7 @@ import { joinGroup } from "@/app/actions/groups";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 
-export function JoinByCodeForm({
-  redirectTo = "/today",
-  onJoined,
-}: { redirectTo?: string; onJoined?: () => void } = {}) {
+export function JoinByCodeForm({ redirectTo = "/today", onJoined }: { redirectTo?: string; onJoined?: () => void } = {}) {
   const router = useRouter();
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | undefined>();
@@ -34,12 +31,7 @@ export function JoinByCodeForm({
         });
       }}
     >
-      <Field
-        label="Código de invitación"
-        htmlFor="invite-code"
-        error={error}
-        hint="12 caracteres, por ejemplo ABCD-EFGH-JKLM"
-      >
+      <Field label="Código de invitación" htmlFor="invite-code" error={error} hint="12 caracteres, por ejemplo ABCD-EFGH-JKLM">
         <Input
           id="invite-code"
           value={code}
@@ -53,16 +45,8 @@ export function JoinByCodeForm({
           aria-invalid={!!error}
         />
       </Field>
-      <Button
-        type="submit"
-        size="lg"
-        variant="pro"
-        className="w-full"
-        disabled={pending || code.trim().length < 12}
-      >
-        {pending ? (
-          <LoaderCircle className="animate-spin" aria-hidden="true" />
-        ) : null}
+      <Button type="submit" size="lg" variant="pro" className="w-full" disabled={pending || code.trim().length < 12}>
+        {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
         Unirme al grupo
       </Button>
     </form>

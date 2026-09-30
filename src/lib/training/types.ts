@@ -1,35 +1,8 @@
-export const GOALS = [
-  "fat_loss",
-  "recomp",
-  "muscle",
-  "strength",
-  "endurance",
-  "health",
-] as const;
+export const GOALS = ["fat_loss", "recomp", "muscle", "strength", "endurance", "health"] as const;
 export const LEVELS = ["beginner", "intermediate", "advanced"] as const;
-export const TRAINING_TYPES = [
-  "gym",
-  "home_dumbbells",
-  "bodyweight",
-  "running",
-  "mixed",
-] as const;
-export const LIMITATIONS = [
-  "knee",
-  "lower_back",
-  "shoulder",
-  "wrist",
-  "hip",
-  "ankle",
-] as const;
-export const FOCUSES = [
-  "balanced",
-  "glutes_legs",
-  "chest_arms",
-  "back_posture",
-  "shoulders",
-  "core",
-] as const;
+export const TRAINING_TYPES = ["gym", "home_dumbbells", "bodyweight", "running", "mixed"] as const;
+export const LIMITATIONS = ["knee", "lower_back", "shoulder", "wrist", "hip", "ankle"] as const;
+export const FOCUSES = ["balanced", "glutes_legs", "chest_arms", "back_posture", "shoulders", "core"] as const;
 export const SEXES = ["male", "female"] as const;
 export const SESSION_MINUTES = [30, 45, 60, 75, 90] as const;
 

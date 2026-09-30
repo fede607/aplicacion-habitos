@@ -8,19 +8,11 @@ import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: { default: "Year Arc", template: "%s · Year Arc" },
-  description:
-    "Seguimiento de hábitos y entrenamiento para tu Year Arc con amigos.",
+  description: "Seguimiento de hábitos y entrenamiento para tu Year Arc con amigos.",
   applicationName: "Year Arc",
-  appleWebApp: {
-    capable: true,
-    title: "Year Arc",
-    statusBarStyle: "black-translucent",
-  },
+  appleWebApp: { capable: true, title: "Year Arc", statusBarStyle: "black-translucent" },
   icons: {
-    icon: [
-      { url: "/icons/icon.svg", type: "image/svg+xml" },
-      { url: "/icons/icon-192.png", sizes: "192x192" },
-    ],
+    icon: [{ url: "/icons/icon.svg", type: "image/svg+xml" }, { url: "/icons/icon-192.png", sizes: "192x192" }],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
   },
   formatDetection: { telephone: false },
@@ -37,18 +29,10 @@ export const viewport: Viewport = {
   ],
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   return (
-    <html
-      lang="es"
-      suppressHydrationWarning
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
-    >
+    <html lang="es" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="min-h-dvh font-sans antialiased">
         <Providers nonce={nonce}>{children}</Providers>
         {/* Analítica sin cookies de Vercel (visitas y páginas; sin datos personales). */}

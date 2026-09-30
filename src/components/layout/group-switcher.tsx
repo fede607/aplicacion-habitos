@@ -5,13 +5,7 @@ import { toast } from "sonner";
 import { setActiveGroup } from "@/app/actions/groups";
 import { Select } from "@/components/ui/input";
 
-export function GroupSwitcher({
-  groups,
-  activeId,
-}: {
-  groups: { id: string; name: string }[];
-  activeId: string | null;
-}) {
+export function GroupSwitcher({ groups, activeId }: { groups: { id: string; name: string }[]; activeId: string | null }) {
   const [pending, startTransition] = useTransition();
   if (groups.length < 2) return null;
   return (

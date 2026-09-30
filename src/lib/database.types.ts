@@ -5,8 +5,7 @@
  */
 
 export type GroupRole = "admin" | "member";
-export type HabitCategory =
-  "physical" | "mental" | "productivity" | "health" | "other";
+export type HabitCategory = "physical" | "mental" | "productivity" | "health" | "other";
 export type HabitFrequency = "daily" | "weekdays" | "weekly_target";
 export type HabitLogStatus = "done" | "missed" | "skipped";
 export type WorkoutType = "gym" | "boxing" | "cardio" | "mobility" | "other";
@@ -142,8 +141,7 @@ export type HabitLogRow = {
   status: HabitLogStatus;
 } & Timestamps;
 
-export type ActivityKind =
-  "day_complete" | "achievement" | "rank_up" | "duel_accepted" | "joined";
+export type ActivityKind = "day_complete" | "achievement" | "rank_up" | "duel_accepted" | "joined";
 export type ReactionEmoji = "🔥" | "💪" | "👏" | "🫡";
 
 export type GroupActivityRow = {
@@ -200,16 +198,8 @@ export type TrainingProfileRow = {
   training_type: "gym" | "home_dumbbells" | "bodyweight" | "running" | "mixed";
   days_per_week: number;
   session_minutes: number;
-  limitations: (
-    "knee" | "lower_back" | "shoulder" | "wrist" | "hip" | "ankle"
-  )[];
-  focus:
-    | "balanced"
-    | "glutes_legs"
-    | "chest_arms"
-    | "back_posture"
-    | "shoulders"
-    | "core";
+  limitations: ("knee" | "lower_back" | "shoulder" | "wrist" | "hip" | "ankle")[];
+  focus: "balanced" | "glutes_legs" | "chest_arms" | "back_posture" | "shoulders" | "core";
   preferred_days: number[];
   updated_at: string;
 };

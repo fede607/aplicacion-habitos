@@ -1,17 +1,8 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
-import {
-  hasFullAccess,
-  requireSession,
-  type GroupSession,
-} from "@/lib/data/session";
+import { hasFullAccess, requireSession, type GroupSession } from "@/lib/data/session";
 import { Avatar } from "@/components/ui/avatar";
-import {
-  BottomNav,
-  SectionTabs,
-  ShowOn,
-  SidebarNav,
-} from "@/components/layout/app-nav";
+import { BottomNav, SectionTabs, ShowOn, SidebarNav } from "@/components/layout/app-nav";
 import { GroupSwitcher } from "@/components/layout/group-switcher";
 import { GroupTabs } from "@/components/layout/group-tabs";
 import { Logo } from "@/components/layout/logo";
@@ -19,24 +10,15 @@ import { InstallAppBanner } from "@/components/pwa/install-app";
 import { OfflineBanner } from "@/components/layout/offline-banner";
 import { TimezoneMismatch } from "@/components/layout/timezone-mismatch";
 
-export default async function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await requireSession();
   const { profile, groups, activeGroup } = session;
   const groupOptions = groups.map((g) => ({ id: g.id, name: g.name }));
-  const locked = activeGroup
-    ? !(await hasFullAccess(session as GroupSession))
-    : false;
+  const locked = activeGroup ? !(await hasFullAccess(session as GroupSession)) : false;
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[16rem_1fr]">
-      <a
-        href="#main"
-        className="sr-only z-50 rounded-lg bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
-      >
+      <a href="#main" className="sr-only z-50 rounded-lg bg-primary px-4 py-2 text-primary-foreground focus:not-sr-only focus:fixed focus:top-2 focus:left-2">
         Saltar al contenido
       </a>
 
@@ -46,30 +28,16 @@ export default async function AppLayout({
         </Link>
         {activeGroup ? (
           <div className="rounded-xl bg-surface-2 px-3 py-2">
-            <p className="text-[11px] font-semibold tracking-wider text-muted uppercase">
-              Grupo
-            </p>
+            <p className="text-[11px] font-semibold tracking-wider text-muted uppercase">Grupo</p>
             <p className="truncate text-sm font-semibold">{activeGroup.name}</p>
           </div>
         ) : null}
         <SidebarNav locked={locked} />
-        <Link
-          href="/settings"
-          className="mt-auto flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-surface-2"
-        >
-          <Avatar
-            name={profile.display_name}
-            emoji={profile.avatar_emoji}
-            color={profile.avatar_color}
-            size="sm"
-          />
+        <Link href="/settings" className="mt-auto flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-surface-2">
+          <Avatar name={profile.display_name} emoji={profile.avatar_emoji} color={profile.avatar_color} size="sm" />
           <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold">
-              {profile.display_name}
-            </span>
-            <span className="block truncate text-xs text-muted">
-              @{profile.username}
-            </span>
+            <span className="block truncate text-sm font-semibold">{profile.display_name}</span>
+            <span className="block truncate text-xs text-muted">@{profile.username}</span>
           </span>
         </Link>
       </aside>
@@ -77,23 +45,14 @@ export default async function AppLayout({
       <div className="flex min-w-0 flex-col">
         <header className="pt-safe sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-lg">
           <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
-            <Link
-              href="/today"
-              className="lg:hidden"
-              aria-label="Year Arc, inicio"
-            >
+            <Link href="/today" className="lg:hidden" aria-label="Year Arc, inicio">
               <Logo className="[&_span]:text-base" />
             </Link>
-            <div className="hidden truncate text-sm text-muted lg:block">
-              {activeGroup ? activeGroup.name : "Sin grupo"}
-            </div>
+            <div className="hidden truncate text-sm text-muted lg:block">{activeGroup ? activeGroup.name : "Sin grupo"}</div>
             <div className="flex items-center gap-2">
               {/* En móvil las pestañas de sala ya permiten cambiar de grupo. */}
               <div className="hidden lg:block">
-                <GroupSwitcher
-                  groups={groupOptions}
-                  activeId={activeGroup?.id ?? null}
-                />
+                <GroupSwitcher groups={groupOptions} activeId={activeGroup?.id ?? null} />
               </div>
               {activeGroup?.requires_pro ? (
                 <Link
@@ -110,17 +69,11 @@ export default async function AppLayout({
           <TimezoneMismatch profileTimezone={profile.timezone} />
         </header>
 
-        <main
-          id="main"
-          className="mx-auto w-full max-w-5xl flex-1 px-4 pt-5 pb-28 sm:px-6 lg:pb-12"
-        >
+        <main id="main" className="mx-auto w-full max-w-5xl flex-1 px-4 pt-5 pb-28 sm:px-6 lg:pb-12">
           {groups.length > 1 ? (
             <ShowOn paths={["/today", "/group"]}>
               <div className="mb-5">
-                <GroupTabs
-                  groups={groupOptions}
-                  activeId={activeGroup?.id ?? null}
-                />
+                <GroupTabs groups={groupOptions} activeId={activeGroup?.id ?? null} />
               </div>
             </ShowOn>
           ) : null}
@@ -129,17 +82,11 @@ export default async function AppLayout({
               href="/pro?locked=1"
               className="mb-5 flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary-soft p-3 text-sm transition-colors hover:bg-primary-soft/70"
             >
-              <Sparkles
-                className="size-5 shrink-0 text-primary"
-                aria-hidden="true"
-              />
+              <Sparkles className="size-5 shrink-0 text-primary" aria-hidden="true" />
               <span className="min-w-0 flex-1 text-foreground">
-                <b>Desbloquea tu plan, progreso y rango.</b>{" "}
-                <span className="text-muted">Desde 1,67 €/mes.</span>
+                <b>Desbloquea tu plan, progreso y rango.</b> <span className="text-muted">Desde 1,67 €/mes.</span>
               </span>
-              <span className="pro-gradient shrink-0 rounded-full px-3 py-1.5 text-xs font-bold">
-                Ver Pro
-              </span>
+              <span className="pro-gradient shrink-0 rounded-full px-3 py-1.5 text-xs font-bold">Ver Pro</span>
             </Link>
           ) : null}
           <InstallAppBanner />

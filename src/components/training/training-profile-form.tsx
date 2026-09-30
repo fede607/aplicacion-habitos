@@ -19,16 +19,8 @@ export type TrainingFormValues = {
   trainingType: "gym" | "home_dumbbells" | "bodyweight" | "running" | "mixed";
   daysPerWeek: number;
   sessionMinutes: number;
-  limitations: (
-    "knee" | "lower_back" | "shoulder" | "wrist" | "hip" | "ankle"
-  )[];
-  focus:
-    | "balanced"
-    | "glutes_legs"
-    | "chest_arms"
-    | "back_posture"
-    | "shoulders"
-    | "core";
+  limitations: ("knee" | "lower_back" | "shoulder" | "wrist" | "hip" | "ankle")[];
+  focus: "balanced" | "glutes_legs" | "chest_arms" | "back_posture" | "shoulders" | "core";
   preferredDays: number[];
 };
 
@@ -60,17 +52,11 @@ function Choice<T extends string | number>({
             aria-pressed={value === o.value}
             className={cn(
               "rounded-2xl border px-3.5 py-2.5 text-left text-sm transition-all active:scale-[0.98]",
-              value === o.value
-                ? "border-primary bg-primary-soft font-semibold text-primary shadow-sm"
-                : "border-border bg-surface hover:bg-surface-2",
+              value === o.value ? "border-primary bg-primary-soft font-semibold text-primary shadow-sm" : "border-border bg-surface hover:bg-surface-2",
             )}
           >
             {o.label}
-            {o.hint ? (
-              <span className="block text-[11px] font-normal text-muted">
-                {o.hint}
-              </span>
-            ) : null}
+            {o.hint ? <span className="block text-[11px] font-normal text-muted">{o.hint}</span> : null}
           </button>
         ))}
       </div>
@@ -78,13 +64,7 @@ function Choice<T extends string | number>({
   );
 }
 
-export function TrainingProfileForm({
-  initial,
-  currentYear,
-}: {
-  initial: TrainingFormValues | null;
-  currentYear: number;
-}) {
+export function TrainingProfileForm({ initial, currentYear }: { initial: TrainingFormValues | null; currentYear: number }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [step, setStep] = useState(0);
@@ -105,30 +85,15 @@ export function TrainingProfileForm({
       preferredDays: [],
     },
   );
-  const set = <K extends keyof TrainingFormValues>(
-    k: K,
-    v: TrainingFormValues[K],
-  ) => setF((prev) => ({ ...prev, [k]: v }));
+  const set = <K extends keyof TrainingFormValues>(k: K, v: TrainingFormValues[K]) => setF((prev) => ({ ...prev, [k]: v }));
   const toggleLimit = (l: TrainingFormValues["limitations"][number]) =>
-    set(
-      "limitations",
-      f.limitations.includes(l)
-        ? f.limitations.filter((x) => x !== l)
-        : [...f.limitations, l],
-    );
+    set("limitations", f.limitations.includes(l) ? f.limitations.filter((x) => x !== l) : [...f.limitations, l]);
   const toggleDay = (d: number) => {
     const has = f.preferredDays.includes(d);
-    if (!has && f.preferredDays.length >= f.daysPerWeek)
-      return toast.info(
-        `Ya has elegido ${f.daysPerWeek} días. Quita uno o sube los días por semana.`,
-      );
-    set(
-      "preferredDays",
-      has ? f.preferredDays.filter((x) => x !== d) : [...f.preferredDays, d],
-    );
+    if (!has && f.preferredDays.length >= f.daysPerWeek) return toast.info(`Ya has elegido ${f.daysPerWeek} días. Quita uno o sube los días por semana.`);
+    set("preferredDays", has ? f.preferredDays.filter((x) => x !== d) : [...f.preferredDays, d]);
   };
-  const daysMismatch =
-    f.preferredDays.length > 0 && f.preferredDays.length !== f.daysPerWeek;
+  const daysMismatch = f.preferredDays.length > 0 && f.preferredDays.length !== f.daysPerWeek;
   const last = step === STEPS.length - 1;
 
   return (
@@ -137,10 +102,7 @@ export function TrainingProfileForm({
       onSubmit={(e) => {
         e.preventDefault();
         if (!last) return setStep((s) => s + 1);
-        if (daysMismatch)
-          return toast.error(
-            `Marca ${f.daysPerWeek} días o ninguno (los elegimos nosotros).`,
-          );
+        if (daysMismatch) return toast.error(`Marca ${f.daysPerWeek} días o ninguno (los elegimos nosotros).`);
         startTransition(async () => {
           const res = await saveTrainingProfile(f);
           if (res.ok) {
@@ -148,18 +110,10 @@ export function TrainingProfileForm({
             setStep(0);
             toast.success("¡Plan listo!");
             router.refresh();
-            document
-              .getElementById("tu-plan")
-              ?.scrollIntoView({ behavior: "smooth" });
+            document.getElementById("tu-plan")?.scrollIntoView({ behavior: "smooth" });
           } else {
             setErrors(res.fieldErrors ?? {});
-            if (
-              res.fieldErrors &&
-              ["birthYear", "heightCm", "weightKg"].some(
-                (k) => res.fieldErrors?.[k],
-              )
-            )
-              setStep(0);
+            if (res.fieldErrors && ["birthYear", "heightCm", "weightKg"].some((k) => res.fieldErrors?.[k])) setStep(0);
             toast.error(res.error);
           }
         });
@@ -168,24 +122,9 @@ export function TrainingProfileForm({
       <ol className="grid grid-cols-3 gap-2" aria-label="Pasos">
         {STEPS.map((s, i) => (
           <li key={s}>
-            <button
-              type="button"
-              onClick={() => setStep(i)}
-              className="grid w-full gap-1.5 text-left"
-              aria-current={i === step ? "step" : undefined}
-            >
-              <span
-                className={cn(
-                  "h-1.5 rounded-full transition-colors",
-                  i <= step ? "bg-primary" : "bg-surface-2",
-                )}
-              />
-              <span
-                className={cn(
-                  "text-xs font-semibold",
-                  i === step ? "text-foreground" : "text-muted",
-                )}
-              >
+            <button type="button" onClick={() => setStep(i)} className="grid w-full gap-1.5 text-left" aria-current={i === step ? "step" : undefined}>
+              <span className={cn("h-1.5 rounded-full transition-colors", i <= step ? "bg-primary" : "bg-surface-2")} />
+              <span className={cn("text-xs font-semibold", i === step ? "text-foreground" : "text-muted")}>
                 {i + 1}. {s}
               </span>
             </button>
@@ -196,11 +135,7 @@ export function TrainingProfileForm({
       {step === 0 ? (
         <div className="grid gap-5">
           <div className="grid grid-cols-3 gap-3">
-            <Field
-              label="Nacimiento"
-              htmlFor="tp-birth"
-              error={errors.birthYear}
-            >
+            <Field label="Nacimiento" htmlFor="tp-birth" error={errors.birthYear}>
               <Input
                 id="tp-birth"
                 type="number"
@@ -212,11 +147,7 @@ export function TrainingProfileForm({
                 required
               />
             </Field>
-            <Field
-              label="Altura (cm)"
-              htmlFor="tp-height"
-              error={errors.heightCm}
-            >
+            <Field label="Altura (cm)" htmlFor="tp-height" error={errors.heightCm}>
               <Input
                 id="tp-height"
                 type="number"
@@ -228,11 +159,7 @@ export function TrainingProfileForm({
                 required
               />
             </Field>
-            <Field
-              label="Peso (kg)"
-              htmlFor="tp-weight"
-              error={errors.weightKg}
-            >
+            <Field label="Peso (kg)" htmlFor="tp-weight" error={errors.weightKg}>
               <Input
                 id="tp-weight"
                 type="number"
@@ -257,9 +184,7 @@ export function TrainingProfileForm({
             ]}
           />
           <fieldset className="grid gap-2">
-            <legend className="mb-1 text-sm font-semibold">
-              ¿Alguna molestia o lesión? (opcional)
-            </legend>
+            <legend className="mb-1 text-sm font-semibold">¿Alguna molestia o lesión? (opcional)</legend>
             <div className="grid grid-cols-3 gap-2">
               {(
                 [
@@ -278,19 +203,14 @@ export function TrainingProfileForm({
                   aria-pressed={f.limitations.includes(v)}
                   className={cn(
                     "rounded-2xl border px-3 py-2.5 text-sm transition-all active:scale-[0.98]",
-                    f.limitations.includes(v)
-                      ? "border-warning bg-warning-soft font-semibold text-warning"
-                      : "border-border bg-surface hover:bg-surface-2",
+                    f.limitations.includes(v) ? "border-warning bg-warning-soft font-semibold text-warning" : "border-border bg-surface hover:bg-surface-2",
                   )}
                 >
                   {label}
                 </button>
               ))}
             </div>
-            <p className="text-xs text-muted">
-              Quitamos los ejercicios que suelen molestar y te damos
-              alternativas seguras.
-            </p>
+            <p className="text-xs text-muted">Quitamos los ejercicios que suelen molestar y te damos alternativas seguras.</p>
           </fieldset>
         </div>
       ) : null}
@@ -373,9 +293,7 @@ export function TrainingProfileForm({
             options={[2, 3, 4, 5, 6].map((d) => ({ value: d, label: `${d}` }))}
           />
           <fieldset className="grid gap-2">
-            <legend className="mb-1 text-sm font-semibold">
-              ¿Qué días te vienen bien? (opcional)
-            </legend>
+            <legend className="mb-1 text-sm font-semibold">¿Qué días te vienen bien? (opcional)</legend>
             <div className="grid grid-cols-7 gap-1.5">
               {WEEKDAYS.map((w, i) => {
                 const d = i + 1;
@@ -386,22 +304,10 @@ export function TrainingProfileForm({
                     type="button"
                     onClick={() => toggleDay(d)}
                     aria-pressed={on}
-                    aria-label={
-                      [
-                        "Lunes",
-                        "Martes",
-                        "Miércoles",
-                        "Jueves",
-                        "Viernes",
-                        "Sábado",
-                        "Domingo",
-                      ][i]
-                    }
+                    aria-label={["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"][i]}
                     className={cn(
                       "grid aspect-square place-items-center rounded-full border text-sm font-bold transition-all active:scale-95",
-                      on
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border bg-surface hover:bg-surface-2",
+                      on ? "border-primary bg-primary text-primary-foreground" : "border-border bg-surface hover:bg-surface-2",
                     )}
                   >
                     {w}
@@ -409,14 +315,7 @@ export function TrainingProfileForm({
                 );
               })}
             </div>
-            <p
-              className={cn(
-                "text-xs",
-                daysMismatch || errors.preferredDays
-                  ? "text-danger"
-                  : "text-muted",
-              )}
-            >
+            <p className={cn("text-xs", daysMismatch || errors.preferredDays ? "text-danger" : "text-muted")}>
               {errors.preferredDays ??
                 (f.preferredDays.length
                   ? `${f.preferredDays.length} de ${f.daysPerWeek} días elegidos.`
@@ -438,30 +337,13 @@ export function TrainingProfileForm({
 
       <div className="flex gap-2">
         {step > 0 ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="xl"
-            className="px-5"
-            onClick={() => setStep((s) => s - 1)}
-            aria-label="Atrás"
-          >
+          <Button type="button" variant="outline" size="xl" className="px-5" onClick={() => setStep((s) => s - 1)} aria-label="Atrás">
             <ArrowLeft aria-hidden="true" />
           </Button>
         ) : null}
         {last ? (
-          <Button
-            type="submit"
-            variant="pro"
-            size="xl"
-            disabled={pending}
-            className="flex-1"
-          >
-            {pending ? (
-              <LoaderCircle className="animate-spin" aria-hidden="true" />
-            ) : (
-              <Wand2 aria-hidden="true" />
-            )}
+          <Button type="submit" variant="pro" size="xl" disabled={pending} className="flex-1">
+            {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Wand2 aria-hidden="true" />}
             {initial ? "Actualizar mi plan" : "Crear mi plan"}
           </Button>
         ) : (
@@ -470,9 +352,7 @@ export function TrainingProfileForm({
           </Button>
         )}
       </div>
-      <p className="text-center text-xs text-muted">
-        🔒 Tus datos físicos son privados: sólo los ves tú.
-      </p>
+      <p className="text-center text-xs text-muted">🔒 Tus datos físicos son privados: sólo los ves tú.</p>
     </form>
   );
 }

@@ -9,11 +9,9 @@ export const buttonVariants = cva(
       variant: {
         primary: "bg-primary text-primary-foreground hover:brightness-110",
         secondary: "bg-surface-2 text-foreground hover:bg-border/70",
-        outline:
-          "border border-border bg-surface text-foreground hover:bg-surface-2",
+        outline: "border border-border bg-surface text-foreground hover:bg-surface-2",
         ghost: "text-foreground hover:bg-surface-2",
-        danger:
-          "bg-danger text-white hover:brightness-110 dark:text-background",
+        danger: "bg-danger text-white hover:brightness-110 dark:text-background",
         pro: "pro-gradient hover:brightness-110",
         link: "h-auto px-0 text-primary underline-offset-4 hover:underline",
       },
@@ -30,17 +28,9 @@ export const buttonVariants = cva(
   },
 );
 
-type ButtonProps = React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & { asChild?: boolean };
+type ButtonProps = React.ComponentProps<"button"> & VariantProps<typeof buttonVariants> & { asChild?: boolean };
 
-export function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  type = "button",
-  ...props
-}: ButtonProps) {
+export function Button({ className, variant, size, asChild = false, type = "button", ...props }: ButtonProps) {
   const Comp = asChild ? Slot.Root : "button";
   return (
     <Comp

@@ -6,27 +6,9 @@
  *   registros + versiones de hábitos → puntuación diaria ponderada
  *   → componentes → score de disciplina (con confianza y suavizado) → rango
  */
-import {
-  addDays,
-  diffDays,
-  isIsoDate,
-  isoWeekday,
-  startOfIsoWeek,
-  type IsoDate,
-} from "../dates";
-import type {
-  HabitCategory,
-  HabitFrequency,
-  HabitLogStatus,
-} from "../database.types";
-import {
-  getTier,
-  LEGEND_INDEX,
-  MAX_TIER_BELOW_LEGEND,
-  nextTier,
-  progressInTier,
-  tierIndexForScore,
-} from "./tiers";
+import { addDays, diffDays, isIsoDate, isoWeekday, startOfIsoWeek, type IsoDate } from "../dates";
+import type { HabitCategory, HabitFrequency, HabitLogStatus } from "../database.types";
+import { getTier, LEGEND_INDEX, MAX_TIER_BELOW_LEGEND, nextTier, progressInTier, tierIndexForScore } from "./tiers";
 
 export const RANK_ALGORITHM_VERSION = 1;
 
@@ -68,8 +50,7 @@ export const RANK_CONFIG = {
   maxRangeDays: 400,
 } as const;
 
-export type RankPhase =
-  "none" | "provisional" | "estimated" | "stabilizing" | "stable";
+export type RankPhase = "none" | "provisional" | "estimated" | "stabilizing" | "stable";
 
 export const PHASE_LABELS: Record<RankPhase, string> = {
   none: "Sin datos",
@@ -131,12 +112,7 @@ export type ScopeRank = {
   components: RankComponents | null;
   demandFactor: number;
   progress: number;
-  next: {
-    index: number;
-    name: string;
-    min: number;
-    pointsNeeded: number;
-  } | null;
+  next: { index: number; name: string; min: number; pointsNeeded: number } | null;
   currentStreak: number;
   bestStreak: number;
   completeDays: number;
@@ -174,10 +150,8 @@ export type RankResult = {
 // Utilidades
 // -----------------------------------------------------------------------------
 const round2 = (n: number) => Math.round(n * 100) / 100;
-const clamp = (n: number, lo: number, hi: number) =>
-  Math.max(lo, Math.min(hi, n));
-const mean = (xs: number[]) =>
-  xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
+const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
+const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
 const STATUSES: ReadonlySet<string> = new Set(["done", "missed", "skipped"]);
 
 /** Peso saneado: 1 / 1,5 / 2. Cualquier otro valor (NaN, 50, -3) se ajusta. */
@@ -196,20 +170,12 @@ export function phaseFor(scoredDays: number): RankPhase {
 }
 
 /** Día local (YYYY-MM-DD) de un timestamp en una zona horaria. Null si no es válido. */
-export function localDateOf(
-  timestamp: string | null | undefined,
-  timeZone: string,
-): IsoDate | null {
+export function localDateOf(timestamp: string | null | undefined, timeZone: string): IsoDate | null {
   if (!timestamp) return null;
   const d = new Date(timestamp);
   if (Number.isNaN(d.getTime())) return null;
   try {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).formatToParts(d);
+    const parts = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(d);
     const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
     const out = `${get("year")}-${get("month")}-${get("day")}`;
     return isIsoDate(out) ? out : null;
@@ -219,20 +185,12 @@ export function localDateOf(
 }
 
 function roundComponents(c: RankComponents | null): RankComponents | null {
-  return c
-    ? (Object.fromEntries(
-        Object.entries(c).map(([k, v]) => [k, round2(v)]),
-      ) as RankComponents)
-    : null;
+  return c ? (Object.fromEntries(Object.entries(c).map(([k, v]) => [k, round2(v)])) as RankComponents) : null;
 }
 
 function consistency30(scored: number[], threshold: number): number | null {
   const last = scored.slice(-30);
-  return last.length
-    ? Math.round(
-        (last.filter((x) => x >= threshold).length / last.length) * 100,
-      )
-    : null;
+  return last.length ? Math.round((last.filter((x) => x >= threshold).length / last.length) * 100) : null;
 }
 
 function emptyScope(): ScopeRank {
@@ -266,23 +224,14 @@ type Cfg = Omit<RankHabitRevision, "habitId">;
 function sanitizeRevisions(revs: RankHabitRevision[]): Map<string, Cfg[]> {
   const byHabit = new Map<string, Map<IsoDate, Cfg>>();
   for (const r of revs) {
-    if (
-      !r ||
-      typeof r.habitId !== "string" ||
-      !isIsoDate(r.effectiveFrom) ||
-      !isIsoDate(r.startsOn)
-    )
-      continue;
+    if (!r || typeof r.habitId !== "string" || !isIsoDate(r.effectiveFrom) || !isIsoDate(r.startsOn)) continue;
     const cfg: Cfg = {
       effectiveFrom: r.effectiveFrom,
       weight: normalizeWeight(r.weight),
       category: r.category,
       frequency: r.frequency,
-      weekdays: (r.weekdays ?? []).filter(
-        (d) => Number.isInteger(d) && d >= 1 && d <= 7,
-      ),
-      weeklyTarget:
-        r.weeklyTarget == null ? null : clamp(Math.round(r.weeklyTarget), 1, 7),
+      weekdays: (r.weekdays ?? []).filter((d) => Number.isInteger(d) && d >= 1 && d <= 7),
+      weeklyTarget: r.weeklyTarget == null ? null : clamp(Math.round(r.weeklyTarget), 1, 7),
       isOptional: !!r.isOptional,
       isActive: !!r.isActive,
       archived: !!r.archived,
@@ -293,13 +242,7 @@ function sanitizeRevisions(revs: RankHabitRevision[]): Map<string, Cfg[]> {
     m.set(r.effectiveFrom, cfg); // misma fecha: gana la última versión
   }
   const out = new Map<string, Cfg[]>();
-  for (const [id, m] of byHabit)
-    out.set(
-      id,
-      [...m.values()].sort((a, b) =>
-        a.effectiveFrom < b.effectiveFrom ? -1 : 1,
-      ),
-    );
+  for (const [id, m] of byHabit) out.set(id, [...m.values()].sort((a, b) => (a.effectiveFrom < b.effectiveFrom ? -1 : 1)));
   return out;
 }
 
@@ -314,13 +257,7 @@ function configAt(revs: Cfg[], day: IsoDate): Cfg | null {
 }
 
 function counts(cfg: Cfg | null, day: IsoDate): cfg is Cfg {
-  return (
-    !!cfg &&
-    cfg.isActive &&
-    !cfg.archived &&
-    !cfg.isOptional &&
-    day >= cfg.startsOn
-  );
+  return !!cfg && cfg.isActive && !cfg.archived && !cfg.isOptional && day >= cfg.startsOn;
 }
 
 function isDailyRequired(cfg: Cfg | null, day: IsoDate): cfg is Cfg {
@@ -336,28 +273,12 @@ function isWeeklyActive(cfg: Cfg | null, day: IsoDate): cfg is Cfg {
 // -----------------------------------------------------------------------------
 // Celdas diarias por hábito
 // -----------------------------------------------------------------------------
-type Cell = {
-  req: number;
-  done: number;
-  skip: number;
-  hard: boolean;
-  weight: number;
-  completed: boolean;
-};
+type Cell = { req: number; done: number; skip: number; hard: boolean; weight: number; completed: boolean };
 
-function buildCells(
-  days: IsoDate[],
-  today: IsoDate,
-  revs: Cfg[],
-  logs: Map<IsoDate, RankLog>,
-): (Cell | null)[] {
+function buildCells(days: IsoDate[], today: IsoDate, revs: Cfg[], logs: Map<IsoDate, RankLog>): (Cell | null)[] {
   const cells: (Cell | null)[] = days.map(() => null);
   const late = (l: RankLog) =>
-    l.recordedOn &&
-    isIsoDate(l.recordedOn) &&
-    diffDays(l.recordedOn, l.date) > RANK_CONFIG.lateAfterDays
-      ? RANK_CONFIG.lateLogFactor
-      : 1;
+    l.recordedOn && isIsoDate(l.recordedOn) && diffDays(l.recordedOn, l.date) > RANK_CONFIG.lateAfterDays ? RANK_CONFIG.lateLogFactor : 1;
 
   // Hábitos diarios / por días de la semana.
   days.forEach((day, i) => {
@@ -414,16 +335,8 @@ function buildCells(
 
 type DayAgg = { sched: number; done: number; skip: number };
 
-function aggregate(
-  cellsByHabit: (Cell | null)[][],
-  dayCount: number,
-  hardOnly: boolean,
-): DayAgg[] {
-  const out: DayAgg[] = Array.from({ length: dayCount }, () => ({
-    sched: 0,
-    done: 0,
-    skip: 0,
-  }));
+function aggregate(cellsByHabit: (Cell | null)[][], dayCount: number, hardOnly: boolean): DayAgg[] {
+  const out: DayAgg[] = Array.from({ length: dayCount }, () => ({ sched: 0, done: 0, skip: 0 }));
   for (const cells of cellsByHabit) {
     for (let i = 0; i < dayCount; i++) {
       const c = cells[i];
@@ -441,21 +354,15 @@ function aggregate(
  * Lo que excede el cupo cuenta como no hecho: marcar todo como "no aplica" no
  * convierte un mal día en descanso.
  */
-export function applySkipBudget(
-  aggs: DayAgg[],
-): { required: number; done: number; score: number | null }[] {
+export function applySkipBudget(aggs: DayAgg[]): { required: number; done: number; score: number | null }[] {
   const W = RANK_CONFIG.skipWindow;
   const neutral: number[] = [];
   return aggs.map((a, i) => {
     let schedWindow = 0;
     let neutralPrev = 0;
-    for (let j = Math.max(0, i - W + 1); j <= i; j++)
-      schedWindow += aggs[j].sched;
+    for (let j = Math.max(0, i - W + 1); j <= i; j++) schedWindow += aggs[j].sched;
     for (let j = Math.max(0, i - W + 1); j < i; j++) neutralPrev += neutral[j];
-    const allowance = Math.max(
-      0,
-      RANK_CONFIG.skipAllowance * schedWindow - neutralPrev,
-    );
+    const allowance = Math.max(0, RANK_CONFIG.skipAllowance * schedWindow - neutralPrev);
     const n = Math.min(a.skip, allowance);
     neutral[i] = n;
     const required = Math.max(0, a.sched - n);
@@ -538,8 +445,7 @@ function trajectory(
     win.forEach((x, j) => {
       const w = j + 1; // los días recientes pesan más
       wSum += w;
-      cSum +=
-        w * (x >= threshold ? 1 : x >= cfg.partialMin ? cfg.partialCredit : 0);
+      cSum += w * (x >= threshold ? 1 : x >= cfg.partialMin ? cfg.partialCredit : 0);
     });
     const consistency = (cSum / wSum) * 100;
     const recent = mean(scored.slice(-cfg.recentWindow));
@@ -558,39 +464,25 @@ function trajectory(
       progress,
     };
     let raw = 0;
-    for (const k of Object.keys(RANK_WEIGHTS) as RankComponent[])
-      raw += RANK_WEIGHTS[k] * components[k];
+    for (const k of Object.keys(RANK_WEIGHTS) as RankComponent[]) raw += RANK_WEIGHTS[k] * components[k];
 
     // Exigencia de la rutina: una rutina de 1 hábito fácil no llega arriba.
     const load = mean(loads.slice(-cfg.consistencyWindow));
-    demandFactor =
-      cfg.demandMinFactor +
-      (1 - cfg.demandMinFactor) * Math.min(1, load / cfg.demandFullLoad);
+    demandFactor = cfg.demandMinFactor + (1 - cfg.demandMinFactor) * Math.min(1, load / cfg.demandFullLoad);
     raw *= demandFactor;
 
     // Confianza: con pocos días el score se acerca al punto de partida.
-    const confidence = Math.sqrt(
-      Math.min(1, scored.length / cfg.fullConfidenceDays),
-    );
+    const confidence = Math.sqrt(Math.min(1, scored.length / cfg.fullConfidenceDays));
     const target = cfg.prior + (raw - cfg.prior) * confidence;
 
     // Suavizado: subidas y bajadas limitadas por día + suelo sobre tu mejor marca.
-    let next: number =
-      value === null
-        ? target
-        : clamp(target, value - cfg.maxDailyDrop, value + cfg.maxDailyRise);
+    let next: number = value === null ? target : clamp(target, value - cfg.maxDailyDrop, value + cfg.maxDailyRise);
     if (peak !== null) next = Math.max(next, peak * cfg.peakFloorRatio);
     next = round2(clamp(next, 0, 100));
     value = next;
 
     let t = tierIndexForScore(value);
-    if (
-      t === LEGEND_INDEX &&
-      !(
-        scored.length >= cfg.legendMinDays &&
-        consistency >= cfg.legendMinConsistency
-      )
-    ) {
+    if (t === LEGEND_INDEX && !(scored.length >= cfg.legendMinDays && consistency >= cfg.legendMinConsistency)) {
       t = MAX_TIER_BELOW_LEGEND;
     }
     if (tierIdx !== null) t = clamp(t, tierIdx - 1, tierIdx + 1); // nunca más de una división por día
@@ -615,14 +507,7 @@ function trajectory(
   if (value !== null && tierIdx !== null) {
     res.progress = round2(progressInTier(value, tierIdx));
     const n = nextTier(tierIdx);
-    res.next = n
-      ? {
-          index: n.index,
-          name: n.name,
-          min: n.min,
-          pointsNeeded: round2(Math.max(0, n.min - value)),
-        }
-      : null;
+    res.next = n ? { index: n.index, name: n.name, min: n.min, pointsNeeded: round2(Math.max(0, n.min - value)) } : null;
   }
   return res;
 }
@@ -630,13 +515,8 @@ function trajectory(
 // -----------------------------------------------------------------------------
 // API pública
 // -----------------------------------------------------------------------------
-export function computeRank(
-  input: RankInput,
-  opts: { detailDays?: number } = {},
-): RankResult {
-  const threshold = Number.isFinite(input.threshold)
-    ? clamp(Math.round(input.threshold), 1, 100)
-    : 80;
+export function computeRank(input: RankInput, opts: { detailDays?: number } = {}): RankResult {
+  const threshold = Number.isFinite(input.threshold) ? clamp(Math.round(input.threshold), 1, 100) : 80;
   const empty = (from: IsoDate, to: IsoDate): RankResult => ({
     version: RANK_ALGORITHM_VERSION,
     from,
@@ -651,10 +531,7 @@ export function computeRank(
   if (!isIsoDate(today) || !isIsoDate(input.from) || input.from > today) {
     return empty(input.from, input.today);
   }
-  const from =
-    diffDays(today, input.from) > RANK_CONFIG.maxRangeDays
-      ? addDays(today, -RANK_CONFIG.maxRangeDays)
-      : input.from;
+  const from = diffDays(today, input.from) > RANK_CONFIG.maxRangeDays ? addDays(today, -RANK_CONFIG.maxRangeDays) : input.from;
   const days: IsoDate[] = [];
   for (let d = from; d <= today; d = addDays(d, 1)) days.push(d);
 
@@ -663,29 +540,15 @@ export function computeRank(
   // Registros válidos, dentro del rango y de hábitos conocidos. Duplicados: gana el más reciente.
   const logs = new Map<string, Map<IsoDate, RankLog>>();
   for (const l of input.logs ?? []) {
-    if (
-      !l ||
-      !revs.has(l.habitId) ||
-      !isIsoDate(l.date) ||
-      l.date < from ||
-      l.date > today ||
-      !STATUSES.has(l.status)
-    )
-      continue;
+    if (!l || !revs.has(l.habitId) || !isIsoDate(l.date) || l.date < from || l.date > today || !STATUSES.has(l.status)) continue;
     let m = logs.get(l.habitId);
     if (!m) logs.set(l.habitId, (m = new Map()));
     const prev = m.get(l.date);
-    if (!prev || (l.recordedOn ?? "") >= (prev.recordedOn ?? ""))
-      m.set(l.date, l);
+    if (!prev || (l.recordedOn ?? "") >= (prev.recordedOn ?? "")) m.set(l.date, l);
   }
 
   const habitIds = [...revs.keys()];
-  const cells = new Map(
-    habitIds.map((id) => [
-      id,
-      buildCells(days, today, revs.get(id)!, logs.get(id) ?? new Map()),
-    ]),
-  );
+  const cells = new Map(habitIds.map((id) => [id, buildCells(days, today, revs.get(id)!, logs.get(id) ?? new Map())]));
 
   const scope = (ids: string[]) => {
     const list = ids.map((id) => cells.get(id)!);
@@ -730,23 +593,13 @@ export function computeRank(
       date,
       required: round2(global.daily[i].required),
       done: round2(global.daily[i].done),
-      dailyScore:
-        global.daily[i].score === null ? null : round2(global.daily[i].score!),
+      dailyScore: global.daily[i].score === null ? null : round2(global.daily[i].score!),
       weights,
       completed,
     };
   });
 
-  return {
-    version: RANK_ALGORITHM_VERSION,
-    from,
-    to: today,
-    threshold,
-    global: global.rank,
-    categories,
-    habits,
-    days: dayDetails,
-  };
+  return { version: RANK_ALGORITHM_VERSION, from, to: today, threshold, global: global.rank, categories, habits, days: dayDetails };
 }
 
 export function tierLabel(index: number | null): string {

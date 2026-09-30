@@ -17,19 +17,10 @@ export function GroupRealtime({ groupId }: { groupId: string }) {
     const supabase = getBrowserClient();
     const channel = supabase
       .channel(`group-logs-${groupId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "habit_logs",
-          filter: `group_id=eq.${groupId}`,
-        },
-        () => {
-          if (timer.current) clearTimeout(timer.current);
-          timer.current = setTimeout(() => router.refresh(), 1500);
-        },
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "habit_logs", filter: `group_id=eq.${groupId}` }, () => {
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => router.refresh(), 1500);
+      })
       .subscribe((status) => setLive(status === "SUBSCRIBED"));
     return () => {
       if (timer.current) clearTimeout(timer.current);
@@ -39,14 +30,8 @@ export function GroupRealtime({ groupId }: { groupId: string }) {
 
   if (!live) return null;
   return (
-    <span
-      className="inline-flex items-center gap-1.5 text-xs font-medium text-success"
-      role="status"
-    >
-      <span
-        className="size-2 animate-pulse rounded-full bg-success"
-        aria-hidden="true"
-      />
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success" role="status">
+      <span className="size-2 animate-pulse rounded-full bg-success" aria-hidden="true" />
       En directo
     </span>
   );

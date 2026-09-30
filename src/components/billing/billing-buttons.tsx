@@ -7,13 +7,7 @@ import { LoaderCircle, Sparkles } from "lucide-react";
 import { cancelSubscription, startPaypalCheckout } from "@/app/actions/billing";
 import { Button } from "@/components/ui/button";
 
-export function SubscribeButton({
-  period = "month",
-  label,
-}: {
-  period?: "month" | "year";
-  label: string;
-}) {
+export function SubscribeButton({ period = "month", label }: { period?: "month" | "year"; label: string }) {
   const [pending, start] = useTransition();
   return (
     <Button
@@ -28,11 +22,7 @@ export function SubscribeButton({
         })
       }
     >
-      {pending ? (
-        <LoaderCircle className="animate-spin" aria-hidden="true" />
-      ) : (
-        <Sparkles aria-hidden="true" />
-      )}
+      {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Sparkles aria-hidden="true" />}
       {label}
     </Button>
   );
@@ -46,12 +36,7 @@ export function CancelButton() {
       variant="outline"
       disabled={pending}
       onClick={() => {
-        if (
-          !window.confirm(
-            "¿Cancelar la suscripción? Seguirás siendo Pro hasta el final del mes ya pagado y no se te cobrará más.",
-          )
-        )
-          return;
+        if (!window.confirm("¿Cancelar la suscripción? Seguirás siendo Pro hasta el final del mes ya pagado y no se te cobrará más.")) return;
         start(async () => {
           const res = await cancelSubscription();
           if (res.ok) {
@@ -61,9 +46,7 @@ export function CancelButton() {
         });
       }}
     >
-      {pending ? (
-        <LoaderCircle className="animate-spin" aria-hidden="true" />
-      ) : null}
+      {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
       Cancelar suscripción
     </Button>
   );

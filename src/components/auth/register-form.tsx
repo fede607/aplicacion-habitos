@@ -15,13 +15,7 @@ const noop = () => () => {};
  * Registro sólo por invitación. Usa la Edge Function `register-user` para crear
  * la cuenta con email ya confirmado (sin envío de correo) y devolver la sesión.
  */
-export function RegisterForm({
-  next,
-  invite,
-}: {
-  next?: string;
-  invite?: string;
-}) {
+export function RegisterForm({ next, invite }: { next?: string; invite?: string }) {
   const router = useRouter();
   const timezone = useSyncExternalStore(
     noop,
@@ -66,24 +60,21 @@ export function RegisterForm({
             process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-          const resp = await fetch(
-            `${supabaseUrl}/functions/v1/register-user`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                apikey: anonKey,
-              },
-              body: JSON.stringify({
-                email: parsed.data.email,
-                password: parsed.data.password,
-                username: parsed.data.username,
-                displayName: parsed.data.displayName,
-                timezone: parsed.data.timezone,
-                inviteCode: invite,
-              }),
+          const resp = await fetch(`${supabaseUrl}/functions/v1/register-user`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: anonKey,
             },
-          );
+            body: JSON.stringify({
+              email: parsed.data.email,
+              password: parsed.data.password,
+              username: parsed.data.username,
+              displayName: parsed.data.displayName,
+              timezone: parsed.data.timezone,
+              inviteCode: invite,
+            }),
+          });
 
           const result = (await resp.json()) as {
             created?: boolean;
@@ -98,10 +89,7 @@ export function RegisterForm({
             if (result.field === "username") {
               setErrors({ username: "Ese nombre de usuario ya está cogido." });
             }
-            setError(
-              result.error ??
-                "No se ha podido crear la cuenta. Inténtalo de nuevo.",
-            );
+            setError(result.error ?? "No se ha podido crear la cuenta. Inténtalo de nuevo.");
             setPending(false);
             captcha.reset();
             return;
@@ -121,9 +109,7 @@ export function RegisterForm({
               access_token: result.access_token,
               refresh_token: result.refresh_token,
             });
-            const target = invite
-              ? "/today"
-              : safeNextPath(next, "/onboarding");
+            const target = invite ? "/today" : safeNextPath(next, "/onboarding");
             router.replace(target);
             router.refresh();
           }
@@ -135,21 +121,9 @@ export function RegisterForm({
     >
       <FormError message={error} />
       <Field label="Nombre" htmlFor="displayName" error={errors.displayName}>
-        <Input
-          id="displayName"
-          name="displayName"
-          autoComplete="name"
-          maxLength={40}
-          required
-          aria-invalid={!!errors.displayName}
-        />
+        <Input id="displayName" name="displayName" autoComplete="name" maxLength={40} required aria-invalid={!!errors.displayName} />
       </Field>
-      <Field
-        label="Nombre de usuario"
-        htmlFor="username"
-        error={errors.username}
-        hint="3-24 caracteres: minúsculas, números o _"
-      >
+      <Field label="Nombre de usuario" htmlFor="username" error={errors.username} hint="3-24 caracteres: minúsculas, números o _">
         <Input
           id="username"
           name="username"
@@ -162,38 +136,12 @@ export function RegisterForm({
         />
       </Field>
       <Field label="Email" htmlFor="email" error={errors.email}>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          inputMode="email"
-          required
-          aria-invalid={!!errors.email}
-        />
+        <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" required aria-invalid={!!errors.email} />
       </Field>
-      <Field
-        label="Contraseña"
-        htmlFor="password"
-        error={errors.password}
-        hint="Mínimo 8 caracteres, con letras y números"
-      >
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          minLength={8}
-          maxLength={72}
-          required
-          aria-invalid={!!errors.password}
-        />
+      <Field label="Contraseña" htmlFor="password" error={errors.password} hint="Mínimo 8 caracteres, con letras y números">
+        <Input id="password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={72} required aria-invalid={!!errors.password} />
       </Field>
-      <Turnstile
-        onToken={captcha.setToken}
-        resetSignal={captcha.resetSignal}
-        onLoadError={captcha.onLoadError}
-      />
+      <Turnstile onToken={captcha.setToken} resetSignal={captcha.resetSignal} onLoadError={captcha.onLoadError} />
       {captcha.loadError ? <FormError message={CAPTCHA_LOAD_ERROR} /> : null}
       <SubmitButton pending={pending} pendingText="Creando cuenta…">
         Crear cuenta

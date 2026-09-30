@@ -1,22 +1,7 @@
 import { describe, expect, it } from "vitest";
-import {
-  applyPhase,
-  computeNutrition,
-  cyclePhase,
-  generatePlan,
-  pickSlots,
-} from "./engine";
+import { applyPhase, computeNutrition, cyclePhase, generatePlan, pickSlots } from "./engine";
 import { isContraindicated } from "./library";
-import {
-  FOCUSES,
-  GOALS,
-  LEVELS,
-  LIMITATIONS,
-  SESSION_MINUTES,
-  TRAINING_TYPES,
-  type Limitation,
-  type TrainingProfile,
-} from "./types";
+import { FOCUSES, GOALS, LEVELS, LIMITATIONS, SESSION_MINUTES, TRAINING_TYPES, type Limitation, type TrainingProfile } from "./types";
 
 const base: TrainingProfile = {
   age: 25,
@@ -31,11 +16,7 @@ const base: TrainingProfile = {
   limitations: [],
 };
 
-const limitationSets: Limitation[][] = [
-  [],
-  ...LIMITATIONS.map((l) => [l]),
-  [...LIMITATIONS],
-];
+const limitationSets: Limitation[][] = [[], ...LIMITATIONS.map((l) => [l]), [...LIMITATIONS]];
 const maxByMinutes: Record<number, number> = {
   30: 4,
   45: 5,
@@ -78,61 +59,25 @@ describe("generatePlan — todas las combinaciones", () => {
                 plans++;
                 // Un día planificado por cada día de entreno, en días distintos.
                 check(plan.days.length === daysPerWeek, `días ${id}`);
-                check(
-                  new Set(plan.days.map((d) => d.weekday)).size === daysPerWeek,
-                  `días repetidos ${id}`,
-                );
-                check(
-                  plan.restDays.length === 7 - daysPerWeek,
-                  `descansos ${id}`,
-                );
+                check(new Set(plan.days.map((d) => d.weekday)).size === daysPerWeek, `días repetidos ${id}`);
+                check(plan.restDays.length === 7 - daysPerWeek, `descansos ${id}`);
                 for (const day of plan.days) {
-                  check(
-                    day.exercises.length > 0 || !!day.cardio,
-                    `día vacío ${id}`,
-                  );
-                  check(
-                    (day.estMinutes >= 15 &&
-                      day.estMinutes <= sessionMinutes + 15) ||
-                      day.exercises.length === 0,
-                    `duración ${day.estMinutes} ${id}`,
-                  );
-                  check(
-                    day.exercises.length <= maxByMinutes[sessionMinutes],
-                    `demasiados ejercicios ${id}`,
-                  );
+                  check(day.exercises.length > 0 || !!day.cardio, `día vacío ${id}`);
+                  check((day.estMinutes >= 15 && day.estMinutes <= sessionMinutes + 15) || day.exercises.length === 0, `duración ${day.estMinutes} ${id}`);
+                  check(day.exercises.length <= maxByMinutes[sessionMinutes], `demasiados ejercicios ${id}`);
                   const names = day.exercises.map((e) => e.name);
-                  check(
-                    new Set(names).size === names.length,
-                    `ejercicio repetido ${id}`,
-                  );
+                  check(new Set(names).size === names.length, `ejercicio repetido ${id}`);
                   for (const ex of day.exercises) {
-                    check(
-                      !isContraindicated(ex.name, limitations),
-                      `${ex.name} desaconsejado ${id}`,
-                    );
-                    check(
-                      ex.sets >= 2 && ex.sets <= 5,
-                      `series ${ex.sets} ${id}`,
-                    );
+                    check(!isContraindicated(ex.name, limitations), `${ex.name} desaconsejado ${id}`);
+                    check(ex.sets >= 2 && ex.sets <= 5, `series ${ex.sets} ${id}`);
                     check(ex.rir >= 1 && ex.rir <= 4, `rir ${ex.rir} ${id}`);
                     check(ex.restSec > 0, `descanso ${id}`);
                     check(ex.muscles.length > 0, `músculos ${id}`);
-                    check(
-                      !ex.alternatives.includes(ex.name),
-                      `alternativa repetida ${id}`,
-                    );
-                    for (const alt of ex.alternatives)
-                      check(
-                        !isContraindicated(alt, limitations),
-                        `alternativa ${alt} desaconsejada ${id}`,
-                      );
+                    check(!ex.alternatives.includes(ex.name), `alternativa repetida ${id}`);
+                    for (const alt of ex.alternatives) check(!isContraindicated(alt, limitations), `alternativa ${alt} desaconsejada ${id}`);
                   }
                 }
-                check(
-                  /no sustituye/.test(plan.warnings.at(-1) ?? ""),
-                  `aviso final ${id}`,
-                );
+                check(/no sustituye/.test(plan.warnings.at(-1) ?? ""), `aviso final ${id}`);
               }
     expect(errors).toEqual([]);
     expect(plans).toBe(GOALS.length * 3 * 5 * 5 * 5 * limitationSets.length);
@@ -154,9 +99,7 @@ describe("generatePlan — todas las combinaciones", () => {
       level: "advanced",
       limitations: ["lower_back"],
     });
-    const all = plan.days
-      .flatMap((d) => d.exercises.map((e) => e.name))
-      .join(" | ");
+    const all = plan.days.flatMap((d) => d.exercises.map((e) => e.name)).join(" | ");
     expect(all).not.toMatch(/Peso muerto|Sentadilla trasera|Remo con barra/);
   });
 
@@ -185,13 +128,8 @@ describe("opciones del plan", () => {
             sessionMinutes: 30,
           });
           for (const day of plan.days) {
-            for (const ex of day.exercises)
-              expect(isContraindicated(ex.name, limitations)).toBe(false);
-            if (
-              focus !== "balanced" &&
-              day.exercises.length &&
-              trainingType !== "running"
-            ) {
+            for (const ex of day.exercises) expect(isContraindicated(ex.name, limitations)).toBe(false);
+            if (focus !== "balanced" && day.exercises.length && trainingType !== "running") {
               expect(day.exercises.some((e) => e.focus)).toBe(true);
             }
           }
@@ -218,9 +156,7 @@ describe("opciones del plan", () => {
     expect(cyclePhase("2026-09-01", "2026-09-29").week).toBe(1);
     const day = generatePlan(base).days[0];
     const deload = applyPhase(day, cyclePhase("2026-09-01", "2026-09-22"));
-    deload.exercises.forEach((e, i) =>
-      expect(e.sets).toBe(Math.ceil(day.exercises[i].sets / 2)),
-    );
+    deload.exercises.forEach((e, i) => expect(e.sets).toBe(Math.ceil(day.exercises[i].sets / 2)));
   });
 
   it("definir: déficit suave y proteína alta", () => {
@@ -245,9 +181,7 @@ describe("seguridad para menores y bajo peso", () => {
       goal: "strength",
       level: "advanced",
     });
-    expect(
-      strength.days.flatMap((d) => d.exercises).some((e) => e.reps === "3-5"),
-    ).toBe(false);
+    expect(strength.days.flatMap((d) => d.exercises).some((e) => e.reps === "3-5")).toBe(false);
     expect(strength.warnings.join(" ")).toMatch(/menor/);
   });
 
@@ -291,10 +225,7 @@ describe("computeNutrition", () => {
   });
 
   it("la proteína usa peso ajustado con obesidad", () => {
-    const n = computeNutrition(
-      { ...base, age: 30, weightKg: 130, heightCm: 175 },
-      "health",
-    );
+    const n = computeNutrition({ ...base, age: 30, weightKg: 130, heightCm: 175 }, "health");
     expect(n.proteinG).toBeLessThan(130 * 1.4);
   });
 });

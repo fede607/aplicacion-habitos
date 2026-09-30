@@ -5,10 +5,7 @@ export default function Loading() {
       <div className="h-40 animate-pulse rounded-3xl bg-surface-2" />
       <div className="grid gap-3 md:grid-cols-2">
         {Array.from({ length: 4 }, (_, i) => (
-          <div
-            key={i}
-            className="h-24 animate-pulse rounded-2xl bg-surface-2"
-          />
+          <div key={i} className="h-24 animate-pulse rounded-2xl bg-surface-2" />
         ))}
       </div>
       <span className="sr-only">Cargando…</span>

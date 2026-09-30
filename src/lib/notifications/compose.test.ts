@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { composeDailyReminder, composeWeeklySummary } from "./compose";
 
-const base = {
-  siteUrl: "https://wa.test",
-  unsubscribeUrl: "https://wa.test/unsubscribe?token=abc",
-};
+const base = { siteUrl: "https://wa.test", unsubscribeUrl: "https://wa.test/unsubscribe?token=abc" };
 
 describe("composeDailyReminder", () => {
   it("lista los hábitos pendientes, la racha y el enlace de baja", () => {
@@ -18,7 +15,7 @@ describe("composeDailyReminder", () => {
       streak: 4,
     });
     expect(email.subject).toBe("Te quedan 2 hábitos hoy · 🔥 racha de 4");
-    expect(email.html).toContain('<li style="margin:4px 0">Lectura</li>');
+    expect(email.html).toContain("<li style=\"margin:4px 0\">Lectura</li>");
     expect(email.html).toContain("https://wa.test/today");
     expect(email.html).toContain("Darse de baja");
     expect(email.text).toContain("- Estudio");
@@ -74,9 +71,7 @@ describe("composeWeeklySummary", () => {
   });
 
   it("numera sólo si la comparación está activada", () => {
-    expect(composeWeeklySummary({ ...input, ranked: true }).text).toContain(
-      "1. Álex",
-    );
+    expect(composeWeeklySummary({ ...input, ranked: true }).text).toContain("1. Álex");
     expect(composeWeeklySummary(input).text).not.toContain("1. Álex");
   });
 });

@@ -19,9 +19,7 @@ export type DailyReminderInput = {
 export function composeDailyReminder(i: DailyReminderInput): OutgoingEmail {
   const n = i.pendingHabits.length;
   const subject = `Te ${n === 1 ? "queda 1 hábito" : `quedan ${n} hábitos`} hoy${i.streak > 0 ? ` · 🔥 racha de ${i.streak}` : ""}`;
-  const list = i.pendingHabits
-    .map((h) => `<li style="margin:4px 0">${esc(h)}</li>`)
-    .join("");
+  const list = i.pendingHabits.map((h) => `<li style="margin:4px 0">${esc(h)}</li>`).join("");
   const streakLine =
     i.streak > 0
       ? `<p>Llevas <strong>🔥 ${i.streak} ${i.streak === 1 ? "día" : "días"}</strong> seguidos. No la rompas hoy.</p>`
@@ -50,12 +48,7 @@ export type WeeklySummaryInput = {
   streak: { current: number; best: number };
   workouts: { count: number; minutes: number };
   weeklyTargets: { name: string; done: number; target: number }[];
-  members: {
-    name: string;
-    weekPercent: number | null;
-    streak: number;
-    isMe: boolean;
-  }[];
+  members: { name: string; weekPercent: number | null; streak: number; isMe: boolean }[];
   collective: { done: number; required: number };
   ranked: boolean;
   hiddenMembers: number;
@@ -66,26 +59,13 @@ export type WeeklySummaryInput = {
 const pct = (v: number | null) => (v === null ? "—" : `${v}%`);
 
 export function composeWeeklySummary(i: WeeklySummaryInput): OutgoingEmail {
-  const collectivePct = i.collective.required
-    ? Math.round((i.collective.done / i.collective.required) * 100)
-    : null;
+  const collectivePct = i.collective.required ? Math.round((i.collective.done / i.collective.required) * 100) : null;
   const mine = statTable([
-    statRow(
-      "Hábitos esta semana",
-      `${i.week.completed} / ${i.week.required} (${pct(i.week.percent)})`,
-    ),
+    statRow("Hábitos esta semana", `${i.week.completed} / ${i.week.required} (${pct(i.week.percent)})`),
     statRow("Racha actual", `🔥 ${i.streak.current} días`),
     statRow("Mejor racha", `${i.streak.best} días`),
-    statRow(
-      "Entrenamientos",
-      `${i.workouts.count} · ${formatMinutes(i.workouts.minutes)}`,
-    ),
-    ...i.weeklyTargets.map((t) =>
-      statRow(
-        t.name,
-        `${t.done} / ${t.target}${t.done >= t.target ? " ✅" : ""}`,
-      ),
-    ),
+    statRow("Entrenamientos", `${i.workouts.count} · ${formatMinutes(i.workouts.minutes)}`),
+    ...i.weeklyTargets.map((t) => statRow(t.name, `${t.done} / ${t.target}${t.done >= t.target ? " ✅" : ""}`)),
   ]);
   const memberRows = i.members
     .map(
@@ -118,10 +98,7 @@ ${i.hiddenMembers > 0 ? `<p style="font-size:12px;color:#5a6a82">${i.hiddenMembe
       ...i.weeklyTargets.map((t) => `${t.name}: ${t.done}/${t.target}`),
       "",
       `${i.groupName}: ${i.collective.done}/${i.collective.required} (${pct(collectivePct)})`,
-      ...i.members.map(
-        (m, idx) =>
-          `${i.ranked ? `${idx + 1}. ` : "- "}${m.name}: ${pct(m.weekPercent)} · racha ${m.streak}`,
-      ),
+      ...i.members.map((m, idx) => `${i.ranked ? `${idx + 1}. ` : "- "}${m.name}: ${pct(m.weekPercent)} · racha ${m.streak}`),
       "",
       `Ver progreso: ${i.siteUrl}/dashboard`,
       `Darse de baja: ${i.unsubscribeUrl}`,

@@ -24,56 +24,31 @@ function publicFromPrivate(privateKey: string): string {
 export async function getVapidKeys(): Promise<Vapid> {
   if (cached) return cached;
   const admin = createAdminClient();
-  let { data: privateKey } = await admin.rpc("billing_config_get", {
-    p_key: "vapid_private_key",
-  });
+  let { data: privateKey } = await admin.rpc("billing_config_get", { p_key: "vapid_private_key" });
   if (!privateKey) {
-    const { data, error } = await admin.rpc("billing_config_set_if_absent", {
-      p_key: "vapid_private_key",
-      p_value: webpush.generateVAPIDKeys().privateKey,
-    });
+    const { data, error } = await admin.rpc("billing_config_set_if_absent", { p_key: "vapid_private_key", p_value: webpush.generateVAPIDKeys().privateKey });
     if (error || !data) throw error ?? new Error("vapid");
     privateKey = data;
   }
   return (cached = { publicKey: publicFromPrivate(privateKey), privateKey });
 }
 
-export type PushPayload = {
-  title: string;
-  body: string;
-  url: string;
-  tag?: string;
-};
+export type PushPayload = { title: string; body: string; url: string; tag?: string };
 
 /** Envía a todos los dispositivos del usuario. Borra las suscripciones caducadas. Devuelve cuántos recibieron. */
-export async function sendPushToUser(
-  userId: string,
-  payload: PushPayload,
-): Promise<number> {
+export async function sendPushToUser(userId: string, payload: PushPayload): Promise<number> {
   const admin = createAdminClient();
-  const { data: subs } = await admin
-    .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth")
-    .eq("user_id", userId);
+  const { data: subs } = await admin.from("push_subscriptions").select("id, endpoint, p256dh, auth").eq("user_id", userId);
   if (!subs?.length) return 0;
   const vapid = await getVapidKeys();
-  const subject = getSiteUrl().startsWith("https://")
-    ? getSiteUrl()
-    : "mailto:notificaciones@winterarc.app";
+  const subject = getSiteUrl().startsWith("https://") ? getSiteUrl() : "mailto:notificaciones@winterarc.app";
   let delivered = 0;
   await Promise.all(
     subs.map(async (s) => {
-      const sub: PushSubscription = {
-        endpoint: s.endpoint,
-        keys: { p256dh: s.p256dh, auth: s.auth },
-      };
+      const sub: PushSubscription = { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } };
       try {
         await webpush.sendNotification(sub, JSON.stringify(payload), {
-          vapidDetails: {
-            subject,
-            publicKey: vapid.publicKey,
-            privateKey: vapid.privateKey,
-          },
+          vapidDetails: { subject, publicKey: vapid.publicKey, privateKey: vapid.privateKey },
           TTL: 60 * 60 * 6,
           urgency: "normal",
           topic: payload.tag?.slice(0, 32),

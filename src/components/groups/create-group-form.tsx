@@ -39,11 +39,7 @@ export function CreateGroupForm({ today }: { today: string }) {
         });
       }}
     >
-      <Field
-        label="Nombre del Year Arc"
-        htmlFor="group-name"
-        error={errors.name}
-      >
+      <Field label="Nombre del Year Arc" htmlFor="group-name" error={errors.name}>
         <Input
           id="group-name"
           value={form.name}
@@ -53,11 +49,7 @@ export function CreateGroupForm({ today }: { today: string }) {
           aria-invalid={!!errors.name}
         />
       </Field>
-      <Field
-        label="Descripción (opcional)"
-        htmlFor="group-description"
-        error={errors.description}
-      >
+      <Field label="Descripción (opcional)" htmlFor="group-description" error={errors.description}>
         <Textarea
           id="group-description"
           value={form.description}
@@ -69,48 +61,23 @@ export function CreateGroupForm({ today }: { today: string }) {
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Inicio" htmlFor="group-start" error={errors.startDate}>
-          <Input
-            id="group-start"
-            type="date"
-            value={form.startDate}
-            required
-            onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-          />
+          <Input id="group-start" type="date" value={form.startDate} required onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
         </Field>
         <Field label="Fin" htmlFor="group-end" error={errors.endDate}>
-          <Input
-            id="group-end"
-            type="date"
-            value={form.endDate}
-            required
-            onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-          />
+          <Input id="group-end" type="date" value={form.endDate} required onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
         </Field>
       </div>
-      <label
-        className="flex items-start justify-between gap-4 rounded-xl bg-surface-2 p-3"
-        htmlFor="group-seed"
-      >
+      <label className="flex items-start justify-between gap-4 rounded-xl bg-surface-2 p-3" htmlFor="group-seed">
         <span>
-          <span className="block text-sm font-medium">
-            Usar los hábitos del Year Arc
-          </span>
+          <span className="block text-sm font-medium">Usar los hábitos del Year Arc</span>
           <span className="block text-xs text-muted">
-            Entrenamiento, despertar temprano, ducha fría, agua, alimentación
-            limpia, sueño, lectura, reflexión, foco digital y estudio. Podrás
-            editarlos.
+            Entrenamiento, despertar temprano, ducha fría, agua, alimentación limpia, sueño, lectura, reflexión, foco digital y estudio. Podrás editarlos.
           </span>
         </span>
-        <Switch
-          id="group-seed"
-          checked={form.seedDefaults}
-          onCheckedChange={(v) => setForm({ ...form, seedDefaults: v })}
-        />
+        <Switch id="group-seed" checked={form.seedDefaults} onCheckedChange={(v) => setForm({ ...form, seedDefaults: v })} />
       </label>
       <Button type="submit" size="lg" disabled={pending}>
-        {pending ? (
-          <LoaderCircle className="animate-spin" aria-hidden="true" />
-        ) : null}
+        {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
         Crear grupo
       </Button>
     </form>

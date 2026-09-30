@@ -14,10 +14,7 @@ export function DialogContent({
   title,
   description,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content> & {
-  title: string;
-  description?: string;
-}) {
+}: React.ComponentProps<typeof DialogPrimitive.Content> & { title: string; description?: string }) {
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
@@ -32,13 +29,9 @@ export function DialogContent({
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
-            <DialogPrimitive.Title className="text-lg font-semibold tracking-tight">
-              {title}
-            </DialogPrimitive.Title>
+            <DialogPrimitive.Title className="text-lg font-semibold tracking-tight">{title}</DialogPrimitive.Title>
             {description ? (
-              <DialogPrimitive.Description className="mt-1 text-sm text-muted">
-                {description}
-              </DialogPrimitive.Description>
+              <DialogPrimitive.Description className="mt-1 text-sm text-muted">{description}</DialogPrimitive.Description>
             ) : null}
           </div>
           <DialogPrimitive.Close
