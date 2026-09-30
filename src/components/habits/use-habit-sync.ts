@@ -31,7 +31,9 @@ export function useHabitSync(date: string, initial: Record<string, Status>) {
   const flushRef = useRef<(habitId: string) => void>(() => {});
 
   const refreshPending = useCallback(() => {
-    const ids = Object.keys(desired.current).filter((id) => desired.current[id] !== confirmed.current[id]);
+    const ids = Object.keys(desired.current).filter(
+      (id) => desired.current[id] !== confirmed.current[id],
+    );
     setPendingCount(ids.length);
   }, []);
 
@@ -59,7 +61,10 @@ export function useHabitSync(date: string, initial: Record<string, Status>) {
         } else {
           // Error definitivo (validación, permisos, fecha no editable): revertir.
           desired.current[habitId] = confirmed.current[habitId] ?? null;
-          setStatuses((prev) => ({ ...prev, [habitId]: confirmed.current[habitId] ?? null }));
+          setStatuses((prev) => ({
+            ...prev,
+            [habitId]: confirmed.current[habitId] ?? null,
+          }));
           setSaveState(habitId, "error");
           toast.error(res.error);
         }
@@ -70,13 +75,19 @@ export function useHabitSync(date: string, initial: Record<string, Status>) {
         setSaveState(habitId, "retrying");
         const delay = RETRY_DELAYS[Math.min(n - 1, RETRY_DELAYS.length - 1)];
         clearTimeout(timers.current[habitId]);
-        timers.current[habitId] = setTimeout(() => flushRef.current(habitId), delay);
+        timers.current[habitId] = setTimeout(
+          () => flushRef.current(habitId),
+          delay,
+        );
       } finally {
         inFlight.current.delete(habitId);
         refreshPending();
       }
       // Si el usuario cambió de idea mientras se guardaba, enviar el último estado.
-      if (desired.current[habitId] !== confirmed.current[habitId] && !attempts.current[habitId]) {
+      if (
+        desired.current[habitId] !== confirmed.current[habitId] &&
+        !attempts.current[habitId]
+      ) {
         flushRef.current(habitId);
       }
     },

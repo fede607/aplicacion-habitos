@@ -25,5 +25,7 @@ export function useCaptcha() {
   };
 }
 
-export const CAPTCHA_PENDING = "Completa la verificación anti-bots para continuar.";
-export const CAPTCHA_LOAD_ERROR = "No se ha podido cargar la verificación anti-bots. Desactiva bloqueadores y recarga la página.";
+export const CAPTCHA_PENDING =
+  "Completa la verificación anti-bots para continuar.";
+export const CAPTCHA_LOAD_ERROR =
+  "No se ha podido cargar la verificación anti-bots. Desactiva bloqueadores y recarga la página.";

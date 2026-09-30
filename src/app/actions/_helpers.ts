@@ -9,4 +9,7 @@ export async function authed() {
   return { supabase, userId };
 }
 
-export const NOT_AUTHENTICATED = { ok: false as const, error: "Tu sesión ha caducado. Vuelve a iniciar sesión." };
+export const NOT_AUTHENTICATED = {
+  ok: false as const,
+  error: "Tu sesión ha caducado. Vuelve a iniciar sesión.",
+};

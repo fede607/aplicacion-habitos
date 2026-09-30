@@ -1,5 +1,10 @@
 /** Cabeceras de seguridad y Content Security Policy con nonce por petición. */
-export function buildCsp(nonce: string, supabaseUrl: string, isDev: boolean, isHttps = true): string {
+export function buildCsp(
+  nonce: string,
+  supabaseUrl: string,
+  isDev: boolean,
+  isHttps = true,
+): string {
   let supabaseOrigin = "";
   let supabaseWs = "";
   try {
@@ -33,7 +38,13 @@ export const STATIC_SECURITY_HEADERS: { key: string; value: string }[] = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
-  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+  },
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];

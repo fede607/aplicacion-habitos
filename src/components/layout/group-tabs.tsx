@@ -7,11 +7,20 @@ import { setActiveGroup } from "@/app/actions/groups";
 import { cn } from "@/lib/utils";
 
 /** Pestañas visibles para cambiar de grupo (sólo si perteneces a más de uno). */
-export function GroupTabs({ groups, activeId }: { groups: { id: string; name: string }[]; activeId: string | null }) {
+export function GroupTabs({
+  groups,
+  activeId,
+}: {
+  groups: { id: string; name: string }[];
+  activeId: string | null;
+}) {
   const [pending, startTransition] = useTransition();
   if (groups.length < 2) return null;
   return (
-    <nav aria-label="Tus grupos" className="-mx-4 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6">
+    <nav
+      aria-label="Tus grupos"
+      className="-mx-4 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6"
+    >
       <ul className="flex w-max gap-2">
         {groups.map((g) => {
           const active = g.id === activeId;
@@ -34,7 +43,14 @@ export function GroupTabs({ groups, activeId }: { groups: { id: string; name: st
                     : "border-border bg-surface text-muted hover:bg-surface-2 hover:text-foreground disabled:opacity-60",
                 )}
               >
-                {pending && !active ? <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" /> : <Users className="size-3.5" aria-hidden="true" />}
+                {pending && !active ? (
+                  <LoaderCircle
+                    className="size-3.5 animate-spin"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Users className="size-3.5" aria-hidden="true" />
+                )}
                 {g.name}
               </button>
             </li>

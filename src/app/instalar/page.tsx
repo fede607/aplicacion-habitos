@@ -7,13 +7,17 @@ import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Descarga la app",
-  description: "Instala Year Arc en la pantalla de inicio de tu móvil, gratis y sin tienda de apps.",
+  description:
+    "Instala Year Arc en la pantalla de inicio de tu móvil, gratis y sin tienda de apps.",
 };
 
 const PERKS = [
   { icon: Zap, text: "Se abre al instante desde tu pantalla de inicio" },
   { icon: Maximize, text: "Pantalla completa, sin barra del navegador" },
-  { icon: RefreshCw, text: "Siempre actualizada: nunca tienes que descargar nada más" },
+  {
+    icon: RefreshCw,
+    text: "Siempre actualizada: nunca tienes que descargar nada más",
+  },
   { icon: WifiOff, text: "Aviso claro si te quedas sin conexión" },
 ];
 
@@ -28,19 +32,40 @@ export default function InstallPage() {
       <main className="mx-auto grid max-w-xl gap-6 px-4 pb-16">
         <section className="text-center">
           {/* eslint-disable-next-line @next/next/no-img-element -- icono estático de la app */}
-          <img src="/icons/icon-192.png" alt="" width={96} height={96} className="mx-auto size-24 rounded-[1.6rem] shadow-card" />
-          <h1 className="mt-5 text-3xl font-bold tracking-tight text-balance">Descarga Year Arc</h1>
-          <p className="mt-2 text-muted text-pretty">Gratis, sin App Store ni Play Store. Tenla en tu pantalla de inicio en 10 segundos.</p>
+          <img
+            src="/icons/icon-192.png"
+            alt=""
+            width={96}
+            height={96}
+            className="mx-auto size-24 rounded-[1.6rem] shadow-card"
+          />
+          <h1 className="mt-5 text-3xl font-bold tracking-tight text-balance">
+            Descarga Year Arc
+          </h1>
+          <p className="mt-2 text-muted text-pretty">
+            Gratis, sin App Store ni Play Store. Tenla en tu pantalla de inicio
+            en 10 segundos.
+          </p>
         </section>
 
-        <section className="rounded-3xl border border-border bg-surface/90 p-5 shadow-card backdrop-blur" aria-label="Cómo instalar">
+        <section
+          className="rounded-3xl border border-border bg-surface/90 p-5 shadow-card backdrop-blur"
+          aria-label="Cómo instalar"
+        >
           <InstallAppCard />
         </section>
 
         <ul className="grid gap-2 text-sm">
           {PERKS.map(({ icon: Icon, text }) => (
-            <li key={text} className="flex items-center gap-3 rounded-2xl bg-surface/70 px-4 py-3">
-              <Icon className="size-5 shrink-0 text-primary" aria-hidden="true" /> {text}
+            <li
+              key={text}
+              className="flex items-center gap-3 rounded-2xl bg-surface/70 px-4 py-3"
+            >
+              <Icon
+                className="size-5 shrink-0 text-primary"
+                aria-hidden="true"
+              />{" "}
+              {text}
             </li>
           ))}
         </ul>

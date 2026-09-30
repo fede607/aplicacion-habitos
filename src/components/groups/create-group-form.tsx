@@ -18,7 +18,7 @@ export function CreateGroupForm({ today }: { today: string }) {
     name: `YEAR ARC ${today.slice(0, 4)}`,
     description: "",
     startDate: today,
-    endDate: addDays(today, 90),
+    endDate: addDays(today, 365),
     seedDefaults: true,
   });
 
@@ -39,7 +39,11 @@ export function CreateGroupForm({ today }: { today: string }) {
         });
       }}
     >
-      <Field label="Nombre del Year Arc" htmlFor="group-name" error={errors.name}>
+      <Field
+        label="Nombre del Year Arc"
+        htmlFor="group-name"
+        error={errors.name}
+      >
         <Input
           id="group-name"
           value={form.name}
@@ -49,13 +53,17 @@ export function CreateGroupForm({ today }: { today: string }) {
           aria-invalid={!!errors.name}
         />
       </Field>
-      <Field label="Descripción (opcional)" htmlFor="group-description" error={errors.description}>
+      <Field
+        label="Descripción (opcional)"
+        htmlFor="group-description"
+        error={errors.description}
+      >
         <Textarea
           id="group-description"
           value={form.description}
           maxLength={500}
           className="min-h-20"
-          placeholder="90 días de disciplina: entrenar, estudiar y leer."
+          placeholder="Un año de disciplina: entrenar, estudiar y leer."
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
       </Field>
@@ -79,11 +87,17 @@ export function CreateGroupForm({ today }: { today: string }) {
           />
         </Field>
       </div>
-      <label className="flex items-start justify-between gap-4 rounded-xl bg-surface-2 p-3" htmlFor="group-seed">
+      <label
+        className="flex items-start justify-between gap-4 rounded-xl bg-surface-2 p-3"
+        htmlFor="group-seed"
+      >
         <span>
-          <span className="block text-sm font-medium">Usar los hábitos del Year Arc</span>
+          <span className="block text-sm font-medium">
+            Usar los hábitos del Year Arc
+          </span>
           <span className="block text-xs text-muted">
-            Entrenamiento, despertar temprano, ducha fría, agua, alimentación limpia, sueño, lectura, reflexión, foco digital y estudio. Podrás
+            Entrenamiento, despertar temprano, ducha fría, agua, alimentación
+            limpia, sueño, lectura, reflexión, foco digital y estudio. Podrás
             editarlos.
           </span>
         </span>
@@ -94,7 +108,9 @@ export function CreateGroupForm({ today }: { today: string }) {
         />
       </label>
       <Button type="submit" size="lg" disabled={pending}>
-        {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
+        {pending ? (
+          <LoaderCircle className="animate-spin" aria-hidden="true" />
+        ) : null}
         Crear grupo
       </Button>
     </form>

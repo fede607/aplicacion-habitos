@@ -23,9 +23,16 @@ function refreshApp() {
 // -----------------------------------------------------------------------------
 // Crear / unirse / cambiar de grupo
 // -----------------------------------------------------------------------------
-export async function createGroup(input: z.input<typeof createGroupSchema>): Promise<ActionResult<{ groupId: string }>> {
+export async function createGroup(
+  input: z.input<typeof createGroupSchema>,
+): Promise<ActionResult<{ groupId: string }>> {
   const parsed = createGroupSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Revisa los campos.", fieldErrors: fieldErrors(parsed.error) };
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: "Revisa los campos.",
+      fieldErrors: fieldErrors(parsed.error),
+    };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
 
@@ -42,14 +49,23 @@ export async function createGroup(input: z.input<typeof createGroupSchema>): Pro
 }
 
 /**
- * «Crear grupo» en un toque: grupo nuevo con los hábitos por defecto (90 días)
+ * «Crear grupo» en un toque: grupo nuevo con los hábitos por defecto (365 días)
  * y su código de invitación, listo para copiar y compartir.
  */
-export async function quickCreateGroup(): Promise<ActionResult<{ groupId: string; code: string | null }>> {
+export async function quickCreateGroup(): Promise<
+  ActionResult<{ groupId: string; code: string | null }>
+> {
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
-  const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle();
-  const firstName = (profile?.display_name ?? "").trim().split(/\s+/)[0]?.slice(0, 40);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", userId)
+    .maybeSingle();
+  const firstName = (profile?.display_name ?? "")
+    .trim()
+    .split(/\s+/)[0]
+    ?.slice(0, 40);
   const { data: groupId, error } = await supabase.rpc("create_group", {
     p_name: firstName ? `Grupo de ${firstName}` : "Mi grupo",
     p_description: "",
@@ -76,16 +92,28 @@ const JOIN_ERRORS: Record<string, string> = {
   full: "El grupo está completo.",
 };
 
-export async function joinGroup(code: string): Promise<ActionResult<{ groupId: string }>> {
+export async function joinGroup(
+  code: string,
+): Promise<ActionResult<{ groupId: string }>> {
   const parsed = inviteCodeSchema.safeParse(code);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Código no válido." };
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: parsed.error.issues[0]?.message ?? "Código no válido.",
+    };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
 
-  const { data, error } = await supabase.rpc("join_group", { p_code: parsed.data });
+  const { data, error } = await supabase.rpc("join_group", {
+    p_code: parsed.data,
+  });
   if (error) return fail(error, "joinGroup");
   const result = data?.[0];
-  if (!result?.group_id) return { ok: false, error: JOIN_ERRORS[result?.status ?? "invalid"] ?? JOIN_ERRORS.invalid };
+  if (!result?.group_id)
+    return {
+      ok: false,
+      error: JOIN_ERRORS[result?.status ?? "invalid"] ?? JOIN_ERRORS.invalid,
+    };
   refreshApp();
   return { ok: true, data: { groupId: result.group_id } };
 }
@@ -95,7 +123,10 @@ export async function setActiveGroup(groupId: string): Promise<ActionResult> {
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
-  const { error } = await supabase.from("user_settings").update({ active_group_id: parsed.data }).eq("user_id", userId);
+  const { error } = await supabase
+    .from("user_settings")
+    .update({ active_group_id: parsed.data })
+    .eq("user_id", userId);
   if (error) return fail(error, "setActiveGroup");
   refreshApp();
   return { ok: true, data: undefined };
@@ -106,7 +137,9 @@ export async function leaveGroup(groupId: string): Promise<ActionResult> {
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
-  const { error } = await supabase.rpc("leave_group", { p_group_id: parsed.data });
+  const { error } = await supabase.rpc("leave_group", {
+    p_group_id: parsed.data,
+  });
   if (error) return fail(error, "leaveGroup");
   refreshApp();
   redirect("/today");
@@ -115,9 +148,16 @@ export async function leaveGroup(groupId: string): Promise<ActionResult> {
 // -----------------------------------------------------------------------------
 // Administración (los permisos se verifican en BD; aquí sólo se valida la forma)
 // -----------------------------------------------------------------------------
-export async function updateGroupSettings(input: z.input<typeof groupSettingsSchema>): Promise<ActionResult> {
+export async function updateGroupSettings(
+  input: z.input<typeof groupSettingsSchema>,
+): Promise<ActionResult> {
   const parsed = groupSettingsSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Revisa los campos.", fieldErrors: fieldErrors(parsed.error) };
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: "Revisa los campos.",
+      fieldErrors: fieldErrors(parsed.error),
+    };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
   const g = parsed.data;
@@ -136,7 +176,8 @@ export async function updateGroupSettings(input: z.input<typeof groupSettingsSch
     .eq("id", g.groupId)
     .select("id");
   if (error) return fail(error, "updateGroupSettings");
-  if (!data?.length) return { ok: false, error: "No tienes permiso para hacer esto." };
+  if (!data?.length)
+    return { ok: false, error: "No tienes permiso para hacer esto." };
   refreshApp();
   return { ok: true, data: undefined };
 }
@@ -146,27 +187,44 @@ export async function deleteGroup(groupId: string): Promise<ActionResult> {
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
-  const { error } = await supabase.rpc("delete_group", { p_group_id: parsed.data });
+  const { error } = await supabase.rpc("delete_group", {
+    p_group_id: parsed.data,
+  });
   if (error) return fail(error, "deleteGroup");
   refreshApp();
   redirect("/today");
 }
 
-const memberActionSchema = z.object({ groupId: uuidSchema, userId: uuidSchema });
+const memberActionSchema = z.object({
+  groupId: uuidSchema,
+  userId: uuidSchema,
+});
 
-export async function removeMember(input: { groupId: string; userId: string }): Promise<ActionResult> {
+export async function removeMember(input: {
+  groupId: string;
+  userId: string;
+}): Promise<ActionResult> {
   const parsed = memberActionSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
-  const { error } = await supabase.rpc("remove_member", { p_group_id: parsed.data.groupId, p_user_id: parsed.data.userId });
+  const { error } = await supabase.rpc("remove_member", {
+    p_group_id: parsed.data.groupId,
+    p_user_id: parsed.data.userId,
+  });
   if (error) return fail(error, "removeMember");
   refreshApp();
   return { ok: true, data: undefined };
 }
 
-export async function setMemberRole(input: { groupId: string; userId: string; role: GroupRole }): Promise<ActionResult> {
-  const parsed = memberActionSchema.extend({ role: z.enum(["admin", "member"]) }).safeParse(input);
+export async function setMemberRole(input: {
+  groupId: string;
+  userId: string;
+  role: GroupRole;
+}): Promise<ActionResult> {
+  const parsed = memberActionSchema
+    .extend({ role: z.enum(["admin", "member"]) })
+    .safeParse(input);
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
@@ -180,12 +238,18 @@ export async function setMemberRole(input: { groupId: string; userId: string; ro
   return { ok: true, data: undefined };
 }
 
-export async function transferAdmin(input: { groupId: string; userId: string }): Promise<ActionResult> {
+export async function transferAdmin(input: {
+  groupId: string;
+  userId: string;
+}): Promise<ActionResult> {
   const parsed = memberActionSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
-  const { error } = await supabase.rpc("transfer_admin", { p_group_id: parsed.data.groupId, p_user_id: parsed.data.userId });
+  const { error } = await supabase.rpc("transfer_admin", {
+    p_group_id: parsed.data.groupId,
+    p_user_id: parsed.data.userId,
+  });
   if (error) return fail(error, "transferAdmin");
   refreshApp();
   return { ok: true, data: undefined };
@@ -195,7 +259,12 @@ export async function createInvitation(
   input: z.input<typeof createInvitationSchema>,
 ): Promise<ActionResult<GroupInvitationRow>> {
   const parsed = createInvitationSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Revisa los campos.", fieldErrors: fieldErrors(parsed.error) };
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: "Revisa los campos.",
+      fieldErrors: fieldErrors(parsed.error),
+    };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
   const { data, error } = await supabase.rpc("create_invitation", {
@@ -208,19 +277,25 @@ export async function createInvitation(
   return { ok: true, data };
 }
 
-export async function revokeInvitation(invitationId: string): Promise<ActionResult> {
+export async function revokeInvitation(
+  invitationId: string,
+): Promise<ActionResult> {
   const parsed = uuidSchema.safeParse(invitationId);
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
-  const { error } = await supabase.rpc("revoke_invitation", { p_invitation_id: parsed.data });
+  const { error } = await supabase.rpc("revoke_invitation", {
+    p_invitation_id: parsed.data,
+  });
   if (error) return fail(error, "revokeInvitation");
   revalidatePath("/group/admin");
   return { ok: true, data: undefined };
 }
 
 /** Regenerar = revocar todas las activas y crear una nueva con la misma política. */
-export async function regenerateInvitation(input: z.input<typeof createInvitationSchema>): Promise<ActionResult<GroupInvitationRow>> {
+export async function regenerateInvitation(
+  input: z.input<typeof createInvitationSchema>,
+): Promise<ActionResult<GroupInvitationRow>> {
   const parsed = createInvitationSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
@@ -232,7 +307,9 @@ export async function regenerateInvitation(input: z.input<typeof createInvitatio
     .is("revoked_at", null);
   if (listError) return fail(listError, "regenerateInvitation:list");
   for (const inv of active ?? []) {
-    const { error } = await supabase.rpc("revoke_invitation", { p_invitation_id: inv.id });
+    const { error } = await supabase.rpc("revoke_invitation", {
+      p_invitation_id: inv.id,
+    });
     if (error) return fail(error, "regenerateInvitation:revoke");
   }
   return createInvitation(parsed.data);
@@ -241,9 +318,16 @@ export async function regenerateInvitation(input: z.input<typeof createInvitatio
 // -----------------------------------------------------------------------------
 // Hábitos del grupo
 // -----------------------------------------------------------------------------
-export async function saveHabit(input: z.input<typeof habitSchema>): Promise<ActionResult<{ id: string }>> {
+export async function saveHabit(
+  input: z.input<typeof habitSchema>,
+): Promise<ActionResult<{ id: string }>> {
   const parsed = habitSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Revisa los campos.", fieldErrors: fieldErrors(parsed.error) };
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: "Revisa los campos.",
+      fieldErrors: fieldErrors(parsed.error),
+    };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
   const h = parsed.data;
@@ -263,9 +347,15 @@ export async function saveHabit(input: z.input<typeof habitSchema>): Promise<Act
   };
 
   if (h.id) {
-    const { data, error } = await supabase.from("habits").update(row).eq("id", h.id).eq("group_id", h.groupId).select("id");
+    const { data, error } = await supabase
+      .from("habits")
+      .update(row)
+      .eq("id", h.id)
+      .eq("group_id", h.groupId)
+      .select("id");
     if (error) return fail(error, "saveHabit:update");
-    if (!data?.length) return { ok: false, error: "No tienes permiso para hacer esto." };
+    if (!data?.length)
+      return { ok: false, error: "No tienes permiso para hacer esto." };
     refreshApp();
     return { ok: true, data: { id: data[0].id } };
   }
@@ -278,7 +368,11 @@ export async function saveHabit(input: z.input<typeof habitSchema>): Promise<Act
     .limit(1);
   const { data, error } = await supabase
     .from("habits")
-    .insert({ ...row, group_id: h.groupId, sort_order: Math.min((last?.[0]?.sort_order ?? 0) + 10, 10000) })
+    .insert({
+      ...row,
+      group_id: h.groupId,
+      sort_order: Math.min((last?.[0]?.sort_order ?? 0) + 10, 10000),
+    })
     .select("id")
     .single();
   if (error || !data) return fail(error, "saveHabit:insert");
@@ -288,7 +382,10 @@ export async function saveHabit(input: z.input<typeof habitSchema>): Promise<Act
 
 const habitFlagSchema = z.object({ habitId: uuidSchema, value: z.boolean() });
 
-export async function setHabitActive(input: { habitId: string; value: boolean }): Promise<ActionResult> {
+export async function setHabitActive(input: {
+  habitId: string;
+  value: boolean;
+}): Promise<ActionResult> {
   const parsed = habitFlagSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
@@ -299,7 +396,8 @@ export async function setHabitActive(input: { habitId: string; value: boolean })
     .eq("id", parsed.data.habitId)
     .select("id");
   if (error) return fail(error, "setHabitActive");
-  if (!data?.length) return { ok: false, error: "No tienes permiso para hacer esto." };
+  if (!data?.length)
+    return { ok: false, error: "No tienes permiso para hacer esto." };
   refreshApp();
   return { ok: true, data: undefined };
 }
@@ -315,15 +413,24 @@ export async function archiveHabit(habitId: string): Promise<ActionResult> {
     .eq("id", parsed.data)
     .select("id");
   if (error) return fail(error, "archiveHabit");
-  if (!data?.length) return { ok: false, error: "No tienes permiso para hacer esto." };
+  if (!data?.length)
+    return { ok: false, error: "No tienes permiso para hacer esto." };
   refreshApp();
   return { ok: true, data: undefined };
 }
 
 /** Reordena intercambiando sort_order con el vecino. */
-export async function moveHabit(input: { groupId: string; habitId: string; direction: "up" | "down" }): Promise<ActionResult> {
+export async function moveHabit(input: {
+  groupId: string;
+  habitId: string;
+  direction: "up" | "down";
+}): Promise<ActionResult> {
   const parsed = z
-    .object({ groupId: uuidSchema, habitId: uuidSchema, direction: z.enum(["up", "down"]) })
+    .object({
+      groupId: uuidSchema,
+      habitId: uuidSchema,
+      direction: z.enum(["up", "down"]),
+    })
     .safeParse(input);
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
@@ -340,7 +447,8 @@ export async function moveHabit(input: { groupId: string; habitId: string; direc
 
   const index = habits.findIndex((h) => h.id === parsed.data.habitId);
   const swapWith = parsed.data.direction === "up" ? index - 1 : index + 1;
-  if (index < 0 || swapWith < 0 || swapWith >= habits.length) return { ok: true, data: undefined };
+  if (index < 0 || swapWith < 0 || swapWith >= habits.length)
+    return { ok: true, data: undefined };
 
   // Normaliza el orden (10, 20, 30…) y aplica el intercambio.
   const ordered = [...habits];
@@ -354,7 +462,8 @@ export async function moveHabit(input: { groupId: string; habitId: string; direc
       .eq("id", ordered[i].id)
       .select("id");
     if (updError) return fail(updError, "moveHabit:update");
-    if (!data?.length) return { ok: false, error: "No tienes permiso para hacer esto." };
+    if (!data?.length)
+      return { ok: false, error: "No tienes permiso para hacer esto." };
   }
   refreshApp();
   return { ok: true, data: undefined };

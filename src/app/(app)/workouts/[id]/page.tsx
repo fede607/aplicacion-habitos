@@ -8,22 +8,40 @@ import { WorkoutForm } from "@/components/workouts/workout-form";
 
 export const metadata: Metadata = { title: "Editar entrenamiento" };
 
-export default async function EditWorkoutPage({ params }: PageProps<"/workouts/[id]">) {
+export default async function EditWorkoutPage({
+  params,
+}: PageProps<"/workouts/[id]">) {
   const { id } = await params;
   if (!uuidSchema.safeParse(id).success) notFound();
   const { supabase, userId, today } = await requireFullAccess();
   // RLS garantiza que sólo se devuelven entrenamientos propios.
-  const { data: workout } = await supabase.from("workouts").select("*").eq("id", id).eq("user_id", userId).maybeSingle();
+  const { data: workout } = await supabase
+    .from("workouts")
+    .select("*")
+    .eq("id", id)
+    .eq("user_id", userId)
+    .maybeSingle();
   if (!workout) notFound();
   const minDate = addDays(today, -60);
   const editable = workout.workout_date >= minDate;
   return (
     <div className="mx-auto grid max-w-2xl gap-6">
-      <h1 className="text-2xl font-bold tracking-tight">Editar entrenamiento</h1>
-      {!editable ? <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-muted">Los entrenamientos de hace más de 60 días ya no se pueden editar.</p> : null}
+      <h1 className="text-2xl font-bold tracking-tight">
+        Editar entrenamiento
+      </h1>
+      {!editable ? (
+        <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-muted">
+          Los entrenamientos de hace más de 60 días ya no se pueden editar.
+        </p>
+      ) : null}
       <Card>
         <CardContent className="p-4 sm:p-6">
-          <WorkoutForm workout={workout} defaultDate={workout.workout_date} minDate={minDate} maxDate={today} />
+          <WorkoutForm
+            workout={workout}
+            defaultDate={workout.workout_date}
+            minDate={minDate}
+            maxDate={today}
+          />
         </CardContent>
       </Card>
     </div>

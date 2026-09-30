@@ -5,7 +5,16 @@
  * cruzar más de una división en un solo día.
  */
 
-export type TierFamily = "iron" | "bronze" | "silver" | "gold" | "platinum" | "diamond" | "master" | "elite" | "legend";
+export type TierFamily =
+  | "iron"
+  | "bronze"
+  | "silver"
+  | "gold"
+  | "platinum"
+  | "diamond"
+  | "master"
+  | "elite"
+  | "legend";
 
 export type Tier = {
   index: number;
@@ -42,16 +51,17 @@ export const FAMILY_COLORS: Record<TierFamily, { from: string; to: string }> = {
 
 const ROMAN = ["I", "II", "III"] as const;
 
-const FAMILY_MINS: [Exclude<TierFamily, "legend">, [number, number, number]][] = [
-  ["iron", [0, 6, 12]],
-  ["bronze", [18, 22, 26]],
-  ["silver", [30, 34, 38]],
-  ["gold", [42, 46, 50]],
-  ["platinum", [54, 58, 62]],
-  ["diamond", [66, 70, 74]],
-  ["master", [78, 81, 84]],
-  ["elite", [87, 89.5, 92]],
-];
+const FAMILY_MINS: [Exclude<TierFamily, "legend">, [number, number, number]][] =
+  [
+    ["iron", [0, 6, 12]],
+    ["bronze", [18, 22, 26]],
+    ["silver", [30, 34, 38]],
+    ["gold", [42, 46, 50]],
+    ["platinum", [54, 58, 62]],
+    ["diamond", [66, 70, 74]],
+    ["master", [78, 81, 84]],
+    ["elite", [87, 89.5, 92]],
+  ];
 
 export const LEGEND_MIN = 95;
 
@@ -65,7 +75,13 @@ export const TIERS: Tier[] = [
       min,
     })),
   ),
-  { index: 0, family: "legend" as const, division: null, name: FAMILY_LABELS.legend, min: LEGEND_MIN },
+  {
+    index: 0,
+    family: "legend" as const,
+    division: null,
+    name: FAMILY_LABELS.legend,
+    min: LEGEND_MIN,
+  },
 ].map((t, index) => ({ ...t, index }));
 
 export const LEGEND_INDEX = TIERS.length - 1;

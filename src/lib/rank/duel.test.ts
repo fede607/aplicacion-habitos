@@ -18,8 +18,18 @@ const WEEK = "2026-09-28"; // lunes
 
 describe("duelos", () => {
   it("media sólo de los días de la semana, sin contar descansos", () => {
-    const h = [pt("2026-09-27", 0), pt(WEEK, 100), pt("2026-09-29", 50), pt("2026-09-30", null), pt("2026-10-05", 0)];
-    expect(duelSide(h, WEEK, "2026-10-10", 80)).toEqual({ average: 75, scoredDays: 2, completeDays: 1 });
+    const h = [
+      pt("2026-09-27", 0),
+      pt(WEEK, 100),
+      pt("2026-09-29", 50),
+      pt("2026-09-30", null),
+      pt("2026-10-05", 0),
+    ];
+    expect(duelSide(h, WEEK, "2026-10-10", 80)).toEqual({
+      average: 75,
+      scoredDays: 2,
+      completeDays: 1,
+    });
   });
 
   it("durante la semana sólo cuenta hasta hoy", () => {
@@ -28,14 +38,38 @@ describe("duelos", () => {
   });
 
   it("sin días puntuados no hay media", () => {
-    expect(duelSide([], WEEK, "2026-10-01", 80)).toEqual({ average: null, scoredDays: 0, completeDays: 0 });
+    expect(duelSide([], WEEK, "2026-10-01", 80)).toEqual({
+      average: null,
+      scoredDays: 0,
+      completeDays: 0,
+    });
   });
 
   it("ganador por margen, desempate por días cumplidos y empate", () => {
-    expect(duelLeader({ average: 80, scoredDays: 7, completeDays: 5 }, { average: 70, scoredDays: 7, completeDays: 6 })).toBe("a");
-    expect(duelLeader({ average: 80, scoredDays: 7, completeDays: 4 }, { average: 80.2, scoredDays: 7, completeDays: 5 })).toBe("b");
-    expect(duelLeader({ average: 80, scoredDays: 7, completeDays: 5 }, { average: 80, scoredDays: 7, completeDays: 5 })).toBe("draw");
-    expect(duelLeader({ average: null, scoredDays: 0, completeDays: 0 }, { average: 10, scoredDays: 1, completeDays: 0 })).toBe("b");
+    expect(
+      duelLeader(
+        { average: 80, scoredDays: 7, completeDays: 5 },
+        { average: 70, scoredDays: 7, completeDays: 6 },
+      ),
+    ).toBe("a");
+    expect(
+      duelLeader(
+        { average: 80, scoredDays: 7, completeDays: 4 },
+        { average: 80.2, scoredDays: 7, completeDays: 5 },
+      ),
+    ).toBe("b");
+    expect(
+      duelLeader(
+        { average: 80, scoredDays: 7, completeDays: 5 },
+        { average: 80, scoredDays: 7, completeDays: 5 },
+      ),
+    ).toBe("draw");
+    expect(
+      duelLeader(
+        { average: null, scoredDays: 0, completeDays: 0 },
+        { average: 10, scoredDays: 1, completeDays: 0 },
+      ),
+    ).toBe("b");
   });
 
   it("la semana termina el domingo", () => {

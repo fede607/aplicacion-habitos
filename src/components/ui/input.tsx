@@ -7,16 +7,45 @@ export function Input({ className, ...props }: React.ComponentProps<"input">) {
   return <input className={cn(fieldBase, "h-11", className)} {...props} />;
 }
 
-export function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
-  return <textarea className={cn(fieldBase, "min-h-24 resize-y py-3 leading-relaxed", className)} {...props} />;
+export function Textarea({
+  className,
+  ...props
+}: React.ComponentProps<"textarea">) {
+  return (
+    <textarea
+      className={cn(
+        fieldBase,
+        "min-h-24 resize-y py-3 leading-relaxed",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
-export function Select({ className, ...props }: React.ComponentProps<"select">) {
-  return <select className={cn(fieldBase, "h-11 appearance-none bg-surface pr-8", className)} {...props} />;
+export function Select({
+  className,
+  ...props
+}: React.ComponentProps<"select">) {
+  return (
+    <select
+      className={cn(
+        fieldBase,
+        "h-11 appearance-none bg-surface pr-8",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 export function Label({ className, ...props }: React.ComponentProps<"label">) {
-  return <label className={cn("text-sm font-medium text-foreground", className)} {...props} />;
+  return (
+    <label
+      className={cn("text-sm font-medium text-foreground", className)}
+      {...props}
+    />
+  );
 }
 
 export function Field({

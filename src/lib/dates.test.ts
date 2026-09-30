@@ -28,13 +28,21 @@ describe("todayInTimeZone", () => {
 
   it("no se equivoca de día en el cambio de hora (DST)", () => {
     // 29 marzo 2026: en Madrid se pasa de 02:00 a 03:00.
-    expect(todayInTimeZone("Europe/Madrid", new Date("2026-03-28T23:30:00Z"))).toBe("2026-03-29");
-    expect(todayInTimeZone("Europe/Madrid", new Date("2026-03-29T21:59:00Z"))).toBe("2026-03-29");
-    expect(todayInTimeZone("Europe/Madrid", new Date("2026-03-29T22:00:00Z"))).toBe("2026-03-30");
+    expect(
+      todayInTimeZone("Europe/Madrid", new Date("2026-03-28T23:30:00Z")),
+    ).toBe("2026-03-29");
+    expect(
+      todayInTimeZone("Europe/Madrid", new Date("2026-03-29T21:59:00Z")),
+    ).toBe("2026-03-29");
+    expect(
+      todayInTimeZone("Europe/Madrid", new Date("2026-03-29T22:00:00Z")),
+    ).toBe("2026-03-30");
   });
 
   it("formatea la hora local en 24h", () => {
-    expect(timeInTimeZone("Europe/Madrid", new Date("2026-07-01T18:45:00Z"))).toBe("20:45");
+    expect(
+      timeInTimeZone("Europe/Madrid", new Date("2026-07-01T18:45:00Z")),
+    ).toBe("20:45");
   });
 });
 
@@ -63,7 +71,12 @@ describe("aritmética de días", () => {
     expect(endOfMonth("2028-02-10")).toBe("2028-02-29");
     expect(addMonths("2026-12", 1)).toBe("2027-01");
     expect(addMonths("2026-01", -1)).toBe("2025-12");
-    expect(eachDay("2026-01-30", "2026-02-02")).toEqual(["2026-01-30", "2026-01-31", "2026-02-01", "2026-02-02"]);
+    expect(eachDay("2026-01-30", "2026-02-02")).toEqual([
+      "2026-01-30",
+      "2026-01-31",
+      "2026-02-01",
+      "2026-02-02",
+    ]);
   });
 
   it("rejilla mensual empieza en lunes y tiene semanas completas", () => {

@@ -1,6 +1,13 @@
 "use client";
 
-import { Check, CircleCheck, CloudOff, LoaderCircle, Minus, X } from "lucide-react";
+import {
+  Check,
+  CircleCheck,
+  CloudOff,
+  LoaderCircle,
+  Minus,
+  X,
+} from "lucide-react";
 import type { HabitLogStatus, HabitRow } from "@/lib/database.types";
 import { describeFrequency } from "@/lib/labels";
 import { isRequiredOn } from "@/lib/stats";
@@ -38,16 +45,25 @@ export function TodayTracker({
   initialStatuses: Record<string, Status>;
   editable: boolean;
 }) {
-  const { statuses, saveStates, update, pendingCount } = useHabitSync(date, initialStatuses);
+  const { statuses, saveStates, update, pendingCount } = useHabitSync(
+    date,
+    initialStatuses,
+  );
 
   const required = habits.filter((h) => isRequiredOn(h, date));
   const weekly = habits.filter((h) => h.frequency === "weekly_target");
-  const others = habits.filter((h) => !required.includes(h) && !weekly.includes(h));
+  const others = habits.filter(
+    (h) => !required.includes(h) && !weekly.includes(h),
+  );
 
   const counted = required.filter((h) => statuses[h.id] !== "skipped");
   const done = counted.filter((h) => statuses[h.id] === "done").length;
-  const percent = counted.length ? Math.round((done / counted.length) * 100) : 0;
-  const anySaving = Object.values(saveStates).some((s) => s === "saving" || s === "retrying");
+  const percent = counted.length
+    ? Math.round((done / counted.length) * 100)
+    : 0;
+  const anySaving = Object.values(saveStates).some(
+    (s) => s === "saving" || s === "retrying",
+  );
 
   const cardProps = (h: TrackerHabit) => ({
     habit: h,
@@ -60,11 +76,16 @@ export function TodayTracker({
 
   return (
     <div className="grid gap-6">
-      <section aria-labelledby="progress-title" className="aurora relative overflow-hidden rounded-3xl border border-border bg-surface p-5 shadow-card sm:p-6">
+      <section
+        aria-labelledby="progress-title"
+        className="aurora relative overflow-hidden rounded-3xl border border-border bg-surface p-5 shadow-card sm:p-6"
+      >
         <div className="flex items-center gap-5 sm:gap-8">
           <ProgressRing value={percent} label={`Progreso de hoy: ${percent}%`}>
             <div className="text-center">
-              <div className="tabular text-3xl font-bold tracking-tight">{percent}%</div>
+              <div className="tabular text-3xl font-bold tracking-tight">
+                {percent}%
+              </div>
               <div className="text-xs text-muted">hoy</div>
             </div>
           </ProgressRing>
@@ -83,7 +104,8 @@ export function TodayTracker({
 
       {!editable ? (
         <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-muted">
-          Este día ya no es editable (sólo se pueden modificar los últimos 7 días).
+          Este día ya no es editable (sólo se pueden modificar los últimos 7
+          días).
         </p>
       ) : null}
 
@@ -95,7 +117,8 @@ export function TodayTracker({
         </HabitSection>
       ) : (
         <p className="rounded-2xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted">
-          Hoy no hay hábitos obligatorios. ¡Día de descanso! Puedes sumar puntos con los objetivos semanales.
+          Hoy no hay hábitos obligatorios. ¡Día de descanso! Puedes sumar puntos
+          con los objetivos semanales.
         </p>
       )}
 
@@ -108,7 +131,10 @@ export function TodayTracker({
       ) : null}
 
       {others.length > 0 ? (
-        <HabitSection title="Opcionales y otros días" subtitle="No cuentan para el % de hoy, pero suman XP.">
+        <HabitSection
+          title="Opcionales y otros días"
+          subtitle="No cuentan para el % de hoy, pero suman XP."
+        >
           {others.map((h) => (
             <HabitCard key={h.id} {...cardProps(h)} />
           ))}
@@ -121,14 +147,22 @@ export function TodayTracker({
 function SyncStatus({ pending, saving }: { pending: number; saving: boolean }) {
   if (saving || pending > 0) {
     return (
-      <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-muted" role="status" aria-live="polite">
+      <p
+        className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-muted"
+        role="status"
+        aria-live="polite"
+      >
         <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
         Guardando{pending > 1 ? ` ${pending} cambios` : ""}…
       </p>
     );
   }
   return (
-    <p className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-success" role="status" aria-live="polite">
+    <p
+      className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-success"
+      role="status"
+      aria-live="polite"
+    >
       <CircleCheck className="size-3.5" aria-hidden="true" />
       Todo guardado
     </p>
@@ -153,7 +187,11 @@ function HabitSection({
           <h2 className="text-base font-semibold tracking-tight">{title}</h2>
           {subtitle ? <p className="text-xs text-muted">{subtitle}</p> : null}
         </div>
-        {count ? <span className="tabular text-sm font-semibold text-muted">{count}</span> : null}
+        {count ? (
+          <span className="tabular text-sm font-semibold text-muted">
+            {count}
+          </span>
+        ) : null}
       </div>
       <ul className="grid gap-2.5 md:grid-cols-2">{children}</ul>
     </section>
@@ -183,7 +221,10 @@ function HabitCard({
   onChange: (status: Status) => void;
 }) {
   const done = status === "done";
-  const weeklyDone = habit.frequency === "weekly_target" ? habit.weekDone + (done ? 1 : 0) : null;
+  const weeklyDone =
+    habit.frequency === "weekly_target"
+      ? habit.weekDone + (done ? 1 : 0)
+      : null;
 
   return (
     <li
@@ -201,7 +242,14 @@ function HabitCard({
       </span>
 
       <div className="min-w-0 flex-1">
-        <p className={cn("font-semibold leading-tight break-words", done && "text-success")}>{habit.name}</p>
+        <p
+          className={cn(
+            "font-semibold leading-tight break-words",
+            done && "text-success",
+          )}
+        >
+          {habit.name}
+        </p>
         <p className="mt-0.5 text-xs text-muted">
           {[habit.goal, describeFrequency(habit)].filter(Boolean).join(" · ")}
           {weeklyDone !== null ? (
@@ -237,7 +285,9 @@ function HabitCard({
             )}
             aria-live="polite"
           >
-            {saveState === "retrying" ? <CloudOff className="mr-1 inline size-3" aria-hidden="true" /> : null}
+            {saveState === "retrying" ? (
+              <CloudOff className="mr-1 inline size-3" aria-hidden="true" />
+            ) : null}
             {SAVE_LABEL[saveState]}
           </span>
         </div>
@@ -248,7 +298,11 @@ function HabitCard({
         onClick={() => onChange(done ? null : "done")}
         disabled={!editable}
         aria-pressed={done}
-        aria-label={done ? `Desmarcar ${habit.name}` : `Marcar ${habit.name} como completado`}
+        aria-label={
+          done
+            ? `Desmarcar ${habit.name}`
+            : `Marcar ${habit.name} como completado`
+        }
         className={cn(
           "grid size-12 shrink-0 place-items-center self-center rounded-2xl border-2 transition-all active:scale-90 disabled:cursor-not-allowed disabled:opacity-50",
           done
@@ -285,8 +339,12 @@ function StatusChip({
       aria-pressed={active}
       className={cn(
         "inline-flex h-8 items-center gap-1 rounded-full border border-border px-2.5 text-xs font-medium text-muted transition-colors hover:text-foreground disabled:opacity-50 [&_svg]:size-3.5",
-        active && tone === "danger" && "border-danger/40 bg-danger-soft text-danger hover:text-danger",
-        active && tone === "neutral" && "border-foreground/20 bg-surface-2 text-foreground",
+        active &&
+          tone === "danger" &&
+          "border-danger/40 bg-danger-soft text-danger hover:text-danger",
+        active &&
+          tone === "neutral" &&
+          "border-foreground/20 bg-surface-2 text-foreground",
       )}
     >
       {icon}

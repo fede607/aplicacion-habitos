@@ -5,9 +5,13 @@
  * de que se monte cualquier botón, así que se captura al cargar la app y se
  * guarda aquí; los componentes se suscriben con useSyncExternalStore.
  */
-type InstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: "accepted" | "dismissed" }> };
+type InstallPromptEvent = Event & {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+};
 
-export type InstallPlatform = "unknown" | "installed" | "android" | "ios" | "inapp" | "desktop";
+export type InstallPlatform =
+  "unknown" | "installed" | "android" | "ios" | "inapp" | "desktop";
 
 let deferred: InstallPromptEvent | null = null;
 let installed = false;
@@ -36,11 +40,15 @@ export function subscribe(listener: () => void) {
 export function getPlatform(): InstallPlatform {
   if (installed) return "installed";
   const standalone =
-    window.matchMedia?.("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+    window.matchMedia?.("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
   if (standalone) return "installed";
   const ua = navigator.userAgent;
-  if (/Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Snapchat|Line\//i.test(ua)) return "inapp";
-  const ios = /iPad|iPhone|iPod/.test(ua) || (ua.includes("Macintosh") && navigator.maxTouchPoints > 1);
+  if (/Instagram|FBAN|FBAV|FB_IAB|TikTok|musical_ly|Snapchat|Line\//i.test(ua))
+    return "inapp";
+  const ios =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (ua.includes("Macintosh") && navigator.maxTouchPoints > 1);
   if (ios) return "ios";
   if (/Android/i.test(ua)) return "android";
   return "desktop";

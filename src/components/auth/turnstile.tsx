@@ -22,10 +22,12 @@ declare global {
   }
 }
 
-export const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+export const TURNSTILE_SITE_KEY =
+  process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
 export const captchaEnabled = TURNSTILE_SITE_KEY !== "";
 
-const SCRIPT_SRC = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+const SCRIPT_SRC =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 let scriptPromise: Promise<TurnstileApi> | null = null;
 
 function loadTurnstile(): Promise<TurnstileApi> {
@@ -35,7 +37,10 @@ function loadTurnstile(): Promise<TurnstileApi> {
       const script = document.createElement("script");
       script.src = SCRIPT_SRC;
       script.async = true;
-      script.onload = () => (window.turnstile ? resolve(window.turnstile) : reject(new Error("turnstile")));
+      script.onload = () =>
+        window.turnstile
+          ? resolve(window.turnstile)
+          : reject(new Error("turnstile"));
       script.onerror = () => {
         scriptPromise = null;
         reject(new Error("turnstile"));
@@ -84,7 +89,8 @@ export function Turnstile({
       .catch(() => errorCb.current?.());
     return () => {
       cancelled = true;
-      if (widgetId.current && window.turnstile) window.turnstile.remove(widgetId.current);
+      if (widgetId.current && window.turnstile)
+        window.turnstile.remove(widgetId.current);
       widgetId.current = null;
     };
   }, []);
@@ -97,10 +103,18 @@ export function Turnstile({
   }, [resetSignal]);
 
   if (!captchaEnabled) return null;
-  return <div ref={container} className="min-h-[65px]" aria-label="Verificación anti-bots" />;
+  return (
+    <div
+      ref={container}
+      className="min-h-[65px]"
+      aria-label="Verificación anti-bots"
+    />
+  );
 }
 
 /** Estado del captcha para un formulario. */
-export function captchaOptions(token: string | null): { captchaToken?: string } {
+export function captchaOptions(token: string | null): {
+  captchaToken?: string;
+} {
   return captchaEnabled && token ? { captchaToken: token } : {};
 }

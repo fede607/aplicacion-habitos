@@ -32,7 +32,8 @@ export type ScheduleHabit = {
   starts_on: IsoDate;
 };
 
-export type DayLevel = "complete" | "partial" | "low" | "rest" | "none" | "future";
+export type DayLevel =
+  "complete" | "partial" | "low" | "rest" | "none" | "future";
 
 /** ¿Está programado el hábito ese día? (independiente de si es obligatorio). */
 export function isScheduledOn(habit: ScheduleHabit, day: IsoDate): boolean {
@@ -49,33 +50,61 @@ export function isScheduledOn(habit: ScheduleHabit, day: IsoDate): boolean {
 
 /** ¿Cuenta en el % diario? */
 export function isRequiredOn(habit: ScheduleHabit, day: IsoDate): boolean {
-  return !habit.is_optional && habit.frequency !== "weekly_target" && isScheduledOn(habit, day);
+  return (
+    !habit.is_optional &&
+    habit.frequency !== "weekly_target" &&
+    isScheduledOn(habit, day)
+  );
 }
 
-export function dayPercent(stat: Pick<DayStat, "required" | "completed">): number | null {
+export function dayPercent(
+  stat: Pick<DayStat, "required" | "completed">,
+): number | null {
   if (stat.required <= 0) return null;
-  return Math.round((Math.min(stat.completed, stat.required) / stat.required) * 100);
+  return Math.round(
+    (Math.min(stat.completed, stat.required) / stat.required) * 100,
+  );
 }
 
-export function isGoodDay(stat: Pick<DayStat, "required" | "completed">, threshold: number): boolean {
+export function isGoodDay(
+  stat: Pick<DayStat, "required" | "completed">,
+  threshold: number,
+): boolean {
   return stat.required > 0 && stat.completed * 100 >= stat.required * threshold;
 }
 
-export function dayLevel(stat: DayStat | undefined, threshold: number, day: IsoDate, today: IsoDate): DayLevel {
+export function dayLevel(
+  stat: DayStat | undefined,
+  threshold: number,
+  day: IsoDate,
+  today: IsoDate,
+): DayLevel {
   if (day > today) return "future";
   if (!stat) return "none";
   if (stat.required === 0) return stat.bonus > 0 ? "rest" : "none";
   const pct = dayPercent(stat) ?? 0;
   if (isGoodDay(stat, threshold)) return "complete";
-  if (stat.completed === 0 && stat.skipped === 0 && day !== today && stat.bonus === 0) return "none";
+  if (
+    stat.completed === 0 &&
+    stat.skipped === 0 &&
+    day !== today &&
+    stat.bonus === 0
+  )
+    return "none";
   return pct >= 40 ? "partial" : "low";
 }
 
 export type Streaks = { current: number; best: number };
 
 /** Rachas de días cumplidos a partir de una serie diaria (cualquier orden). */
-export function computeStreaks(stats: DayStat[], threshold: number, today: IsoDate): Streaks {
-  const sorted = [...stats].filter((s) => s.day <= today).sort((a, b) => (a.day < b.day ? -1 : 1));
+export function computeStreaks(
+  stats: DayStat[],
+  threshold: number,
+  today: IsoDate,
+): Streaks {
+  const sorted = [...stats]
+    .filter((s) => s.day <= today)
+    .sort((a, b) => (a.day < b.day ? -1 : 1));
   let run = 0;
   let best = 0;
   let prevDay: IsoDate | null = null;
@@ -95,9 +124,18 @@ export function computeStreaks(stats: DayStat[], threshold: number, today: IsoDa
   return { current: run, best };
 }
 
-export type Totals = { required: number; completed: number; percent: number | null; activeDays: number };
+export type Totals = {
+  required: number;
+  completed: number;
+  percent: number | null;
+  activeDays: number;
+};
 
-export function summarize(stats: DayStat[], from: IsoDate, to: IsoDate): Totals {
+export function summarize(
+  stats: DayStat[],
+  from: IsoDate,
+  to: IsoDate,
+): Totals {
   let required = 0;
   let completed = 0;
   let activeDays = 0;
@@ -137,7 +175,8 @@ export function habitStreak(
     for (let i = 0; i < Math.ceil(maxLookbackDays / 7); i++) {
       if (addDays(weekStart, 6) < habit.starts_on) break;
       let done = 0;
-      for (let d = 0; d < 7; d++) if (logs.get(addDays(weekStart, d)) === "done") done += 1;
+      for (let d = 0; d < 7; d++)
+        if (logs.get(addDays(weekStart, d)) === "done") done += 1;
       const isCurrent = weekStart === startOfIsoWeek(today);
       if (done >= target) weeks += 1;
       else if (!isCurrent) break;
@@ -153,7 +192,8 @@ export function habitStreak(
     if (!isScheduledOn(habit, day)) continue;
     const status = logs.get(day);
     if (status === "done") count += 1;
-    else if (status === "skipped" || (day === today && status === undefined)) continue;
+    else if (status === "skipped" || (day === today && status === undefined))
+      continue;
     else break;
   }
   return { value: count, unit: "days" };
@@ -165,8 +205,13 @@ export function weeklyTargetProgress(
   target: number,
 ): { done: number; target: number; percent: number } {
   let done = 0;
-  for (let d = 0; d < 7; d++) if (logs.get(addDays(weekStart, d)) === "done") done += 1;
-  return { done, target, percent: Math.min(100, Math.round((done / target) * 100)) };
+  for (let d = 0; d < 7; d++)
+    if (logs.get(addDays(weekStart, d)) === "done") done += 1;
+  return {
+    done,
+    target,
+    percent: Math.min(100, Math.round((done / target) * 100)),
+  };
 }
 
 // -----------------------------------------------------------------------------
@@ -193,10 +238,20 @@ export function xpForLevel(level: number): number {
   return (100 * (level - 1) * level) / 2;
 }
 
-export function levelFromXp(xp: number): { level: number; current: number; next: number; progress: number } {
+export function levelFromXp(xp: number): {
+  level: number;
+  current: number;
+  next: number;
+  progress: number;
+} {
   let level = 1;
   while (xpForLevel(level + 1) <= xp) level += 1;
   const current = xpForLevel(level);
   const next = xpForLevel(level + 1);
-  return { level, current, next, progress: Math.round(((xp - current) / (next - current)) * 100) };
+  return {
+    level,
+    current,
+    next,
+    progress: Math.round(((xp - current) / (next - current)) * 100),
+  };
 }

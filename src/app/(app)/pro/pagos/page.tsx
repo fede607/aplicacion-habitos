@@ -3,8 +3,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { requireSession } from "@/lib/data/session";
-import { PAYPAL_ME_URL, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  PAYPAL_ME_URL,
+  PRO_MONTH_EUR,
+  PRO_YEAR_EUR,
+} from "@/lib/billing/paypal-me";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ProManager, type ProMember } from "@/components/admin/pro-manager";
 
 export const metadata: Metadata = { title: "Pagos Pro" };
@@ -13,7 +23,10 @@ export default async function StaffPaymentsPage() {
   const { supabase, profile } = await requireSession();
   const { data: isStaff } = await supabase.rpc("am_i_staff");
   if (!isStaff) notFound();
-  const [{ data }, { data: metricsRows }] = await Promise.all([supabase.rpc("staff_pro_list"), supabase.rpc("staff_metrics")]);
+  const [{ data }, { data: metricsRows }] = await Promise.all([
+    supabase.rpc("staff_pro_list"),
+    supabase.rpc("staff_metrics"),
+  ]);
   const m = metricsRows?.[0];
   const members: ProMember[] = (data ?? []).map((r) => ({
     userId: r.user_id,
@@ -31,29 +44,52 @@ export default async function StaffPaymentsPage() {
   return (
     <div className="mx-auto grid max-w-3xl gap-6">
       <header>
-        <Link href="/pro" className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground">
+        <Link
+          href="/pro"
+          className="inline-flex items-center gap-1 text-sm text-muted hover:text-foreground"
+        >
           <ChevronLeft className="size-4" aria-hidden="true" /> Pro
         </Link>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">Pagos Pro</h1>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
+          Pagos Pro
+        </h1>
         <p className="text-sm text-muted">
           {members.length} usuarios · {proCount} con Pro ahora mismo
         </p>
       </header>
       {m ? (
-        <section className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Métricas">
+        <section
+          className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+          aria-label="Métricas"
+        >
           {[
             ["Usuarios", m.users, ""],
-            ["Activos hoy", m.active_today, `${m.users ? Math.round((m.active_today / m.users) * 100) : 0}%`],
-            ["Activos 7 días", m.active_7d, `${m.users ? Math.round((m.active_7d / m.users) * 100) : 0}%`],
+            [
+              "Activos hoy",
+              m.active_today,
+              `${m.users ? Math.round((m.active_today / m.users) * 100) : 0}%`,
+            ],
+            [
+              "Activos 7 días",
+              m.active_7d,
+              `${m.users ? Math.round((m.active_7d / m.users) * 100) : 0}%`,
+            ],
             ["Pro activado (pago)", m.paid, "manual o automático"],
             ["En prueba gratis", m.on_trial, ""],
-            ["Prueba acaba ≤7 días", m.trials_ending_7d, m.trials_ending_7d ? "¡avísales!" : ""],
+            [
+              "Prueba acaba ≤7 días",
+              m.trials_ending_7d,
+              m.trials_ending_7d ? "¡avísales!" : "",
+            ],
             ["Versión gratis", m.free_only, ""],
             ["Pro para siempre", m.lifetime, ""],
             ["Móviles con avisos", m.push_devices, ""],
             ["Amigos invitados", m.referrals, ""],
           ].map(([label, value, sub]) => (
-            <div key={String(label)} className="rounded-2xl border border-border bg-surface p-3">
+            <div
+              key={String(label)}
+              className="rounded-2xl border border-border bg-surface p-3"
+            >
               <p className="text-[11px] text-muted">{label}</p>
               <p className="tabular text-2xl font-bold">{value}</p>
               {sub ? <p className="text-[11px] text-muted">{sub}</p> : null}
@@ -65,19 +101,31 @@ export default async function StaffPaymentsPage() {
       <Card>
         <CardHeader>
           <div>
-            <CardTitle className="text-base">Activar Pro tras un pago</CardTitle>
+            <CardTitle className="text-base">
+              Activar Pro tras un pago
+            </CardTitle>
             <CardDescription>
               Cuando te llegue un pago a{" "}
-              <a href={PAYPAL_ME_URL} target="_blank" rel="noopener noreferrer" className="font-medium text-primary underline">
+              <a
+                href={PAYPAL_ME_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary underline"
+              >
                 tu PayPal.me
               </a>{" "}
-              ({PRO_MONTH_EUR} € = 1 mes, {PRO_YEAR_EUR} € = 1 año), busca el @usuario de la nota y pulsa el botón. Si aún está en su mes gratis, se
-              suma al final. Sólo tú ves esta página.
+              ({PRO_MONTH_EUR} € = 1 mes, {PRO_YEAR_EUR} € = 1 año), busca el
+              @usuario de la nota y pulsa el botón. Si aún está en su mes
+              gratis, se suma al final. Sólo tú ves esta página.
             </CardDescription>
           </div>
         </CardHeader>
         <CardContent>
-          <ProManager members={members} timeZone={profile.timezone} nowMs={new Date().getTime()} />
+          <ProManager
+            members={members}
+            timeZone={profile.timezone}
+            nowMs={new Date().getTime()}
+          />
         </CardContent>
       </Card>
     </div>

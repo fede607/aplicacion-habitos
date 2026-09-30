@@ -17,7 +17,8 @@ const STATUS_TEXT: Record<string, string> = {
   expired: "Esta invitación ha caducado. Pide un enlace nuevo.",
   exhausted: "Esta invitación ya se ha usado el máximo de veces.",
   full: "El grupo está completo.",
-  rate_limited: "Demasiados intentos. Espera unos minutos y vuelve a intentarlo.",
+  rate_limited:
+    "Demasiados intentos. Espera unos minutos y vuelve a intentarlo.",
 };
 
 /**
@@ -36,7 +37,10 @@ export default async function JoinPage({ params }: PageProps<"/join/[code]">) {
   let description: string | null = null;
 
   if (code && session) {
-    const { data, error } = await session.supabase.rpc("get_invitation_preview", { p_code: code });
+    const { data, error } = await session.supabase.rpc(
+      "get_invitation_preview",
+      { p_code: code },
+    );
     if (error?.code === "WA429") status = "rate_limited";
     else if (data?.[0]) {
       if (data[0].already_member) redirect("/today");
@@ -47,7 +51,9 @@ export default async function JoinPage({ params }: PageProps<"/join/[code]">) {
     }
   } else if (code) {
     const supabase = await createClient();
-    const { data, error } = await supabase.rpc("invite_signup_preview", { p_code: code });
+    const { data, error } = await supabase.rpc("invite_signup_preview", {
+      p_code: code,
+    });
     if (error?.code === "WA429") status = "rate_limited";
     else if (data?.[0]) {
       status = data[0].status;
@@ -66,8 +72,12 @@ export default async function JoinPage({ params }: PageProps<"/join/[code]">) {
             </div>
             <div>
               <p className="text-sm text-muted">Te han invitado a</p>
-              <h1 className="mt-1 text-2xl font-bold tracking-tight break-words">{groupName}</h1>
-              {description ? <p className="mt-2 text-sm text-muted">{description}</p> : null}
+              <h1 className="mt-1 text-2xl font-bold tracking-tight break-words">
+                {groupName}
+              </h1>
+              {description ? (
+                <p className="mt-2 text-sm text-muted">{description}</p>
+              ) : null}
               {memberCount !== null ? (
                 <p className="mt-2 text-sm text-muted">
                   {memberCount} {memberCount === 1 ? "miembro" : "miembros"}
@@ -82,7 +92,11 @@ export default async function JoinPage({ params }: PageProps<"/join/[code]">) {
                   <Link href={`/register?invite=${code}`}>Crear mi cuenta</Link>
                 </Button>
                 <Button asChild variant="outline">
-                  <Link href={`/login?next=${encodeURIComponent(`/join/${code}`)}`}>Ya tengo cuenta</Link>
+                  <Link
+                    href={`/login?next=${encodeURIComponent(`/join/${code}`)}`}
+                  >
+                    Ya tengo cuenta
+                  </Link>
                 </Button>
               </div>
             )}
@@ -90,9 +104,13 @@ export default async function JoinPage({ params }: PageProps<"/join/[code]">) {
         ) : (
           <>
             <h1 className="text-xl font-bold">Invitación no disponible</h1>
-            <p className="text-sm text-muted">{STATUS_TEXT[status] ?? STATUS_TEXT.invalid}</p>
+            <p className="text-sm text-muted">
+              {STATUS_TEXT[status] ?? STATUS_TEXT.invalid}
+            </p>
             <Button asChild variant="secondary">
-              <Link href={session ? "/onboarding" : "/login"}>{session ? "Introducir un código" : "Entrar"}</Link>
+              <Link href={session ? "/onboarding" : "/login"}>
+                {session ? "Introducir un código" : "Entrar"}
+              </Link>
             </Button>
           </>
         )}

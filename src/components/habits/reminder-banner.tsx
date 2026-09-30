@@ -30,12 +30,17 @@ export function ReminderBanner({
     };
   }, [timezone]);
 
-  if (!enabled || !now || pendingHabits === 0 || now < reminderTime.slice(0, 5)) return null;
+  if (!enabled || !now || pendingHabits === 0 || now < reminderTime.slice(0, 5))
+    return null;
   return (
-    <div role="status" className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary-soft px-4 py-3 text-sm">
+    <div
+      role="status"
+      className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary-soft px-4 py-3 text-sm"
+    >
       <Bell className="size-5 shrink-0 text-primary" aria-hidden="true" />
       <p>
-        Son las <strong className="tabular">{now}</strong>. Te quedan <strong>{pendingHabits}</strong> hábitos por marcar hoy.
+        Son las <strong className="tabular">{now}</strong>. Te quedan{" "}
+        <strong>{pendingHabits}</strong> hábitos por marcar hoy.
       </p>
     </div>
   );

@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-  if (error || !data.user) return NextResponse.redirect(new URL("/login?error=oauth", site));
+  if (error || !data.user)
+    return NextResponse.redirect(new URL("/login?error=oauth", site));
   const user = data.user;
 
   const cookieStore = await cookies();
@@ -30,20 +31,31 @@ export async function GET(request: NextRequest) {
   cookieStore.delete({ name: OAUTH_INVITE_COOKIE, path: "/auth" });
 
   if (invite) {
-    const { error: joinError } = await supabase.rpc("join_group", { p_code: invite });
+    const { error: joinError } = await supabase.rpc("join_group", {
+      p_code: invite,
+    });
     if (joinError) logServerError("oauth:join", joinError);
   }
 
-  const { count } = await supabase.from("group_members").select("group_id", { count: "exact", head: true }).eq("user_id", user.id);
-  const isNew = Date.now() - new Date(user.created_at).getTime() < 10 * 60 * 1000;
+  const { count } = await supabase
+    .from("group_members")
+    .select("group_id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+  const isNew =
+    Date.now() - new Date(user.created_at).getTime() < 10 * 60 * 1000;
   if ((count ?? 0) === 0 && isNew) {
     const { data: staff } = await supabase.rpc("am_i_staff");
     if (!staff) {
       await supabase.auth.signOut();
-      const { error: delError } = await createAdminClient().auth.admin.deleteUser(user.id);
+      const { error: delError } =
+        await createAdminClient().auth.admin.deleteUser(user.id);
       if (delError) logServerError("oauth:delete-orphan", delError);
-      return NextResponse.redirect(new URL("/login?error=invite_required", site));
+      return NextResponse.redirect(
+        new URL("/login?error=invite_required", site),
+      );
     }
   }
-  return NextResponse.redirect(new URL((count ?? 0) === 0 ? "/onboarding" : next, site));
+  return NextResponse.redirect(
+    new URL((count ?? 0) === 0 ? "/onboarding" : next, site),
+  );
 }

@@ -19,11 +19,14 @@ export function ForgotPasswordForm() {
 
   if (sent) {
     return (
-      <div className="grid justify-items-center gap-3 text-center" role="status">
+      <div
+        className="grid justify-items-center gap-3 text-center"
+        role="status"
+      >
         <MailCheck className="size-10 text-primary" aria-hidden="true" />
         <p className="text-sm text-muted">
-          Si existe una cuenta con ese email, recibirás un enlace para restablecer la contraseña. Ábrelo en este mismo
-          navegador.
+          Si existe una cuenta con ese email, recibirás un enlace para
+          restablecer la contraseña. Ábrelo en este mismo navegador.
         </p>
       </div>
     );
@@ -34,7 +37,9 @@ export function ForgotPasswordForm() {
       noValidate
       onSubmit={async (e) => {
         e.preventDefault();
-        const parsed = forgotPasswordSchema.safeParse({ email: new FormData(e.currentTarget).get("email") });
+        const parsed = forgotPasswordSchema.safeParse({
+          email: new FormData(e.currentTarget).get("email"),
+        });
         if (!parsed.success) {
           setFieldError("Email no válido");
           return;
@@ -46,11 +51,18 @@ export function ForgotPasswordForm() {
         setPending(true);
         setFieldError(undefined);
         try {
-          const { error: authError } = await getBrowserClient().auth.resetPasswordForEmail(parsed.data.email, {
-            redirectTo: `${window.location.origin}/auth/confirm?next=/reset-password`,
-            ...captcha.options,
-          });
-          if (authError?.status === 429 || authError?.code === "captcha_failed") {
+          const { error: authError } =
+            await getBrowserClient().auth.resetPasswordForEmail(
+              parsed.data.email,
+              {
+                redirectTo: `${window.location.origin}/auth/confirm?next=/reset-password`,
+                ...captcha.options,
+              },
+            );
+          if (
+            authError?.status === 429 ||
+            authError?.code === "captcha_failed"
+          ) {
             setError(authError.status === 429 ? TOO_MANY : CAPTCHA_PENDING);
             setPending(false);
             captcha.reset();
@@ -66,9 +78,21 @@ export function ForgotPasswordForm() {
     >
       <FormError message={error} />
       <Field label="Email" htmlFor="email" error={fieldError}>
-        <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" required aria-invalid={!!fieldError} />
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+          required
+          aria-invalid={!!fieldError}
+        />
       </Field>
-      <Turnstile onToken={captcha.setToken} resetSignal={captcha.resetSignal} onLoadError={captcha.onLoadError} />
+      <Turnstile
+        onToken={captcha.setToken}
+        resetSignal={captcha.resetSignal}
+        onLoadError={captcha.onLoadError}
+      />
       {captcha.loadError ? <FormError message={CAPTCHA_LOAD_ERROR} /> : null}
       <SubmitButton pending={pending} pendingText="Enviando…">
         Enviar enlace

@@ -1,9 +1,22 @@
 import "server-only";
 import type { ServerSupabase } from "../supabase/server";
-import type { HabitCategory, HabitLogStatus, HabitRevisionRow, RankSnapshotRow } from "../database.types";
+import type {
+  HabitCategory,
+  HabitLogStatus,
+  HabitRevisionRow,
+  RankSnapshotRow,
+} from "../database.types";
 import { addDays, type IsoDate } from "../dates";
 import { logServerError } from "../errors";
-import { computeRank, localDateOf, phaseFor, RANK_CONFIG, type RankHabitRevision, type RankLog, type RankResult } from "../rank/engine";
+import {
+  computeRank,
+  localDateOf,
+  phaseFor,
+  RANK_CONFIG,
+  type RankHabitRevision,
+  type RankLog,
+  type RankResult,
+} from "../rank/engine";
 
 export type RankHabitMeta = {
   id: string;
@@ -18,12 +31,22 @@ export type RankHabitMeta = {
 
 export type MemberRank = { result: RankResult; habits: RankHabitMeta[] };
 
-type RankGroup = { id: string; start_date: IsoDate; end_date: IsoDate; streak_threshold: number };
+type RankGroup = {
+  id: string;
+  start_date: IsoDate;
+  end_date: IsoDate;
+  streak_threshold: number;
+};
 
 const LOG_PAGE = 1000;
 
 /** Ventana del cálculo: desde que empezó el arc (o te uniste) hasta hoy (o el final del arc). */
-export function rankRange(group: RankGroup, joinedAt: string, timeZone: string, today: IsoDate) {
+export function rankRange(
+  group: RankGroup,
+  joinedAt: string,
+  timeZone: string,
+  today: IsoDate,
+) {
   const joinedOn = localDateOf(joinedAt, timeZone) ?? group.start_date;
   let from = group.start_date > joinedOn ? group.start_date : joinedOn;
   const limit = addDays(today, -RANK_CONFIG.maxRangeDays);
@@ -35,7 +58,13 @@ export function rankRange(group: RankGroup, joinedAt: string, timeZone: string, 
 /** Calcula el rango de un miembro (RLS decide qué registros puede ver quien pregunta). */
 export async function getMemberRank(
   supabase: ServerSupabase,
-  opts: { group: RankGroup; memberId: string; joinedAt: string; timeZone: string; today: IsoDate },
+  opts: {
+    group: RankGroup;
+    memberId: string;
+    joinedAt: string;
+    timeZone: string;
+    today: IsoDate;
+  },
 ): Promise<MemberRank> {
   const { group, memberId, joinedAt, timeZone, today } = opts;
   const { from, to } = rankRange(group, joinedAt, timeZone, today);
@@ -44,11 +73,15 @@ export async function getMemberRank(
     supabase.from("habit_revisions").select("*").eq("group_id", group.id),
     supabase
       .from("habits")
-      .select("id, name, icon, color, category, weight, archived_at, is_active, sort_order, created_at")
+      .select(
+        "id, name, icon, color, category, weight, archived_at, is_active, sort_order, created_at",
+      )
       .eq("group_id", group.id)
       .order("sort_order")
       .order("created_at"),
-    to >= from ? fetchLogs(supabase, group.id, memberId, from, to) : Promise.resolve([]),
+    to >= from
+      ? fetchLogs(supabase, group.id, memberId, from, to)
+      : Promise.resolve([]),
   ]);
   if (revRes.error) logServerError("getMemberRank:revisions", revRes.error);
   if (habitRes.error) logServerError("getMemberRank:habits", habitRes.error);
@@ -56,7 +89,13 @@ export async function getMemberRank(
   const revisions = toRankRevisions(revRes.data ?? []);
   const rankLogs = toRankLogs(logs, timeZone);
 
-  const result = computeRank({ from, today: to, threshold: group.streak_threshold, revisions, logs: rankLogs });
+  const result = computeRank({
+    from,
+    today: to,
+    threshold: group.streak_threshold,
+    revisions,
+    logs: rankLogs,
+  });
   const habits: RankHabitMeta[] = (habitRes.data ?? []).map((h) => ({
     id: h.id,
     name: h.name,
@@ -86,12 +125,36 @@ export function toRankRevisions(rows: HabitRevisionRow[]): RankHabitRevision[] {
   }));
 }
 
-export function toRankLogs(rows: { habit_id: string; log_date: string; status: HabitLogStatus; updated_at: string }[], timeZone: string): RankLog[] {
-  return rows.map((l) => ({ habitId: l.habit_id, date: l.log_date, status: l.status, recordedOn: localDateOf(l.updated_at, timeZone) }));
+export function toRankLogs(
+  rows: {
+    habit_id: string;
+    log_date: string;
+    status: HabitLogStatus;
+    updated_at: string;
+  }[],
+  timeZone: string,
+): RankLog[] {
+  return rows.map((l) => ({
+    habitId: l.habit_id,
+    date: l.log_date,
+    status: l.status,
+    recordedOn: localDateOf(l.updated_at, timeZone),
+  }));
 }
 
-export async function fetchLogs(supabase: ServerSupabase, groupId: string, userId: string, from: IsoDate, to: IsoDate) {
-  const out: { habit_id: string; log_date: string; status: HabitLogStatus; updated_at: string }[] = [];
+export async function fetchLogs(
+  supabase: ServerSupabase,
+  groupId: string,
+  userId: string,
+  from: IsoDate,
+  to: IsoDate,
+) {
+  const out: {
+    habit_id: string;
+    log_date: string;
+    status: HabitLogStatus;
+    updated_at: string;
+  }[] = [];
   for (let page = 0; page < 20; page++) {
     const { data, error } = await supabase
       .from("habit_logs")
@@ -119,7 +182,10 @@ export async function getPreviousSnapshot(
   userId: string,
   groupId: string,
   today: IsoDate,
-): Promise<Pick<RankSnapshotRow, "snapshot_date" | "tier_index" | "discipline_score"> | null> {
+): Promise<Pick<
+  RankSnapshotRow,
+  "snapshot_date" | "tier_index" | "discipline_score"
+> | null> {
   const { data, error } = await supabase
     .from("rank_snapshots")
     .select("snapshot_date, tier_index, discipline_score")
@@ -147,13 +213,23 @@ export async function persistRankSnapshots(
   const detail = new Map(result.days.map((d) => [d.date, d]));
   const windowStart = addDays(today, -8);
   const rows = result.global.history
-    .filter((p) => p.date >= windowStart && p.score !== null && p.tierIndex !== null && p.scoredDays > 0)
+    .filter(
+      (p) =>
+        p.date >= windowStart &&
+        p.score !== null &&
+        p.tierIndex !== null &&
+        p.scoredDays > 0,
+    )
     .map((p) => {
       const d = detail.get(p.date);
-      const categoryScores: Record<string, { score: number; tier_index: number }> = {};
+      const categoryScores: Record<
+        string,
+        { score: number; tier_index: number }
+      > = {};
       for (const [cat, scope] of Object.entries(result.categories)) {
         const cp = scope?.history.find((h) => h.date === p.date);
-        if (cp?.score != null && cp.tierIndex != null) categoryScores[cat] = { score: cp.score, tier_index: cp.tierIndex };
+        if (cp?.score != null && cp.tierIndex != null)
+          categoryScores[cat] = { score: cp.score, tier_index: cp.tierIndex };
       }
       const phase = phaseFor(p.scoredDays) as RankSnapshotRow["phase"];
       return {
@@ -170,13 +246,20 @@ export async function persistRankSnapshots(
         category_scores: categoryScores,
         components: p.components ?? {},
         inputs: d
-          ? { required: d.required, done: d.done, weights: d.weights, completed: d.completed }
+          ? {
+              required: d.required,
+              done: d.done,
+              weights: d.weights,
+              completed: d.completed,
+            }
           : { required: 0, done: 0, weights: {}, completed: [] },
         algorithm_version: result.version,
         computed_at: new Date().toISOString(),
       } satisfies RankSnapshotRow;
     });
   if (!rows.length) return;
-  const { error } = await supabase.from("rank_snapshots").upsert(rows, { onConflict: "user_id,group_id,snapshot_date" });
+  const { error } = await supabase
+    .from("rank_snapshots")
+    .upsert(rows, { onConflict: "user_id,group_id,snapshot_date" });
   if (error) logServerError("persistRankSnapshots", error);
 }

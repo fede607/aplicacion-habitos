@@ -12,10 +12,19 @@ import { APP_HOME, isAuthPage, isPublicPath } from "@/lib/routes";
 export async function proxy(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+  const key =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    "";
   const isHttps =
-    request.nextUrl.protocol === "https:" || request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() === "https";
-  const csp = buildCsp(nonce, url, process.env.NODE_ENV === "development", isHttps);
+    request.nextUrl.protocol === "https:" ||
+    request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() === "https";
+  const csp = buildCsp(
+    nonce,
+    url,
+    process.env.NODE_ENV === "development",
+    isHttps,
+  );
 
   const forward = () => {
     const headers = new Headers(request.headers);
@@ -32,9 +41,11 @@ export async function proxy(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
+        for (const { name, value } of cookiesToSet)
+          request.cookies.set(name, value);
         response = forward();
-        for (const { name, value, options } of cookiesToSet) response.cookies.set(name, value, options);
+        for (const { name, value, options } of cookiesToSet)
+          response.cookies.set(name, value, options);
       },
     },
   });
@@ -46,7 +57,8 @@ export async function proxy(request: NextRequest) {
 
   const redirectTo = (target: URL) => {
     const redirect = NextResponse.redirect(target);
-    for (const cookie of response.cookies.getAll()) redirect.cookies.set(cookie);
+    for (const cookie of response.cookies.getAll())
+      redirect.cookies.set(cookie);
     redirect.headers.set("Content-Security-Policy", csp);
     return redirect;
   };
@@ -68,14 +80,16 @@ export async function proxy(request: NextRequest) {
 
   response.headers.set("Content-Security-Policy", csp);
   // Las páginas autenticadas no deben quedarse en cachés compartidas.
-  if (isAuthenticated) response.headers.set("Cache-Control", "private, no-store");
+  if (isAuthenticated)
+    response.headers.set("Cache-Control", "private, no-store");
   return response;
 }
 
 export const config = {
   matcher: [
     {
-      source: "/((?!_next/static|_next/image|favicon.ico|icons/|sw.js|manifest.webmanifest|offline.html|robots.txt).*)",
+      source:
+        "/((?!_next/static|_next/image|favicon.ico|icons/|sw.js|manifest.webmanifest|offline.html|robots.txt).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

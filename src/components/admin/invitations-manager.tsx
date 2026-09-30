@@ -4,7 +4,11 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Copy, Link2, RefreshCw, Share2, Trash2 } from "lucide-react";
-import { createInvitation, regenerateInvitation, revokeInvitation } from "@/app/actions/groups";
+import {
+  createInvitation,
+  regenerateInvitation,
+  revokeInvitation,
+} from "@/app/actions/groups";
 import type { GroupInvitationRow } from "@/lib/database.types";
 import { formatDateTime } from "@/lib/dates";
 import { Badge } from "@/components/ui/badge";
@@ -16,9 +20,12 @@ function formatCode(code: string) {
 }
 
 function invitationStatus(inv: GroupInvitationRow, nowIso: string) {
-  if (inv.revoked_at) return { label: "Revocada", tone: "neutral" as const, active: false };
-  if (inv.expires_at && inv.expires_at <= nowIso) return { label: "Caducada", tone: "neutral" as const, active: false };
-  if (inv.max_uses !== null && inv.use_count >= inv.max_uses) return { label: "Agotada", tone: "neutral" as const, active: false };
+  if (inv.revoked_at)
+    return { label: "Revocada", tone: "neutral" as const, active: false };
+  if (inv.expires_at && inv.expires_at <= nowIso)
+    return { label: "Caducada", tone: "neutral" as const, active: false };
+  if (inv.max_uses !== null && inv.use_count >= inv.max_uses)
+    return { label: "Agotada", tone: "neutral" as const, active: false };
   return { label: "Activa", tone: "success" as const, active: true };
 }
 
@@ -48,8 +55,15 @@ export function InvitationsManager({
   const [expires, setExpires] = useState("168");
   const [maxUses, setMaxUses] = useState("");
 
-  const policy = { groupId, expiresInHours: expires ? Number(expires) : null, maxUses: maxUses ? Number(maxUses) : null };
-  const run = (fn: () => Promise<{ ok: boolean; error?: string }>, success: string) =>
+  const policy = {
+    groupId,
+    expiresInHours: expires ? Number(expires) : null,
+    maxUses: maxUses ? Number(maxUses) : null,
+  };
+  const run = (
+    fn: () => Promise<{ ok: boolean; error?: string }>,
+    success: string,
+  ) =>
     startTransition(async () => {
       const res = await fn();
       if (res.ok) {
@@ -70,7 +84,11 @@ export function InvitationsManager({
   const share = async (url: string) => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Únete a mi Year Arc", text: "Te invito a mi grupo de Year Arc", url });
+        await navigator.share({
+          title: "Únete a mi Year Arc",
+          text: "Te invito a mi grupo de Year Arc",
+          url,
+        });
         return;
       } catch {
         return;
@@ -85,7 +103,11 @@ export function InvitationsManager({
     <div className="grid gap-5">
       <div className="grid gap-3 rounded-2xl bg-surface-2 p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
         <Field label="Caducidad" htmlFor="inv-exp">
-          <Select id="inv-exp" value={expires} onChange={(e) => setExpires(e.target.value)}>
+          <Select
+            id="inv-exp"
+            value={expires}
+            onChange={(e) => setExpires(e.target.value)}
+          >
             {EXPIRY_OPTIONS.map((o) => (
               <option key={o.label} value={o.value}>
                 {o.label}
@@ -94,7 +116,11 @@ export function InvitationsManager({
           </Select>
         </Field>
         <Field label="Usos máximos" htmlFor="inv-uses">
-          <Select id="inv-uses" value={maxUses} onChange={(e) => setMaxUses(e.target.value)}>
+          <Select
+            id="inv-uses"
+            value={maxUses}
+            onChange={(e) => setMaxUses(e.target.value)}
+          >
             <option value="">Ilimitados</option>
             {[1, 5, 10, 25, 50, 100].map((n) => (
               <option key={n} value={n}>
@@ -104,7 +130,12 @@ export function InvitationsManager({
           </Select>
         </Field>
         <div className="flex gap-2">
-          <Button disabled={pending} onClick={() => run(() => createInvitation(policy), "Invitación creada")}>
+          <Button
+            disabled={pending}
+            onClick={() =>
+              run(() => createInvitation(policy), "Invitación creada")
+            }
+          >
             <Link2 aria-hidden="true" /> Crear
           </Button>
           <Button
@@ -112,7 +143,12 @@ export function InvitationsManager({
             disabled={pending}
             title="Revoca todas las invitaciones activas y crea una nueva"
             onClick={() => {
-              if (window.confirm("Se revocarán todas las invitaciones activas. ¿Continuar?")) run(() => regenerateInvitation(policy), "Código regenerado");
+              if (
+                window.confirm(
+                  "Se revocarán todas las invitaciones activas. ¿Continuar?",
+                )
+              )
+                run(() => regenerateInvitation(policy), "Código regenerado");
             }}
           >
             <RefreshCw aria-hidden="true" /> Regenerar
@@ -121,34 +157,57 @@ export function InvitationsManager({
       </div>
 
       {visible.length === 0 ? (
-        <p className="text-sm text-muted">No hay invitaciones. Crea una para invitar a tus amigos.</p>
+        <p className="text-sm text-muted">
+          No hay invitaciones. Crea una para invitar a tus amigos.
+        </p>
       ) : (
         <ul className="grid gap-2.5">
           {visible.map((inv) => {
             const status = invitationStatus(inv, nowIso);
             const url = `${siteUrl}/join/${inv.code}`;
             return (
-              <li key={inv.id} className="grid gap-3 rounded-2xl border border-border p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+              <li
+                key={inv.id}
+                className="grid gap-3 rounded-2xl border border-border p-3 sm:grid-cols-[1fr_auto] sm:items-center"
+              >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <code className="tabular rounded-lg bg-surface-2 px-2 py-1 font-mono text-sm font-semibold tracking-wider">{formatCode(inv.code)}</code>
+                    <code className="tabular rounded-lg bg-surface-2 px-2 py-1 font-mono text-sm font-semibold tracking-wider">
+                      {formatCode(inv.code)}
+                    </code>
                     <Badge tone={status.tone}>{status.label}</Badge>
                   </div>
                   <p className="mt-1.5 text-xs text-muted">
                     {inv.use_count} {inv.use_count === 1 ? "uso" : "usos"}
                     {inv.max_uses ? ` de ${inv.max_uses}` : ""} ·{" "}
-                    {inv.expires_at ? `caduca ${formatDateTime(inv.expires_at, timeZone)}` : "sin caducidad"}
+                    {inv.expires_at
+                      ? `caduca ${formatDateTime(inv.expires_at, timeZone)}`
+                      : "sin caducidad"}
                   </p>
                 </div>
                 {status.active ? (
                   <div className="flex flex-wrap gap-1.5">
-                    <Button size="sm" variant="secondary" onClick={() => void share(url)}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => void share(url)}
+                    >
                       <Share2 aria-hidden="true" /> Compartir
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => void copy(url, "Enlace")} aria-label={`Copiar enlace ${formatCode(inv.code)}`}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => void copy(url, "Enlace")}
+                      aria-label={`Copiar enlace ${formatCode(inv.code)}`}
+                    >
                       <Link2 aria-hidden="true" /> Enlace
                     </Button>
-                    <Button size="sm" variant="ghost" onClick={() => void copy(inv.code, "Código")} aria-label={`Copiar código ${formatCode(inv.code)}`}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => void copy(inv.code, "Código")}
+                      aria-label={`Copiar código ${formatCode(inv.code)}`}
+                    >
                       <Copy aria-hidden="true" /> Código
                     </Button>
                     <Button
@@ -157,7 +216,12 @@ export function InvitationsManager({
                       className="text-danger"
                       disabled={pending}
                       aria-label={`Revocar invitación ${formatCode(inv.code)}`}
-                      onClick={() => run(() => revokeInvitation(inv.id), "Invitación revocada")}
+                      onClick={() =>
+                        run(
+                          () => revokeInvitation(inv.id),
+                          "Invitación revocada",
+                        )
+                      }
                     >
                       <Trash2 aria-hidden="true" />
                     </Button>

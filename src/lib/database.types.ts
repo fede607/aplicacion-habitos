@@ -5,7 +5,8 @@
  */
 
 export type GroupRole = "admin" | "member";
-export type HabitCategory = "physical" | "mental" | "productivity" | "health" | "other";
+export type HabitCategory =
+  "physical" | "mental" | "productivity" | "health" | "other";
 export type HabitFrequency = "daily" | "weekdays" | "weekly_target";
 export type HabitLogStatus = "done" | "missed" | "skipped";
 export type WorkoutType = "gym" | "boxing" | "cardio" | "mobility" | "other";
@@ -122,7 +123,12 @@ export type RankSnapshotRow = {
   consistency: number | null;
   category_scores: Record<string, { score: number; tier_index: number }>;
   components: Record<string, number>;
-  inputs: { required: number; done: number; weights: Record<string, number>; completed: string[] };
+  inputs: {
+    required: number;
+    done: number;
+    weights: Record<string, number>;
+    completed: string[];
+  };
   algorithm_version: number;
   computed_at: string;
 };
@@ -136,7 +142,8 @@ export type HabitLogRow = {
   status: HabitLogStatus;
 } & Timestamps;
 
-export type ActivityKind = "day_complete" | "achievement" | "rank_up" | "duel_accepted" | "joined";
+export type ActivityKind =
+  "day_complete" | "achievement" | "rank_up" | "duel_accepted" | "joined";
 export type ReactionEmoji = "🔥" | "💪" | "👏" | "🫡";
 
 export type GroupActivityRow = {
@@ -188,12 +195,22 @@ export type TrainingProfileRow = {
   sex: "male" | "female";
   height_cm: number;
   weight_kg: number;
-  goal: "fat_loss" | "muscle" | "strength" | "endurance" | "health";
+  goal: "fat_loss" | "recomp" | "muscle" | "strength" | "endurance" | "health";
   level: "beginner" | "intermediate" | "advanced";
   training_type: "gym" | "home_dumbbells" | "bodyweight" | "running" | "mixed";
   days_per_week: number;
   session_minutes: number;
-  limitations: ("knee" | "lower_back" | "shoulder")[];
+  limitations: (
+    "knee" | "lower_back" | "shoulder" | "wrist" | "hip" | "ankle"
+  )[];
+  focus:
+    | "balanced"
+    | "glutes_legs"
+    | "chest_arms"
+    | "back_posture"
+    | "shoulders"
+    | "core";
+  preferred_days: number[];
   updated_at: string;
 };
 
@@ -287,10 +304,17 @@ export type Database = {
     Functions: {
       username_available: { Args: { p_username: string }; Returns: boolean };
       create_invitation: {
-        Args: { p_group_id: string; p_expires_in_hours?: number | null; p_max_uses?: number | null };
+        Args: {
+          p_group_id: string;
+          p_expires_in_hours?: number | null;
+          p_max_uses?: number | null;
+        };
         Returns: GroupInvitationRow;
       };
-      revoke_invitation: { Args: { p_invitation_id: string }; Returns: undefined };
+      revoke_invitation: {
+        Args: { p_invitation_id: string };
+        Returns: undefined;
+      };
       get_invitation_preview: {
         Args: { p_code: string };
         Returns: {
@@ -301,7 +325,10 @@ export type Database = {
           already_member: boolean;
         }[];
       };
-      join_group: { Args: { p_code: string }; Returns: { status: string; group_id: string | null }[] };
+      join_group: {
+        Args: { p_code: string };
+        Returns: { status: string; group_id: string | null }[];
+      };
       create_group: {
         Args: {
           p_name: string;
@@ -313,16 +340,34 @@ export type Database = {
         Returns: string;
       };
       leave_group: { Args: { p_group_id: string }; Returns: undefined };
-      remove_member: { Args: { p_group_id: string; p_user_id: string }; Returns: undefined };
-      set_member_role: { Args: { p_group_id: string; p_user_id: string; p_role: GroupRole }; Returns: undefined };
-      transfer_admin: { Args: { p_group_id: string; p_user_id: string }; Returns: undefined };
+      remove_member: {
+        Args: { p_group_id: string; p_user_id: string };
+        Returns: undefined;
+      };
+      set_member_role: {
+        Args: { p_group_id: string; p_user_id: string; p_role: GroupRole };
+        Returns: undefined;
+      };
+      transfer_admin: {
+        Args: { p_group_id: string; p_user_id: string };
+        Returns: undefined;
+      };
       delete_group: { Args: { p_group_id: string }; Returns: undefined };
       set_habit_status: {
-        Args: { p_habit_id: string; p_date: string; p_status: HabitLogStatus | null };
+        Args: {
+          p_habit_id: string;
+          p_date: string;
+          p_status: HabitLogStatus | null;
+        };
         Returns: HabitLogRow | null;
       };
       daily_stats: {
-        Args: { p_group_id: string; p_from: string; p_to: string; p_user_id?: string | null };
+        Args: {
+          p_group_id: string;
+          p_from: string;
+          p_to: string;
+          p_user_id?: string | null;
+        };
         Returns: DailyStatRow[];
       };
       group_workout_summary: {
@@ -331,17 +376,39 @@ export type Database = {
       };
       group_member_visibility: {
         Args: { p_group_id: string };
-        Returns: { user_id: string; share_habits: boolean; share_workouts: boolean; show_in_comparison: boolean }[];
+        Returns: {
+          user_id: string;
+          share_habits: boolean;
+          share_workouts: boolean;
+          show_in_comparison: boolean;
+        }[];
       };
       has_full_access: { Args: { p_group_id: string }; Returns: boolean };
-      group_pro_status: { Args: { p_group_id: string }; Returns: { user_id: string; pro_until: string | null; active: boolean; trial_until: string | null }[] };
+      group_pro_status: {
+        Args: { p_group_id: string };
+        Returns: {
+          user_id: string;
+          pro_until: string | null;
+          active: boolean;
+          trial_until: string | null;
+        }[];
+      };
       my_pro_trial_end: { Args: Record<string, never>; Returns: string | null };
       group_pro_members: { Args: { p_group_id: string }; Returns: string[] };
       claim_push_batch: {
         Args: { p_now?: string; p_limit?: number };
-        Returns: { user_id: string; display_name: string; group_id: string; local_date: string; period_key: string }[];
+        Returns: {
+          user_id: string;
+          display_name: string;
+          group_id: string;
+          local_date: string;
+          period_key: string;
+        }[];
       };
-      billing_config_set_if_absent: { Args: { p_key: string; p_value: string }; Returns: string | null };
+      billing_config_set_if_absent: {
+        Args: { p_key: string; p_value: string };
+        Returns: string | null;
+      };
       staff_metrics: {
         Args: Record<string, never>;
         Returns: {
@@ -357,7 +424,10 @@ export type Database = {
           referrals: number;
         }[];
       };
-      my_referral_status: { Args: Record<string, never>; Returns: { referrals: number; bonus_until: string | null }[] };
+      my_referral_status: {
+        Args: Record<string, never>;
+        Returns: { referrals: number; bonus_until: string | null }[];
+      };
       my_pro_lifetime: { Args: Record<string, never>; Returns: boolean };
       am_i_staff: { Args: Record<string, never>; Returns: boolean };
       staff_pro_list: {
@@ -374,16 +444,41 @@ export type Database = {
           lifetime: boolean;
         }[];
       };
-      staff_grant_pro: { Args: { p_user_id: string; p_months: number }; Returns: string | null };
-      grant_manual_pro: { Args: { p_group_id: string; p_user_id: string; p_months: number }; Returns: string | null };
+      staff_grant_pro: {
+        Args: { p_user_id: string; p_months: number };
+        Returns: string | null;
+      };
+      grant_manual_pro: {
+        Args: { p_group_id: string; p_user_id: string; p_months: number };
+        Returns: string | null;
+      };
       billing_config_get: { Args: { p_key: string }; Returns: string | null };
-      billing_config_set: { Args: { p_key: string; p_value: string }; Returns: undefined };
-      create_duel: { Args: { p_group_id: string; p_opponent_id: string; p_week_start: string }; Returns: string };
-      respond_duel: { Args: { p_duel_id: string; p_accept: boolean }; Returns: undefined };
+      billing_config_set: {
+        Args: { p_key: string; p_value: string };
+        Returns: undefined;
+      };
+      create_duel: {
+        Args: {
+          p_group_id: string;
+          p_opponent_id: string;
+          p_week_start: string;
+        };
+        Returns: string;
+      };
+      respond_duel: {
+        Args: { p_duel_id: string; p_accept: boolean };
+        Returns: undefined;
+      };
       cancel_duel: { Args: { p_duel_id: string }; Returns: undefined };
-      evaluate_my_achievements: { Args: Record<string, never>; Returns: string[] };
+      evaluate_my_achievements: {
+        Args: Record<string, never>;
+        Returns: string[];
+      };
       delete_my_account: { Args: Record<string, never>; Returns: undefined };
-      invite_signup_preview: { Args: { p_code: string }; Returns: { status: string; group_name: string | null }[] };
+      invite_signup_preview: {
+        Args: { p_code: string };
+        Returns: { status: string; group_name: string | null }[];
+      };
       admin_allow_signup: { Args: { p_email: string }; Returns: undefined };
       my_notification_email: {
         Args: Record<string, never>;
@@ -395,12 +490,18 @@ export type Database = {
           pending_email: string | null;
         }[];
       };
-      use_account_email_for_notifications: { Args: Record<string, never>; Returns: undefined };
+      use_account_email_for_notifications: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
       admin_create_email_verification: {
         Args: { p_user_id: string; p_email: string; p_token_hash: string };
         Returns: undefined;
       };
-      verify_notification_email: { Args: { p_token: string }; Returns: boolean };
+      verify_notification_email: {
+        Args: { p_token: string };
+        Returns: boolean;
+      };
       unsubscribe_emails: { Args: { p_token: string }; Returns: boolean };
       claim_notification_batch: {
         Args: { p_kind: NotificationKind; p_now?: string; p_limit?: number };
@@ -416,7 +517,12 @@ export type Database = {
         }[];
       };
       finish_notification: {
-        Args: { p_user_id: string; p_kind: NotificationKind | "push_reminder"; p_period_key: string; p_status: "sent" | "skipped" | "failed" };
+        Args: {
+          p_user_id: string;
+          p_kind: NotificationKind | "push_reminder";
+          p_period_key: string;
+          p_status: "sent" | "skipped" | "failed";
+        };
         Returns: undefined;
       };
     };

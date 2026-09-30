@@ -30,7 +30,10 @@ export function LoginForm({ next }: { next?: string }) {
       onSubmit={async (e) => {
         e.preventDefault();
         const form = new FormData(e.currentTarget);
-        const parsed = loginSchema.safeParse({ email: form.get("email"), password: form.get("password") });
+        const parsed = loginSchema.safeParse({
+          email: form.get("email"),
+          password: form.get("password"),
+        });
         if (!parsed.success) {
           setErrors(fieldErrors(parsed.error));
           setError("Revisa los campos.");
@@ -43,10 +46,11 @@ export function LoginForm({ next }: { next?: string }) {
         setPending(true);
         setErrors({});
         try {
-          const { error: authError } = await getBrowserClient().auth.signInWithPassword({
-            ...parsed.data,
-            options: captcha.options,
-          });
+          const { error: authError } =
+            await getBrowserClient().auth.signInWithPassword({
+              ...parsed.data,
+              options: captcha.options,
+            });
           if (authError) {
             setError(signInErrorMessage(authError));
             setPending(false);
@@ -63,17 +67,39 @@ export function LoginForm({ next }: { next?: string }) {
     >
       <FormError message={error} />
       <Field label="Email" htmlFor="email" error={errors.email}>
-        <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" required aria-invalid={!!errors.email} />
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          inputMode="email"
+          required
+          aria-invalid={!!errors.email}
+        />
       </Field>
       <Field label="Contraseña" htmlFor="password" error={errors.password}>
-        <Input id="password" name="password" type="password" autoComplete="current-password" required aria-invalid={!!errors.password} />
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+          aria-invalid={!!errors.password}
+        />
       </Field>
       <div className="-mt-1 text-right">
-        <Link href="/forgot-password" className="text-sm font-medium text-primary hover:underline">
+        <Link
+          href="/forgot-password"
+          className="text-sm font-medium text-primary hover:underline"
+        >
           ¿Has olvidado la contraseña?
         </Link>
       </div>
-      <Turnstile onToken={captcha.setToken} resetSignal={captcha.resetSignal} onLoadError={captcha.onLoadError} />
+      <Turnstile
+        onToken={captcha.setToken}
+        resetSignal={captcha.resetSignal}
+        onLoadError={captcha.onLoadError}
+      />
       {captcha.loadError ? <FormError message={CAPTCHA_LOAD_ERROR} /> : null}
       <SubmitButton pending={pending} pendingText="Entrando…">
         Entrar

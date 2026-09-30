@@ -66,7 +66,13 @@ export const HABIT_ICONS: Record<string, LucideIcon> = {
   smile: Smile,
 };
 
-export function HabitIcon({ name, className }: { name: string; className?: string }) {
+export function HabitIcon({
+  name,
+  className,
+}: {
+  name: string;
+  className?: string;
+}) {
   const Icon = HABIT_ICONS[name] ?? Check;
   return <Icon className={className} aria-hidden="true" />;
 }

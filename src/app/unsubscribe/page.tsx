@@ -8,7 +8,9 @@ import { UnsubscribeButton } from "./unsubscribe-button";
 export const metadata: Metadata = { title: "Darse de baja" };
 
 /** Página con botón (no se da de baja en el GET para que los antivirus de correo no lo activen). */
-export default async function UnsubscribePage({ searchParams }: PageProps<"/unsubscribe">) {
+export default async function UnsubscribePage({
+  searchParams,
+}: PageProps<"/unsubscribe">) {
   const params = await searchParams;
   const token = uuidSchema.safeParse(params.token);
   return (
@@ -17,7 +19,10 @@ export default async function UnsubscribePage({ searchParams }: PageProps<"/unsu
         <h1 className="text-xl font-bold">Emails del Year Arc</h1>
         {token.success ? (
           <>
-            <p className="text-sm text-muted">Dejarás de recibir el recordatorio diario y el resumen semanal. Puedes reactivarlos en Ajustes.</p>
+            <p className="text-sm text-muted">
+              Dejarás de recibir el recordatorio diario y el resumen semanal.
+              Puedes reactivarlos en Ajustes.
+            </p>
             <UnsubscribeButton token={token.data} />
           </>
         ) : (

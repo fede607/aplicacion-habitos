@@ -2,7 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { fail, type ActionResult } from "@/lib/errors";
-import { dailyEntrySchema, fieldErrors, habitStatusSchema, uuidSchema, workoutSchema } from "@/lib/validation";
+import {
+  dailyEntrySchema,
+  fieldErrors,
+  habitStatusSchema,
+  uuidSchema,
+  workoutSchema,
+} from "@/lib/validation";
 import type { HabitLogStatus, WorkoutRow } from "@/lib/database.types";
 import { authed, NOT_AUTHENTICATED } from "./_helpers";
 
@@ -35,9 +41,18 @@ export async function saveDailyEntry(input: {
   didToday: string;
   improveTomorrow: string;
   expectedUpdatedAt: string | null;
-}): Promise<ActionResult<{ updatedAt: string }> & { conflict?: { didToday: string; improveTomorrow: string; updatedAt: string } }> {
+}): Promise<
+  ActionResult<{ updatedAt: string }> & {
+    conflict?: { didToday: string; improveTomorrow: string; updatedAt: string };
+  }
+> {
   const parsed = dailyEntrySchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Revisa las notas.", fieldErrors: fieldErrors(parsed.error) };
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: "Revisa las notas.",
+      fieldErrors: fieldErrors(parsed.error),
+    };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
   const { date, didToday, improveTomorrow, expectedUpdatedAt } = parsed.data;
@@ -53,7 +68,12 @@ export async function saveDailyEntry(input: {
   if (!current) {
     const { data, error } = await supabase
       .from("daily_entries")
-      .insert({ user_id: userId, entry_date: date, did_today: didToday, improve_tomorrow: improveTomorrow })
+      .insert({
+        user_id: userId,
+        entry_date: date,
+        did_today: didToday,
+        improve_tomorrow: improveTomorrow,
+      })
       .select("updated_at")
       .single();
     if (error?.code === "23505") {
@@ -64,15 +84,23 @@ export async function saveDailyEntry(input: {
   }
 
   const sameTimestamp =
-    expectedUpdatedAt !== null && new Date(current.updated_at).getTime() === new Date(expectedUpdatedAt).getTime();
-  const sameContent = current.did_today === didToday && current.improve_tomorrow === improveTomorrow;
+    expectedUpdatedAt !== null &&
+    new Date(current.updated_at).getTime() ===
+      new Date(expectedUpdatedAt).getTime();
+  const sameContent =
+    current.did_today === didToday &&
+    current.improve_tomorrow === improveTomorrow;
   if (sameContent) return { ok: true, data: { updatedAt: current.updated_at } };
   if (!sameTimestamp) {
     return {
       ok: false,
       error: "Estas notas se han modificado en otro dispositivo.",
       code: "conflict",
-      conflict: { didToday: current.did_today, improveTomorrow: current.improve_tomorrow, updatedAt: current.updated_at },
+      conflict: {
+        didToday: current.did_today,
+        improveTomorrow: current.improve_tomorrow,
+        updatedAt: current.updated_at,
+      },
     };
   }
 
@@ -85,14 +113,25 @@ export async function saveDailyEntry(input: {
     .select("updated_at");
   if (error) return fail(error, "saveDailyEntry:update");
   if (!data || data.length === 0) {
-    return { ok: false, error: "Estas notas se han modificado en otro dispositivo.", code: "conflict" };
+    return {
+      ok: false,
+      error: "Estas notas se han modificado en otro dispositivo.",
+      code: "conflict",
+    };
   }
   return { ok: true, data: { updatedAt: data[0].updated_at } };
 }
 
-export async function saveWorkout(input: Record<string, unknown>): Promise<ActionResult<WorkoutRow>> {
+export async function saveWorkout(
+  input: Record<string, unknown>,
+): Promise<ActionResult<WorkoutRow>> {
   const parsed = workoutSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Revisa los campos.", fieldErrors: fieldErrors(parsed.error) };
+  if (!parsed.success)
+    return {
+      ok: false,
+      error: "Revisa los campos.",
+      fieldErrors: fieldErrors(parsed.error),
+    };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
   const w = parsed.data;
@@ -108,8 +147,18 @@ export async function saveWorkout(input: Record<string, unknown>): Promise<Actio
   };
 
   const query = w.id
-    ? supabase.from("workouts").update(row).eq("id", w.id).eq("user_id", userId).select().single()
-    : supabase.from("workouts").insert({ ...row, user_id: userId }).select().single();
+    ? supabase
+        .from("workouts")
+        .update(row)
+        .eq("id", w.id)
+        .eq("user_id", userId)
+        .select()
+        .single()
+    : supabase
+        .from("workouts")
+        .insert({ ...row, user_id: userId })
+        .select()
+        .single();
   const { data, error } = await query;
   if (error || !data) return fail(error, "saveWorkout");
   revalidatePath("/workouts");
@@ -122,7 +171,11 @@ export async function deleteWorkout(id: string): Promise<ActionResult> {
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
-  const { error } = await supabase.from("workouts").delete().eq("id", parsed.data).eq("user_id", userId);
+  const { error } = await supabase
+    .from("workouts")
+    .delete()
+    .eq("id", parsed.data)
+    .eq("user_id", userId);
   if (error) return fail(error, "deleteWorkout");
   revalidatePath("/workouts");
   return { ok: true, data: undefined };

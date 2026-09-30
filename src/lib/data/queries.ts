@@ -1,11 +1,20 @@
 import "server-only";
 import type { ServerSupabase } from "../supabase/server";
-import type { DailyStatRow, HabitLogRow, HabitLogStatus, HabitRow, WorkoutRow } from "../database.types";
+import type {
+  DailyStatRow,
+  HabitLogRow,
+  HabitLogStatus,
+  HabitRow,
+  WorkoutRow,
+} from "../database.types";
 import { logServerError } from "../errors";
 import type { IsoDate } from "../dates";
 import type { DayStat } from "../stats";
 
-export async function getActiveHabits(supabase: ServerSupabase, groupId: string): Promise<HabitRow[]> {
+export async function getActiveHabits(
+  supabase: ServerSupabase,
+  groupId: string,
+): Promise<HabitRow[]> {
   const { data, error } = await supabase
     .from("habits")
     .select("*")
@@ -18,7 +27,10 @@ export async function getActiveHabits(supabase: ServerSupabase, groupId: string)
   return data ?? [];
 }
 
-export async function getAllHabits(supabase: ServerSupabase, groupId: string): Promise<HabitRow[]> {
+export async function getAllHabits(
+  supabase: ServerSupabase,
+  groupId: string,
+): Promise<HabitRow[]> {
   const { data, error } = await supabase
     .from("habits")
     .select("*")
@@ -49,7 +61,9 @@ export async function getMyLogs(
 }
 
 /** Índice habit_id -> (fecha -> estado). */
-export function indexLogs(logs: Pick<HabitLogRow, "habit_id" | "log_date" | "status">[]) {
+export function indexLogs(
+  logs: Pick<HabitLogRow, "habit_id" | "log_date" | "status">[],
+) {
   const map = new Map<string, Map<IsoDate, HabitLogStatus>>();
   for (const l of logs) {
     let inner = map.get(l.habit_id);
@@ -78,7 +92,13 @@ export async function getDailyStats(
 }
 
 export function toDayStats(rows: DailyStatRow[]): DayStat[] {
-  return rows.map(({ day, required, completed, skipped, bonus }) => ({ day, required, completed, skipped, bonus }));
+  return rows.map(({ day, required, completed, skipped, bonus }) => ({
+    day,
+    required,
+    completed,
+    skipped,
+    bonus,
+  }));
 }
 
 export async function getWorkoutTotals(
@@ -87,13 +107,19 @@ export async function getWorkoutTotals(
   from?: IsoDate,
   to?: IsoDate,
 ): Promise<{ count: number; minutes: number }> {
-  let query = supabase.from("workouts").select("duration_min").eq("user_id", userId);
+  let query = supabase
+    .from("workouts")
+    .select("duration_min")
+    .eq("user_id", userId);
   if (from) query = query.gte("workout_date", from);
   if (to) query = query.lte("workout_date", to);
   const { data, error } = await query.limit(5000);
   if (error) logServerError("getWorkoutTotals", error);
   const rows = data ?? [];
-  return { count: rows.length, minutes: rows.reduce((acc, r) => acc + r.duration_min, 0) };
+  return {
+    count: rows.length,
+    minutes: rows.reduce((acc, r) => acc + r.duration_min, 0),
+  };
 }
 
 export const WORKOUTS_PAGE_SIZE = 15;
@@ -113,19 +139,32 @@ export async function getWorkoutsPage(
     .range(from, from + WORKOUTS_PAGE_SIZE);
   if (error) logServerError("getWorkoutsPage", error);
   const rows = data ?? [];
-  return { items: rows.slice(0, WORKOUTS_PAGE_SIZE), hasMore: rows.length > WORKOUTS_PAGE_SIZE };
+  return {
+    items: rows.slice(0, WORKOUTS_PAGE_SIZE),
+    hasMore: rows.length > WORKOUTS_PAGE_SIZE,
+  };
 }
 
 export async function getXpInputs(supabase: ServerSupabase, userId: string) {
   const [done, workouts, notes, achievements] = await Promise.all([
-    supabase.from("habit_logs").select("id", { count: "exact", head: true }).eq("user_id", userId).eq("status", "done"),
-    supabase.from("workouts").select("id", { count: "exact", head: true }).eq("user_id", userId),
+    supabase
+      .from("habit_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("status", "done"),
+    supabase
+      .from("workouts")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId),
     supabase
       .from("daily_entries")
       .select("entry_date", { count: "exact", head: true })
       .eq("user_id", userId)
       .or("did_today.neq.,improve_tomorrow.neq."),
-    supabase.from("user_achievements").select("achievement_code").eq("user_id", userId),
+    supabase
+      .from("user_achievements")
+      .select("achievement_code")
+      .eq("user_id", userId),
   ]);
   return {
     habitsDone: done.count ?? 0,

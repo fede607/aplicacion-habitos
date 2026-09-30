@@ -16,7 +16,13 @@ export function SubmitButton({
   const status = useFormStatus();
   const pending = pendingProp ?? status.pending;
   return (
-    <Button type="submit" size="lg" className="w-full" disabled={pending} aria-disabled={pending}>
+    <Button
+      type="submit"
+      size="lg"
+      className="w-full"
+      disabled={pending}
+      aria-disabled={pending}
+    >
       {pending ? (
         <>
           <LoaderCircle className="animate-spin" aria-hidden="true" />
@@ -32,7 +38,10 @@ export function SubmitButton({
 export function FormError({ message }: { message?: string | null }) {
   if (!message) return null;
   return (
-    <p role="alert" className="rounded-xl bg-danger-soft px-3 py-2.5 text-sm font-medium text-danger">
+    <p
+      role="alert"
+      className="rounded-xl bg-danger-soft px-3 py-2.5 text-sm font-medium text-danger"
+    >
       {message}
     </p>
   );
