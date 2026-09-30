@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Providers } from "@/components/providers";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: { default: "Year Arc", template: "%s · Year Arc" },
@@ -34,6 +35,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="es" suppressHydrationWarning className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="min-h-dvh font-sans antialiased">
         <Providers nonce={nonce}>{children}</Providers>
+        {/* Analítica sin cookies de Vercel (visitas y páginas; sin datos personales). */}
+        <Analytics />
       </body>
     </html>
   );

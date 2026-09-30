@@ -13,7 +13,8 @@ export default async function StaffPaymentsPage() {
   const { supabase, profile } = await requireSession();
   const { data: isStaff } = await supabase.rpc("am_i_staff");
   if (!isStaff) notFound();
-  const { data } = await supabase.rpc("staff_pro_list");
+  const [{ data }, { data: metricsRows }] = await Promise.all([supabase.rpc("staff_pro_list"), supabase.rpc("staff_metrics")]);
+  const m = metricsRows?.[0];
   const members: ProMember[] = (data ?? []).map((r) => ({
     userId: r.user_id,
     name: r.display_name,
@@ -38,6 +39,29 @@ export default async function StaffPaymentsPage() {
           {members.length} usuarios · {proCount} con Pro ahora mismo
         </p>
       </header>
+      {m ? (
+        <section className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Métricas">
+          {[
+            ["Usuarios", m.users, ""],
+            ["Activos hoy", m.active_today, `${m.users ? Math.round((m.active_today / m.users) * 100) : 0}%`],
+            ["Activos 7 días", m.active_7d, `${m.users ? Math.round((m.active_7d / m.users) * 100) : 0}%`],
+            ["Pro activado (pago)", m.paid, "manual o automático"],
+            ["En prueba gratis", m.on_trial, ""],
+            ["Prueba acaba ≤7 días", m.trials_ending_7d, m.trials_ending_7d ? "¡avísales!" : ""],
+            ["Versión gratis", m.free_only, ""],
+            ["Pro para siempre", m.lifetime, ""],
+            ["Móviles con avisos", m.push_devices, ""],
+            ["Amigos invitados", m.referrals, ""],
+          ].map(([label, value, sub]) => (
+            <div key={String(label)} className="rounded-2xl border border-border bg-surface p-3">
+              <p className="text-[11px] text-muted">{label}</p>
+              <p className="tabular text-2xl font-bold">{value}</p>
+              {sub ? <p className="text-[11px] text-muted">{sub}</p> : null}
+            </div>
+          ))}
+        </section>
+      ) : null}
+
       <Card>
         <CardHeader>
           <div>
