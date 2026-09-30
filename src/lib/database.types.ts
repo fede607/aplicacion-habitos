@@ -197,6 +197,16 @@ export type TrainingProfileRow = {
   updated_at: string;
 };
 
+export type PushSubscriptionRow = {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  user_agent: string;
+  created_at: string;
+};
+
 export type DailyEntryRow = {
   user_id: string;
   entry_date: string;
@@ -267,6 +277,7 @@ export type Database = {
       duels: Table<DuelRow>;
       subscriptions: Table<SubscriptionRow>;
       training_profiles: Table<TrainingProfileRow>;
+      push_subscriptions: Table<PushSubscriptionRow>;
       daily_entries: Table<DailyEntryRow>;
       workouts: Table<WorkoutRow>;
       achievements: Table<AchievementRow>;
@@ -326,6 +337,11 @@ export type Database = {
       group_pro_status: { Args: { p_group_id: string }; Returns: { user_id: string; pro_until: string | null; active: boolean; trial_until: string | null }[] };
       my_pro_trial_end: { Args: Record<string, never>; Returns: string | null };
       group_pro_members: { Args: { p_group_id: string }; Returns: string[] };
+      claim_push_batch: {
+        Args: { p_now?: string; p_limit?: number };
+        Returns: { user_id: string; display_name: string; group_id: string; local_date: string; period_key: string }[];
+      };
+      billing_config_set_if_absent: { Args: { p_key: string; p_value: string }; Returns: string | null };
       am_i_staff: { Args: Record<string, never>; Returns: boolean };
       staff_pro_list: {
         Args: Record<string, never>;
@@ -382,7 +398,7 @@ export type Database = {
         }[];
       };
       finish_notification: {
-        Args: { p_user_id: string; p_kind: NotificationKind; p_period_key: string; p_status: "sent" | "skipped" | "failed" };
+        Args: { p_user_id: string; p_kind: NotificationKind | "push_reminder"; p_period_key: string; p_status: "sent" | "skipped" | "failed" };
         Returns: undefined;
       };
     };

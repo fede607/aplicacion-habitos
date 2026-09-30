@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/data/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InstallAppCard } from "@/components/pwa/install-app";
+import { PushToggle } from "@/components/pwa/push-toggle";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { ProfileForm } from "@/components/settings/profile-form";
@@ -31,14 +32,24 @@ export default async function SettingsPage() {
         <SignOutButton />
       </header>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">App en tu móvil</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <InstallAppCard />
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">App en tu móvil</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <InstallAppCard />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Avisos en el móvil (push)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PushToggle />
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

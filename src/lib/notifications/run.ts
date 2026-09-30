@@ -8,6 +8,7 @@ import { computeStreaks, isRequiredOn, summarize, weeklyTargetProgress, type Day
 import { statsFrom } from "../data/stats-range";
 import type { GroupRow, HabitLogStatus, HabitRow, NotificationKind } from "../database.types";
 import { composeDailyReminder, composeWeeklySummary } from "./compose";
+import { sendPushToUser } from "../push/server";
 
 type Admin = ReturnType<typeof createAdminClient>;
 type Claim = {
@@ -29,7 +30,8 @@ type GroupContext = {
   from: IsoDate;
 };
 
-export type RunResult = Record<NotificationKind, { sent: number; skipped: number; failed: number }> & { lastError?: string };
+type Counter = { sent: number; skipped: number; failed: number };
+export type RunResult = Record<NotificationKind, Counter> & { push_reminder: Counter; lastError?: string };
 
 /** Motivo del fallo sin datos sensibles (código SMTP/nodemailer o primera línea del mensaje). */
 function describeError(e: unknown): string {
@@ -49,6 +51,7 @@ export async function runNotifications(options: { now?: Date; limit?: number } =
   const result: RunResult = {
     daily_reminder: { sent: 0, skipped: 0, failed: 0 },
     weekly_summary: { sent: 0, skipped: 0, failed: 0 },
+    push_reminder: { sent: 0, skipped: 0, failed: 0 },
   };
   const cache = new Map<string, Promise<GroupContext | null>>();
   const loadGroup = (groupId: string, today: IsoDate) => {
@@ -97,7 +100,54 @@ export async function runNotifications(options: { now?: Date; limit?: number } =
       if (finishError) logServerError("finish_notification", finishError);
     }
   }
+
+  // Push: mismo cálculo que el email, independiente de él (si el SMTP falla, el push sigue).
+  const { data: pushBatch, error: pushError } = await admin.rpc("claim_push_batch", { p_now: now.toISOString(), p_limit: options.limit ?? 500 });
+  if (pushError) logServerError("claim_push_batch", pushError);
+  for (const claim of pushBatch ?? []) {
+    let status: "sent" | "skipped" | "failed" = "failed";
+    try {
+      const ctx = await loadGroup(claim.group_id, claim.local_date);
+      const pending = ctx ? await pendingToday(admin, claim.user_id, ctx, claim.local_date) : null;
+      if (!pending || pending.pending.length === 0) {
+        status = "skipped";
+      } else {
+        const first = claim.display_name.trim().split(/\s+/)[0] || "crack";
+        const list = pending.pending.slice(0, 3).join(", ") + (pending.pending.length > 3 ? "…" : "");
+        const delivered = await sendPushToUser(claim.user_id, {
+          title: pending.streak > 0 ? `🔥 ${first}, no pierdas tu racha de ${pending.streak} días` : `⏰ ${first}, te quedan ${pending.pending.length} hábitos`,
+          body: `Pendientes: ${list}. Márcalos en 10 segundos.`,
+          url: "/today",
+          tag: `reminder-${claim.period_key}`,
+        });
+        status = delivered > 0 ? "sent" : "skipped";
+      }
+    } catch (e) {
+      logServerError("notification:push", e);
+      result.lastError = `push: ${describeError(e)}`;
+    }
+    result.push_reminder[status] += 1;
+    const { error: finishError } = await admin.rpc("finish_notification", {
+      p_user_id: claim.user_id,
+      p_kind: "push_reminder",
+      p_period_key: claim.period_key,
+      p_status: status,
+    });
+    if (finishError) logServerError("finish_notification", finishError);
+  }
   return result;
+}
+
+/** Hábitos obligatorios de hoy aún sin registrar y racha actual. */
+async function pendingToday(admin: Admin, userId: string, ctx: GroupContext, today: IsoDate): Promise<{ pending: string[]; streak: number }> {
+  const required = ctx.habits.filter((h) => isRequiredOn(h, today));
+  if (required.length === 0) return { pending: [], streak: 0 };
+  const { data: logs } = await admin.from("habit_logs").select("habit_id").eq("user_id", userId).eq("group_id", ctx.group.id).eq("log_date", today);
+  const logged = new Set((logs ?? []).map((l) => l.habit_id));
+  return {
+    pending: required.filter((h) => !logged.has(h.id)).map((h) => h.name),
+    streak: computeStreaks(ctx.series.get(userId) ?? [], ctx.group.streak_threshold, today).current,
+  };
 }
 
 async function loadGroupContext(admin: Admin, groupId: string, today: IsoDate): Promise<GroupContext | null> {

@@ -5,7 +5,7 @@
  *  - Sólo se cachean recursos estáticos inmutables (/_next/static, /icons).
  *  - Si falla la red en una navegación, se muestra /offline.html.
  */
-const VERSION = "wa-v1";
+const VERSION = "wa-v2";
 const STATIC_CACHE = `${VERSION}-static`;
 const PRECACHE = ["/offline.html", "/icons/icon.svg", "/icons/icon-192.png"];
 
@@ -48,4 +48,46 @@ self.addEventListener("fetch", (event) => {
       ),
     );
   }
+});
+
+// -----------------------------------------------------------------------------
+// Notificaciones push: sólo se muestran; al tocarlas se abre la app en la URL
+// indicada (siempre dentro de este mismo origen).
+// -----------------------------------------------------------------------------
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+  const title = typeof data.title === "string" ? data.title.slice(0, 80) : "Winter Arc";
+  const body = typeof data.body === "string" ? data.body.slice(0, 240) : "";
+  const url = typeof data.url === "string" && data.url.startsWith("/") && !data.url.startsWith("//") ? data.url : "/today";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: typeof data.tag === "string" ? data.tag : "winter-arc",
+      renotify: true,
+      data: { url },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || "/today", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((wins) => {
+      for (const w of wins) {
+        if (w.url.startsWith(self.location.origin) && "focus" in w) {
+          w.navigate(url);
+          return w.focus();
+        }
+      }
+      return self.clients.openWindow(url);
+    }),
+  );
 });
