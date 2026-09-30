@@ -23,6 +23,7 @@ export default async function StaffPaymentsPage() {
     active: r.active,
     proUntil: r.pro_until,
     trialUntil: r.trial_until,
+    lifetime: r.lifetime,
   }));
   const proCount = members.filter((m) => m.active).length;
 
