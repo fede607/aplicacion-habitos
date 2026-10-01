@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { ProLocked } from "@/components/pro/pro-locked";
 import Link from "next/link";
 import { AlertTriangle, Apple, ChevronDown, Clock, Dumbbell, Flame, Moon, Repeat2, Settings2, Star, TrendingUp } from "lucide-react";
-import { requireFullAccess } from "@/lib/data/session";
+import { requireProPage } from "@/lib/data/session";
 import { planFromRow, todaysSession } from "@/lib/training/user-plan";
 import { applyPhase, cyclePhase, FOCUS_LABELS } from "@/lib/training/engine";
 import { isoWeekday } from "@/lib/dates";
@@ -20,7 +21,9 @@ function formatRest(sec: number) {
 }
 
 export default async function PlanPage() {
-  const { supabase, userId, today } = await requireFullAccess();
+  const gate = await requireProPage();
+  if (!gate) return <ProLocked feature="plan" />;
+  const { supabase, userId, today } = gate;
   const { data: row } = await supabase.from("training_profiles").select("*").eq("user_id", userId).maybeSingle();
   const currentYear = Number(today.slice(0, 4));
 

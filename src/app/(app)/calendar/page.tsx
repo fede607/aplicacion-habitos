@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { ProLocked } from "@/components/pro/pro-locked";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Check, Minus, X } from "lucide-react";
-import { requireFullAccess } from "@/lib/data/session";
+import { requireProPage } from "@/lib/data/session";
 import { getActiveHabits, getDailyStats, toDayStats } from "@/lib/data/queries";
 import {
   addMonths,
@@ -42,7 +43,9 @@ const LEVEL_LABEL: Record<DayLevel, string> = {
 };
 
 export default async function CalendarPage({ searchParams }: PageProps<"/calendar">) {
-  const { supabase, userId, activeGroup, today } = await requireFullAccess();
+  const gate = await requireProPage();
+  if (!gate) return <ProLocked feature="calendar" />;
+  const { supabase, userId, activeGroup, today } = gate;
   const params = await searchParams;
   const month = typeof params.month === "string" && isMonthString(params.month) ? params.month : today.slice(0, 7);
   const selected = typeof params.day === "string" && isIsoDate(params.day) && params.day <= today ? params.day : null;

@@ -30,15 +30,13 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
 
   const session = await requireGroup();
   const { supabase, userId, activeGroup, profile } = session;
-  const [{ data: sub }, fullAccess, { data: trialEnd }, { data: isStaff }, { data: lifetime }, { data: referral }] = await Promise.all([
+  const [{ data: sub }, fullAccess, { data: trialEnd }, { data: isStaff }, { data: lifetime }] = await Promise.all([
     supabase.from("subscriptions").select("status, current_period_end, cancel_at_period_end, paypal_subscription_id").eq("user_id", userId).maybeSingle(),
     hasFullAccess(session),
     supabase.rpc("my_pro_trial_end"),
     supabase.rpc("am_i_staff"),
     supabase.rpc("my_pro_lifetime"),
-    supabase.rpc("my_referral_status"),
   ]);
-  const referrals = referral?.[0]?.referrals ?? 0;
   const active = !!sub && ["active", "trialing", "past_due"].includes(sub.status);
   const nextDate = sub?.current_period_end ? formatDateOnly(sub.current_period_end, profile.timezone) : null;
   const manual = active && !sub.paypal_subscription_id;
@@ -174,24 +172,6 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
           )}
         </CardContent>
       </Card>
-
-      {!isStaff && !lifetime ? (
-        <Card>
-          <CardContent className="grid gap-2 p-5 text-sm">
-            <p className="text-base font-bold">🎁 Invita y gana Pro gratis</p>
-            <p className="text-muted">
-              Cada amigo nuevo que se cree la cuenta con el enlace de tu grupo os da <b className="text-foreground">+7 días de Pro a los dos</b>. Se suman
-              a lo que ya tengas. Hasta 10 amigos.
-            </p>
-            <p>
-              Llevas <b>{referrals}</b> {referrals === 1 ? "amigo invitado" : "amigos invitados"} ·{" "}
-              <Link href="/group" className="font-semibold text-primary underline">
-                copiar mi enlace
-              </Link>
-            </p>
-          </CardContent>
-        </Card>
-      ) : null}
 
       <div className="grid gap-2 text-xs text-muted">
         <p className="flex items-start gap-2">

@@ -89,6 +89,12 @@ export const hasFullAccess = cache(async (session: GroupSession): Promise<boolea
   return data === true;
 });
 
+/** Páginas Pro: devuelve la sesión, o null si no tiene Pro (la página muestra la vista bloqueada). */
+export async function requireProPage(): Promise<GroupSession | null> {
+  const session = await requireGroup();
+  return (await hasFullAccess(session)) ? session : null;
+}
+
 /** Páginas Pro: en una sala de pago, sin suscripción sólo se ven los hábitos de hoy. */
 export async function requireFullAccess(): Promise<GroupSession> {
   const session = await requireGroup();

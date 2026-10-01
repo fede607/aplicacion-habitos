@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
 import { isActivePath, NAV_ITEMS, SECTION_TABS } from "./nav-items";
 
-const target = (href: string, free: boolean | undefined, locked: boolean) => (locked && !free ? "/pro?locked=1" : href);
+// Las pestañas Pro se abren igualmente: sin Pro muestran una vista previa difuminada.
 const isActive = (pathname: string, match: string[]) => match.some((m) => isActivePath(pathname, m));
 
 export function SidebarNav({ locked = false }: { locked?: boolean }) {
@@ -18,7 +18,7 @@ export function SidebarNav({ locked = false }: { locked?: boolean }) {
         return (
           <Link
             key={href}
-            href={target(href, free, locked)}
+            href={href}
             aria-current={active ? "page" : undefined}
             className={cn(
               "flex h-12 items-center gap-3 rounded-2xl px-3 text-[15px] font-semibold text-muted transition-colors hover:bg-surface-2 hover:text-foreground",
@@ -45,7 +45,7 @@ export function BottomNav({ locked = false }: { locked?: boolean }) {
           return (
             <li key={href}>
               <Link
-                href={target(href, free, locked)}
+                href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-semibold text-muted transition-colors",

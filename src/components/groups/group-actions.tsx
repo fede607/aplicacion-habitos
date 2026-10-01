@@ -61,9 +61,6 @@ export function InviteCodeBox({ code, siteUrl }: { code: string; siteUrl: string
           <Share2 aria-hidden="true" /> Compartir
         </Button>
       </div>
-      <p className="text-xs text-muted">
-        🎁 Por cada amigo nuevo que se cree la cuenta con tu enlace, <b className="text-foreground">+7 días de Pro para los dos</b> (hasta 10 amigos).
-      </p>
     </div>
   );
 }

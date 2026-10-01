@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { ProLocked } from "@/components/pro/pro-locked";
 import { CalendarCheck, CalendarX, Coffee, Flame, Gauge, Mountain, Target, Trophy } from "lucide-react";
-import { requireFullAccess } from "@/lib/data/session";
+import { requireProPage } from "@/lib/data/session";
 import { getMemberRank, getPreviousSnapshot, persistRankSnapshots } from "@/lib/data/rank";
 import type { HabitCategory } from "@/lib/database.types";
 import { CATEGORY_LABELS } from "@/lib/labels";
@@ -24,7 +25,9 @@ const fmt = (n: number) => n.toLocaleString("es-ES", { maximumFractionDigits: 1 
 const CATEGORY_ORDER: HabitCategory[] = ["physical", "mental", "productivity", "health", "other"];
 
 export default async function RankPage() {
-  const { supabase, userId, activeGroup, today, profile } = await requireFullAccess();
+  const gate = await requireProPage();
+  if (!gate) return <ProLocked feature="rank" />;
+  const { supabase, userId, activeGroup, today, profile } = gate;
 
   const [previous, { result, habits }] = await Promise.all([
     getPreviousSnapshot(supabase, userId, activeGroup.id, today),

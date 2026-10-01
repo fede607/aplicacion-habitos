@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { ProLocked } from "@/components/pro/pro-locked";
 import { notFound } from "next/navigation";
-import { requireFullAccess } from "@/lib/data/session";
+import { requireProPage } from "@/lib/data/session";
 import { addDays } from "@/lib/dates";
 import { uuidSchema } from "@/lib/validation";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +12,9 @@ export const metadata: Metadata = { title: "Editar entrenamiento" };
 export default async function EditWorkoutPage({ params }: PageProps<"/workouts/[id]">) {
   const { id } = await params;
   if (!uuidSchema.safeParse(id).success) notFound();
-  const { supabase, userId, today } = await requireFullAccess();
+  const gate = await requireProPage();
+  if (!gate) return <ProLocked feature="workouts" />;
+  const { supabase, userId, today } = gate;
   // RLS garantiza que sólo se devuelven entrenamientos propios.
   const { data: workout } = await supabase.from("workouts").select("*").eq("id", id).eq("user_id", userId).maybeSingle();
   if (!workout) notFound();

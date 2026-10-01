@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { ProLocked } from "@/components/pro/pro-locked";
 import Link from "next/link";
 import { CalendarCheck, ChevronRight, Clock, Dumbbell, Flame, Target, TrendingUp } from "lucide-react";
-import { requireFullAccess } from "@/lib/data/session";
+import { requireProPage } from "@/lib/data/session";
 import { getPersonalStats } from "@/lib/data/personal-stats";
 import { getMemberRank, persistRankSnapshots } from "@/lib/data/rank";
 import { PHASE_LABELS } from "@/lib/rank/engine";
@@ -20,7 +21,9 @@ import { RecentDaysChart } from "@/components/stats/recent-days-chart";
 export const metadata: Metadata = { title: "Panel" };
 
 export default async function DashboardPage() {
-  const session = await requireFullAccess();
+  const gate = await requireProPage();
+  if (!gate) return <ProLocked feature="dashboard" />;
+  const session = gate;
   const { supabase, userId, activeGroup, today } = session;
   const weekStart = startOfIsoWeek(today);
 

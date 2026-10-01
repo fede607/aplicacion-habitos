@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { ProLocked } from "@/components/pro/pro-locked";
 import { BarChart3, Download, Flame, Sparkles, Trophy } from "lucide-react";
-import { requireFullAccess } from "@/lib/data/session";
+import { requireProPage } from "@/lib/data/session";
 import { getPersonalStats } from "@/lib/data/personal-stats";
 import { getActiveHabits, getMyLogs, getXpInputs, indexLogs } from "@/lib/data/queries";
 import { addDays, formatShortDate, startOfIsoWeek } from "@/lib/dates";
@@ -20,7 +21,9 @@ import { WEEKDAY_NAMES } from "@/lib/dates";
 export const metadata: Metadata = { title: "Progreso" };
 
 export default async function ProgressPage() {
-  const session = await requireFullAccess();
+  const gate = await requireProPage();
+  if (!gate) return <ProLocked feature="progress" />;
+  const session = gate;
   const { supabase, userId, activeGroup, today } = session;
 
   // Los logros se evalúan en BD con datos reales (idempotente).
