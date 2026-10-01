@@ -6,7 +6,7 @@ import { enabledOAuthProviders } from "@/lib/auth-providers";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
 
 const OAUTH_ERRORS: Record<string, string> = {
-  invite_required: "Para crear una cuenta necesitas una invitación: abre el enlace que te ha pasado tu grupo y pulsa ahí «Continuar con Google/Apple». Si ya tenías cuenta con tu correo, entra con él.",
+  invite_required: "No se ha podido crear la cuenta. Inténtalo de nuevo desde «Crear cuenta».",
   oauth: "No se ha podido completar el acceso. Inténtalo de nuevo.",
   oauth_disabled: "Ese método de acceso no está activado todavía.",
 };

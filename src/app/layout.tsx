@@ -8,7 +8,16 @@ import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: { default: "Year Arc", template: "%s · Year Arc" },
-  description: "Seguimiento de hábitos y entrenamiento para tu Year Arc con amigos.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://winterarc-2026.vercel.app"),
+  description: "Elige tus hábitos, márcalos en un toque y mira cómo sube tu línea de constancia. Gratis, con 1 mes de Pro.",
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    siteName: "Year Arc",
+    title: "Year Arc · Este año es para construirte",
+    description: "Elige tus hábitos, márcalos en un toque y mira cómo sube tu línea de constancia. Gratis.",
+  },
+  twitter: { card: "summary_large_image" },
   applicationName: "Year Arc",
   appleWebApp: { capable: true, title: "Year Arc", statusBarStyle: "black-translucent" },
   icons: {
@@ -16,6 +25,7 @@ export const metadata: Metadata = {
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
   },
   formatDetection: { telephone: false },
+  // La app privada no se indexa; la portada y las páginas públicas lo cambian en su propia metadata.
   robots: { index: false, follow: false },
 };
 

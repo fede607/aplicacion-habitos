@@ -58,6 +58,19 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
 
       <div className="grid gap-4 rounded-3xl border border-border bg-surface p-5 shadow-card sm:p-6">
         <OAuthButtons providers={enabledOAuthProviders()} invite={invite?.code} next={next} />
+        {enabledOAuthProviders().length ? (
+          <p className="text-center text-xs text-muted">
+            Al continuar con Google o Apple confirmas que tienes 14 años o más y aceptas los{" "}
+            <Link href="/terminos" className="underline">
+              términos
+            </Link>{" "}
+            y la{" "}
+            <Link href="/privacidad" className="underline">
+              privacidad
+            </Link>
+            .
+          </p>
+        ) : null}
         <RegisterForm next={next} invite={invite?.code} source={source} />
       </div>
       <StatsStrip stats={proof.stats} />

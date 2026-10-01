@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/layout/logo";
+import { LegalLinks } from "@/components/legal/legal-page";
 
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
@@ -8,6 +9,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         <Logo />
       </Link>
       <main className="w-full max-w-sm">{children}</main>
+      <LegalLinks className="mt-8 text-xs text-muted" />
     </div>
   );
 }

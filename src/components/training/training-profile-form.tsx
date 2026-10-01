@@ -69,6 +69,7 @@ export function TrainingProfileForm({ initial, currentYear }: { initial: Trainin
   const [pending, startTransition] = useTransition();
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [consent, setConsent] = useState(initial !== null);
   const [f, setF] = useState<TrainingFormValues>(
     initial ?? {
       birthYear: currentYear - 16,
@@ -102,6 +103,7 @@ export function TrainingProfileForm({ initial, currentYear }: { initial: Trainin
       onSubmit={(e) => {
         e.preventDefault();
         if (!last) return setStep((s) => s + 1);
+        if (!consent) return toast.error("Marca la casilla de consentimiento para usar tus datos físicos.");
         if (daysMismatch) return toast.error(`Marca ${f.daysPerWeek} días o ninguno (los elegimos nosotros).`);
         startTransition(async () => {
           const res = await saveTrainingProfile(f);
@@ -335,6 +337,19 @@ export function TrainingProfileForm({ initial, currentYear }: { initial: Trainin
         </div>
       ) : null}
 
+      {last ? (
+        <label className="flex items-start gap-2.5 text-xs text-muted">
+          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[var(--primary)]" />
+          <span>
+            Doy mi consentimiento para que Year Arc use mis datos físicos (edad, sexo, altura, peso y molestias) sólo para calcular mi plan. Puedo
+            retirarlo borrando mi cuenta. Más en la{" "}
+            <a href="/privacidad" target="_blank" className="underline">
+              política de privacidad
+            </a>
+            .
+          </span>
+        </label>
+      ) : null}
       <div className="flex gap-2">
         {step > 0 ? (
           <Button type="button" variant="outline" size="xl" className="px-5" onClick={() => setStep((s) => s - 1)} aria-label="Atrás">

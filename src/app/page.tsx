@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, Dumbbell, Flame, ChartSpline, Medal, ShieldCheck, Smartphone, Users } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
@@ -5,9 +6,12 @@ import { Button } from "@/components/ui/button";
 import { PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
 import { getPublicProof } from "@/lib/data/public-proof";
 import { ReviewCards, StatsStrip } from "@/components/reviews/social-proof";
+import { LegalLinks } from "@/components/legal/legal-page";
 
 // Opiniones y cifras reales: se refrescan cada 10 minutos.
 export const revalidate = 600;
+
+export const metadata: Metadata = { robots: { index: true, follow: true }, alternates: { canonical: "/" } };
 
 const FEATURES = [
   { icon: ChartSpline, title: "Tu año en una línea", text: "Tu constancia día a día en un gráfico que sube contigo. Compártelo en tu estado." },
@@ -233,6 +237,10 @@ export default async function LandingPage() {
           </Button>
         </section>
       </main>
+      <footer className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-6 text-xs text-muted sm:px-6">
+        <p>© 2026 Year Arc</p>
+        <LegalLinks />
+      </footer>
     </div>
   );
 }

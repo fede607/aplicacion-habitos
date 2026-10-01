@@ -45,6 +45,7 @@ Deno.serve(async (req: Request) => {
     }
     if (!USERNAME.test(username)) return json({ error: "Nombre de usuario no válido.", field: "username" }, 400);
     if (!displayName) return json({ error: "Escribe tu nombre.", field: "displayName" }, 400);
+    if (body.acceptTerms !== true) return json({ error: "Debes tener 14 años o más y aceptar los términos y la política de privacidad." }, 400);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -77,6 +78,7 @@ Deno.serve(async (req: Request) => {
         username,
         display_name: displayName,
         timezone,
+        terms_accepted_at: new Date().toISOString(),
         ...(inviteCode ? { invite_code: inviteCode } : {}),
         ...(source ? { signup_source: source } : {}),
       },

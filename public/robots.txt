@@ -1,2 +1,6 @@
 User-agent: *
+Allow: /$
+Allow: /privacidad
+Allow: /terminos
+Allow: /opengraph-image
 Disallow: /

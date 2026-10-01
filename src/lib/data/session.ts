@@ -95,7 +95,7 @@ export async function requireProPage(): Promise<GroupSession | null> {
   return (await hasFullAccess(session)) ? session : null;
 }
 
-/** Páginas Pro: en una sala de pago, sin suscripción sólo se ven los hábitos de hoy. */
+/** Páginas Pro (redirige a /pro si no tiene acceso). */
 export async function requireFullAccess(): Promise<GroupSession> {
   const session = await requireGroup();
   if (!(await hasFullAccess(session))) redirect("/pro?locked=1");

@@ -26,6 +26,7 @@ export function RegisterForm({ next, invite, source }: { next?: string; invite?:
   const [error, setError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const captcha = useCaptcha();
+  const [accepted, setAccepted] = useState(false);
 
   return (
     <form
@@ -44,6 +45,10 @@ export function RegisterForm({ next, invite, source }: { next?: string; invite?:
         if (!parsed.success) {
           setErrors(fieldErrors(parsed.error));
           setError("Revisa los campos.");
+          return;
+        }
+        if (!accepted) {
+          setError("Para continuar, confirma que tienes 14 años o más y aceptas los términos.");
           return;
         }
         if (!captcha.ready) {
@@ -74,6 +79,7 @@ export function RegisterForm({ next, invite, source }: { next?: string; invite?:
               timezone: parsed.data.timezone,
               inviteCode: invite,
               source,
+              acceptTerms: true,
               captchaToken: captcha.token ?? undefined,
             }),
           });
@@ -143,6 +149,20 @@ export function RegisterForm({ next, invite, source }: { next?: string; invite?:
       <Field label="Contraseña" htmlFor="password" error={errors.password} hint="Mínimo 8 caracteres, con letras y números">
         <Input id="password" name="password" type="password" autoComplete="new-password" minLength={8} maxLength={72} required aria-invalid={!!errors.password} />
       </Field>
+      <label className="flex items-start gap-2.5 text-sm">
+        <input type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} required className="mt-0.5 size-5 shrink-0 accent-[var(--primary)]" />
+        <span>
+          Tengo 14 años o más y acepto los{" "}
+          <a href="/terminos" target="_blank" className="font-medium text-primary underline">
+            términos
+          </a>{" "}
+          y la{" "}
+          <a href="/privacidad" target="_blank" className="font-medium text-primary underline">
+            política de privacidad
+          </a>
+          .
+        </span>
+      </label>
       <Turnstile onToken={captcha.setToken} resetSignal={captcha.resetSignal} onLoadError={captcha.onLoadError} />
       {captcha.loadError ? <FormError message={CAPTCHA_LOAD_ERROR} /> : null}
       <SubmitButton pending={pending} pendingText="Creando cuenta…">

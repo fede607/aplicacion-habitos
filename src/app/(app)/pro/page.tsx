@@ -102,7 +102,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
       {params.locked && !fullAccess ? (
         <p className="flex items-start gap-2 rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-warning" role="status">
           <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          «{activeGroup.name}» es una sala Pro. Sin Pro puedes crear y marcar tus hábitos, ver tu línea del año y el grupo.
+          «{activeGroup.name}» incluye Pro. Sin Pro puedes crear y marcar tus hábitos, ver tu línea del año y el grupo.
         </p>
       ) : null}
 
