@@ -31,7 +31,7 @@ export default async function ProgressPage() {
   const lookbackFrom = addDays(today, -370);
   const [stats, habits, logs, xpInputs, achievementsRes] = await Promise.all([
     getPersonalStats(session),
-    getActiveHabits(supabase, activeGroup.id),
+    getActiveHabits(supabase, activeGroup.id, userId),
     getMyLogs(supabase, userId, activeGroup.id, lookbackFrom < activeGroup.start_date ? activeGroup.start_date : lookbackFrom, today),
     getXpInputs(supabase, userId),
     supabase.from("achievements").select("*").order("sort_order"),

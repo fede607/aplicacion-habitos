@@ -36,7 +36,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
     <div className="grid gap-6">
       <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight">Empieza tu Year Arc</h1>
-        <p className="mt-1 text-sm text-muted">Crea tu cuenta, monta tu grupo con tus hábitos e invita a tus amigos.</p>
+        <p className="mt-1 text-sm text-muted">Crea tu cuenta, elige tus hábitos y empieza a pintar tu año.</p>
       </div>
 
       {invite ? (
@@ -51,7 +51,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
           <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
           <span>
             {inviteProblem ? "Esta invitación no es válida o ha caducado, pero puedes registrarte igual y crear tu grupo. " : ""}
-            Gratis y con <b>1 mes de Pro</b> de regalo. Luego creas tu grupo en un toque.
+            Gratis y con <b>1 mes de Pro</b> de regalo.
           </span>
         </p>
       )}

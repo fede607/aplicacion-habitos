@@ -55,7 +55,7 @@ function toDraft(h: HabitRow | null, today: string): Draft {
   };
 }
 
-export function HabitsManager({ groupId, habits, today }: { groupId: string; habits: HabitRow[]; today: string }) {
+export function HabitsManager({ groupId, habits, today, personal = false }: { groupId: string; habits: HabitRow[]; today: string; personal?: boolean }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState<Draft | null>(null);
@@ -87,10 +87,10 @@ export function HabitsManager({ groupId, habits, today }: { groupId: string; hab
             </div>
             {!h.is_active ? <Badge>Inactivo</Badge> : null}
             <div className="flex items-center gap-1">
-              <Button size="icon-sm" variant="ghost" aria-label={`Subir ${h.name}`} disabled={pending || i === 0} onClick={() => run(() => moveHabit({ groupId, habitId: h.id, direction: "up" }))}>
+              <Button size="icon-sm" variant="ghost" aria-label={`Subir ${h.name}`} disabled={pending || i === 0} onClick={() => run(() => moveHabit({ groupId, habitId: h.id, direction: "up", personal }))}>
                 <ArrowUp aria-hidden="true" />
               </Button>
-              <Button size="icon-sm" variant="ghost" aria-label={`Bajar ${h.name}`} disabled={pending || i === habits.length - 1} onClick={() => run(() => moveHabit({ groupId, habitId: h.id, direction: "down" }))}>
+              <Button size="icon-sm" variant="ghost" aria-label={`Bajar ${h.name}`} disabled={pending || i === habits.length - 1} onClick={() => run(() => moveHabit({ groupId, habitId: h.id, direction: "down", personal }))}>
                 <ArrowDown aria-hidden="true" />
               </Button>
               <Switch
@@ -137,6 +137,7 @@ export function HabitsManager({ groupId, habits, today }: { groupId: string; hab
                 router.refresh();
               }}
               groupId={groupId}
+              personal={personal}
             />
           </DialogContent>
         ) : null}
@@ -145,7 +146,7 @@ export function HabitsManager({ groupId, habits, today }: { groupId: string; hab
   );
 }
 
-function HabitForm({ draft, groupId, onSaved, onCancel }: { draft: Draft; groupId: string; onSaved: () => void; onCancel: () => void }) {
+function HabitForm({ draft, groupId, personal, onSaved, onCancel }: { draft: Draft; groupId: string; personal: boolean; onSaved: () => void; onCancel: () => void }) {
   const [form, setForm] = useState(draft);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
@@ -160,6 +161,7 @@ function HabitForm({ draft, groupId, onSaved, onCancel }: { draft: Draft; groupI
           const res = await saveHabit({
             ...form,
             groupId,
+            personal,
             weeklyTarget: form.frequency === "weekly_target" ? Number(form.weeklyTarget) : null,
           });
           if (res.ok) {

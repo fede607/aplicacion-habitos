@@ -130,6 +130,8 @@ export const habitSchema = z
       .default(1),
     goal: trimmed(100),
     startsOn: isoDateSchema,
+    /** Hábito personal (sólo tuyo) en vez de común del grupo. */
+    personal: z.boolean().default(false),
   })
   .superRefine((v, ctx) => {
     if (v.frequency === "weekdays" && v.weekdays.length === 0) {

@@ -44,7 +44,7 @@ export async function getMemberRank(
     supabase.from("habit_revisions").select("*").eq("group_id", group.id),
     supabase
       .from("habits")
-      .select("id, name, icon, color, category, weight, archived_at, is_active, sort_order, created_at")
+      .select("id, name, icon, color, category, weight, archived_at, is_active, sort_order, created_at, owner_id")
       .eq("group_id", group.id)
       .order("sort_order")
       .order("created_at"),
@@ -53,11 +53,14 @@ export async function getMemberRank(
   if (revRes.error) logServerError("getMemberRank:revisions", revRes.error);
   if (habitRes.error) logServerError("getMemberRank:habits", habitRes.error);
 
-  const revisions = toRankRevisions(revRes.data ?? []);
+  // Sólo cuentan los hábitos comunes y los personales de este miembro.
+  const memberHabits = (habitRes.data ?? []).filter((h) => h.owner_id === null || h.owner_id === memberId);
+  const applies = new Set(memberHabits.map((h) => h.id));
+  const revisions = toRankRevisions((revRes.data ?? []).filter((r) => applies.has(r.habit_id)));
   const rankLogs = toRankLogs(logs, timeZone);
 
   const result = computeRank({ from, today: to, threshold: group.streak_threshold, revisions, logs: rankLogs });
-  const habits: RankHabitMeta[] = (habitRes.data ?? []).map((h) => ({
+  const habits: RankHabitMeta[] = memberHabits.map((h) => ({
     id: h.id,
     name: h.name,
     icon: h.icon,

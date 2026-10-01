@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, Dumbbell, Flame, Medal, ShieldCheck, Smartphone, Swords, Users } from "lucide-react";
+import { Check, Dumbbell, Flame, Grid3x3, Medal, ShieldCheck, Smartphone, Users } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import { Button } from "@/components/ui/button";
 import { PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
@@ -10,21 +10,9 @@ import { ReviewCards, StatsStrip } from "@/components/reviews/social-proof";
 export const revalidate = 600;
 
 const FEATURES = [
-  {
-    icon: Flame,
-    title: "Rachas que enganchan",
-    text: "Marca tus hábitos en un toque y mira cómo crece tu racha.",
-  },
-  {
-    icon: Users,
-    title: "Con tu gente",
-    text: "Crea un grupo, pasa el código y haced el reto juntos.",
-  },
-  {
-    icon: Swords,
-    title: "Duelos",
-    text: "Reta a un amigo a una semana perfecta. El que falle, pierde.",
-  },
+  { icon: Grid3x3, title: "Tu año en píxeles", text: "Cada día es un cuadrado que se pinta según cumples. Compártelo en tu estado." },
+  { icon: Flame, title: "Tus hábitos, tus reglas", text: "Elige los tuyos en un toque o crea los que quieras." },
+  { icon: Users, title: "Amigos (si quieres)", text: "Invita a tu gente para veros el progreso y animaros." },
   {
     icon: Dumbbell,
     title: "Plan a tu medida",
@@ -44,11 +32,11 @@ const FEATURES = [
 
 const STEPS = [
   ["Crea tu cuenta", "En 30 segundos."],
-  ["Crea o únete a un grupo", "Un código y tus amigos dentro."],
-  ["Cumple cada día", "Hábitos, entreno y racha. 365 días."],
+  ["Elige tus hábitos", "Los populares en un toque o los tuyos."],
+  ["Pinta tu año", "Cada día cumplido, un píxel más."],
 ];
 
-const FREE = ["Hábitos diarios y racha", "Grupo con tus amigos", "Duelos"];
+const FREE = ["Tus propios hábitos y racha", "Tu año en píxeles", "Grupo con tus amigos"];
 const PRO = [
   "Todo lo gratis",
   "Plan de entreno personalizado",
@@ -96,6 +84,24 @@ function PhoneMock() {
   );
 }
 
+/** Ilustración (no son datos de nadie): un año que va mejorando. */
+function PixelsDemo() {
+  const colors = ["#7f1d1d", "#c2410c", "#f59e0b", "#84cc16", "#22c55e"];
+  return (
+    <div aria-hidden="true" className="grid gap-[3px]">
+      {Array.from({ length: 12 }, (_, m) => (
+        <div key={m} className="grid gap-[3px]" style={{ gridTemplateColumns: "repeat(31, minmax(0, 1fr))" }}>
+          {Array.from({ length: 31 }, (_, d) => {
+            const r = (((m * 31 + d) * 9301 + 49297) % 233280) / 233280;
+            const level = Math.min(4, Math.max(0, Math.floor(r * 2.2 + m / 3.2)));
+            return <span key={d} className="aspect-square rounded-[3px]" style={{ backgroundColor: m > 9 ? "rgba(148,163,184,0.15)" : colors[level] }} />;
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default async function LandingPage() {
   const { reviews, stats } = await getPublicProof();
   return (
@@ -113,7 +119,7 @@ export default async function LandingPage() {
             <p className="text-sm font-bold tracking-widest text-primary uppercase">Tu año · tus reglas · tu gente</p>
             <h1 className="mt-3 text-5xl font-black tracking-tight text-balance sm:text-6xl">Este año es para construirte.</h1>
             <p className="mt-5 max-w-xl text-lg text-muted text-pretty">
-              Hábitos, entreno y retos con tus amigos en una sola app. 365 días para convertirte en quien quieres ser.
+              Tus hábitos, tu entreno y tu año pintado día a día. 365 días para convertirte en quien quieres ser.
             </p>
             <div className="mt-8 grid gap-3 sm:flex sm:items-center">
               <Button asChild size="xl" variant="pro" className="px-8">
@@ -127,6 +133,17 @@ export default async function LandingPage() {
             <StatsStrip stats={stats} className="mt-8 max-w-md" />
           </div>
           <PhoneMock />
+        </section>
+
+        <section className="mt-24 grid items-center gap-8 rounded-[2rem] bg-surface p-6 shadow-card sm:p-10 lg:grid-cols-2" aria-labelledby="pixeles">
+          <div>
+            <p className="text-sm font-bold tracking-widest text-primary uppercase">Sólo en Year Arc</p>
+            <h2 id="pixeles" className="mt-2 text-3xl font-black tracking-tight text-balance">Tu año en píxeles</h2>
+            <p className="mt-3 text-muted text-pretty">
+              365 cuadrados. Cada día que cumples se pinta de verde. A final de año tienes un cuadro único: tu constancia, día a día. Y lo compartes en tu estado en un toque.
+            </p>
+          </div>
+          <PixelsDemo />
         </section>
 
         <section className="mt-24" aria-labelledby="como">

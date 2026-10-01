@@ -27,7 +27,7 @@ export default async function DashboardPage() {
   const [stats, workouts, habits, weekLogs, notesRes, rank] = await Promise.all([
     getPersonalStats(session),
     getWorkoutTotals(supabase, userId, activeGroup.start_date <= today ? activeGroup.start_date : undefined, today),
-    getActiveHabits(supabase, activeGroup.id),
+    getActiveHabits(supabase, activeGroup.id, userId),
     getMyLogs(supabase, userId, activeGroup.id, weekStart, today),
     supabase
       .from("daily_entries")

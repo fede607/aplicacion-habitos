@@ -5,8 +5,8 @@ import { CopyText } from "./copy-text";
 export const metadata: Metadata = { title: "Kit para estados", robots: { index: false } };
 
 const CAPTIONS = [
-  "Este año me he propuesto no fallar ni un día 🔥 Me he montado mi grupo en Year Arc: hábitos, entreno y retos con amigos. ¿Te unes? 👉 winterarc-2026.vercel.app/w",
-  "¿Quién aguanta más días seguidos? 😏 Crea tu grupo gratis, elegid vuestros hábitos y a competir 👉 winterarc-2026.vercel.app/w",
+  "Este año me he propuesto no fallar ni un día 🔥 Estoy pintando mi año en Year Arc: cada día que cumplo mis hábitos, un píxel verde. ¿Te animas? 👉 winterarc-2026.vercel.app/w",
+  "Así va mi año 👇 Cada cuadrado es un día. Elige tus hábitos y pinta el tuyo, es gratis 👉 winterarc-2026.vercel.app/w",
   "Me está funcionando esto para entrenar y ser constante 💪 Te hace un plan a tu medida y el primer mes de Pro es gratis 👉 winterarc-2026.vercel.app/w",
 ];
 

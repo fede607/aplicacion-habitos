@@ -54,7 +54,7 @@ export default async function CalendarPage({ searchParams }: PageProps<"/calenda
 
   const [rows, habits, detail] = await Promise.all([
     monthStart <= today ? getDailyStats(supabase, activeGroup.id, monthStart, statsTo, userId) : Promise.resolve([]),
-    getActiveHabits(supabase, activeGroup.id),
+    getActiveHabits(supabase, activeGroup.id, userId),
     selected
       ? Promise.all([
           supabase.from("habit_logs").select("habit_id, status").eq("user_id", userId).eq("group_id", activeGroup.id).eq("log_date", selected),

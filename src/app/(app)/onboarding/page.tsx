@@ -1,57 +1,31 @@
 import type { Metadata } from "next";
-import { Snowflake, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { requireSession } from "@/lib/data/session";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CreateGroupForm } from "@/components/groups/create-group-form";
 import { JoinByCodeForm } from "@/components/groups/join-by-code-form";
+import { StartSoloButton } from "@/components/groups/start-solo-button";
 
 export const metadata: Metadata = { title: "Empezar" };
 
 export default async function OnboardingPage() {
-  const { profile, today, groups } = await requireSession();
+  const { profile, groups } = await requireSession();
   return (
-    <div className="grid gap-6">
-      <header>
-        <p className="text-xs font-semibold tracking-widest text-primary uppercase">
-          {groups.length ? "Nuevo grupo" : "Bienvenido"}
+    <div className="mx-auto grid max-w-md gap-6 pt-4">
+      <header className="text-center">
+        <p className="text-4xl" aria-hidden="true">
+          🟩
         </p>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          {groups.length ? "Crea o únete a otro grupo" : `Hola, ${profile.display_name}`}
-        </h1>
-        <p className="mt-1 text-muted">
-          El Year Arc se hace en grupo. Crea el tuyo con el nombre que quieras, elige vuestros hábitos en Grupo › Administrar e invita a tus amigos con el código. O únete con el código que te hayan pasado.
-        </p>
+        <h1 className="mt-2 text-3xl font-black tracking-tight">{groups.length ? "Otro Year Arc" : `Hola, ${profile.display_name.split(" ")[0]}`}</h1>
+        <p className="mt-2 text-muted">Elige tus hábitos y cada día que cumplas se pintará un píxel de tu año.</p>
       </header>
-      <div className="grid gap-5 lg:grid-cols-2">
-        {(
-          <Card>
-            <CardHeader>
-              <div>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Snowflake className="size-4 text-primary" aria-hidden="true" /> Crear un grupo
-                </CardTitle>
-                <CardDescription>Serás el administrador.</CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <CreateGroupForm today={today} />
-            </CardContent>
-          </Card>
-        )}
-        <Card className="self-start">
-          <CardHeader>
-            <div>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Users className="size-4 text-primary" aria-hidden="true" /> Unirme con un código
-              </CardTitle>
-              <CardDescription>Pega el código que te ha pasado tu amigo.</CardDescription>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <JoinByCodeForm />
-          </CardContent>
-        </Card>
-      </div>
+      <StartSoloButton />
+      <details className="group rounded-3xl border border-border bg-surface">
+        <summary className="flex cursor-pointer list-none items-center gap-3 p-4 font-semibold [&::-webkit-details-marker]:hidden">
+          <Users className="size-5 text-primary" aria-hidden="true" /> Tengo un código de un amigo
+        </summary>
+        <div className="px-4 pb-4">
+          <JoinByCodeForm />
+        </div>
+      </details>
     </div>
   );
 }

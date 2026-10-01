@@ -9,13 +9,13 @@ const DESIGNS = {
   "1": {
     kicker: "RETO DE 365 DÍAS",
     title: ["Este año", "es para", "construirte."],
-    sub: "Hábitos, entreno y retos con tus amigos. Gratis.",
+    sub: "Tus hábitos, tu entreno y tu año pintado día a día. Gratis.",
     bg: "linear-gradient(160deg, #060a12 0%, #0b2540 55%, #3b1a0a 100%)",
   },
   "2": {
-    kicker: "CREA TU GRUPO",
-    title: ["¿Quién de", "tus amigos", "falla primero?"],
-    sub: "Crea un grupo, elegid vuestros hábitos y competid cada día.",
+    kicker: "TU AÑO EN PÍXELES",
+    title: ["365 días.", "365 píxeles.", "¿Lo pintas?"],
+    sub: "Elige tus hábitos y cada día cumplido se pinta de verde.",
     bg: "linear-gradient(160deg, #1a0633 0%, #3b0a4a 50%, #0b2540 100%)",
   },
   "3": {

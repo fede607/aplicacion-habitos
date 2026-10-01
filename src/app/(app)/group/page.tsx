@@ -14,9 +14,8 @@ import { ProgressBar } from "@/components/ui/progress";
 import { GroupRealtime } from "@/components/groups/group-realtime";
 import { GroupActions, InviteCodeBox } from "@/components/groups/group-actions";
 import { getSiteUrl } from "@/lib/env";
-import { getGroupDuels, getGroupFeed } from "@/lib/data/social";
+import { getGroupFeed } from "@/lib/data/social";
 import { ActivityFeed } from "@/components/social/activity-feed";
-import { DuelsSection } from "@/components/social/duels-section";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Grupo" };
@@ -65,13 +64,12 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
         .order("created_at", { ascending: false })
         .limit(10)
     : Promise.resolve({ data: [] as { code: string; expires_at: string | null; max_uses: number | null; use_count: number }[] });
-  const [membersRes, visibilityRes, statsRows, workoutsRes, feed, duels, invitesRes] = await Promise.all([
+  const [membersRes, visibilityRes, statsRows, workoutsRes, feed, invitesRes] = await Promise.all([
     supabase.from("group_members").select("user_id, role, joined_at").eq("group_id", activeGroup.id).order("joined_at").limit(1000),
     supabase.rpc("group_member_visibility", { p_group_id: activeGroup.id }),
     getDailyStats(supabase, activeGroup.id, from, today),
     supabase.rpc("group_workout_summary", { p_group_id: activeGroup.id, p_from: from, p_to: today }),
     getGroupFeed(supabase, activeGroup.id, userId),
-    getGroupDuels(supabase, { group: activeGroup, userId, today }),
     inviteQuery,
   ]);
   const { data: proIds } = await supabase.rpc("group_pro_members", { p_group_id: activeGroup.id });
@@ -199,10 +197,7 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-        <DuelsSection duels={duels} />
-        <ActivityFeed groupId={activeGroup.id} items={feed.items} nowMs={feed.now} />
-      </div>
+      <ActivityFeed groupId={activeGroup.id} items={feed.items} nowMs={feed.now} />
 
       {activeGroup.rules ? (
         <Card>

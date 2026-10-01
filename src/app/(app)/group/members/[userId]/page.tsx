@@ -14,7 +14,6 @@ import { getTier } from "@/lib/rank/tiers";
 import { CATEGORY_LABELS } from "@/lib/labels";
 import type { HabitCategory } from "@/lib/database.types";
 import { RankEmblem } from "@/components/rank/rank-emblem";
-import { ChallengeButton } from "@/components/social/duel-actions";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,7 +42,7 @@ export default async function MemberStatsPage({ params }: PageProps<"/group/memb
   const weekStart = startOfIsoWeek(today) < from ? from : startOfIsoWeek(today);
   const [rows, habits, workoutsArc, workoutsWeek, logsRes, rank] = await Promise.all([
     getDailyStats(supabase, activeGroup.id, from, today, memberId),
-    getActiveHabits(supabase, activeGroup.id),
+    getActiveHabits(supabase, activeGroup.id, memberId),
     supabase.rpc("group_workout_summary", { p_group_id: activeGroup.id, p_from: from, p_to: today }),
     supabase.rpc("group_workout_summary", { p_group_id: activeGroup.id, p_from: startOfIsoWeek(today), p_to: today }),
     supabase
@@ -92,7 +91,6 @@ export default async function MemberStatsPage({ params }: PageProps<"/group/memb
             </p>
           </div>
         </div>
-        {!isMe && shares ? <ChallengeButton groupId={activeGroup.id} opponentId={memberId} name={member.display_name} /> : null}
       </header>
 
       {!shares ? (

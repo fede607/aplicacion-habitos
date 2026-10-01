@@ -138,9 +138,14 @@ export async function runNotifications(options: { now?: Date; limit?: number } =
   return result;
 }
 
+/** Hábitos que cuentan para una persona: los comunes del grupo y los suyos. */
+function habitsFor(ctx: GroupContext, userId: string): HabitRow[] {
+  return ctx.habits.filter((h) => h.owner_id === null || h.owner_id === userId);
+}
+
 /** Hábitos obligatorios de hoy aún sin registrar y racha actual. */
 async function pendingToday(admin: Admin, userId: string, ctx: GroupContext, today: IsoDate): Promise<{ pending: string[]; streak: number }> {
-  const required = ctx.habits.filter((h) => isRequiredOn(h, today));
+  const required = habitsFor(ctx, userId).filter((h) => isRequiredOn(h, today));
   if (required.length === 0) return { pending: [], streak: 0 };
   const { data: logs } = await admin.from("habit_logs").select("habit_id").eq("user_id", userId).eq("group_id", ctx.group.id).eq("log_date", today);
   const logged = new Set((logs ?? []).map((l) => l.habit_id));
@@ -188,7 +193,7 @@ async function loadGroupContext(admin: Admin, groupId: string, today: IsoDate): 
 
 async function buildDaily(admin: Admin, claim: Claim, ctx: GroupContext, siteUrl: string, unsubscribeUrl: string): Promise<OutgoingEmail | null> {
   const today = claim.local_date;
-  const required = ctx.habits.filter((h) => isRequiredOn(h, today));
+  const required = habitsFor(ctx, claim.user_id).filter((h) => isRequiredOn(h, today));
   if (required.length === 0) return null;
   const { data: logs } = await admin
     .from("habit_logs")
@@ -270,7 +275,7 @@ async function buildWeekly(admin: Admin, claim: Claim, ctx: GroupContext, siteUr
     week: summarize(mySeries, weekStart, today),
     streak: computeStreaks(mySeries, threshold, today),
     workouts: { count: workouts.length, minutes: workouts.reduce((a, w) => a + w.duration_min, 0) },
-    weeklyTargets: ctx.habits
+    weeklyTargets: habitsFor(ctx, claim.user_id)
       .filter((h) => h.frequency === "weekly_target")
       .map((h) => {
         const p = weeklyTargetProgress(logsByHabit.get(h.id) ?? new Map(), startOfIsoWeek(today), h.weekly_target ?? 1);

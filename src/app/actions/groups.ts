@@ -39,8 +39,8 @@ export async function createGroup(input: z.input<typeof createGroupSchema>): Pro
 }
 
 /**
- * «Crear grupo» en un toque: grupo nuevo con los hábitos por defecto (365 días)
- * y su código de invitación, listo para copiar y compartir.
+ * Empezar en un toque: crea tu Year Arc (365 días, sin hábitos comunes: cada
+ * persona elige los suyos) con su código para invitar a amigos si quieres.
  */
 export async function quickCreateGroup(): Promise<ActionResult<{ groupId: string; code: string | null }>> {
   const { supabase, userId } = await authed();
@@ -48,9 +48,9 @@ export async function quickCreateGroup(): Promise<ActionResult<{ groupId: string
   const { data: profile } = await supabase.from("profiles").select("display_name").eq("id", userId).maybeSingle();
   const firstName = (profile?.display_name ?? "").trim().split(/\s+/)[0]?.slice(0, 40);
   const { data: groupId, error } = await supabase.rpc("create_group", {
-    p_name: firstName ? `Grupo de ${firstName}` : "Mi grupo",
+    p_name: firstName ? `Year Arc de ${firstName}` : "Mi Year Arc",
     p_description: "",
-    p_seed_defaults: true,
+    p_seed_defaults: false,
   });
   if (error || !groupId) return fail(error, "quickCreateGroup");
   const { data: inv } = await supabase
@@ -303,12 +303,16 @@ export async function saveHabit(input: z.input<typeof habitSchema>): Promise<Act
     return { ok: true, data: { id: data[0].id } };
   }
 
-  const { data: last } = await supabase.from("habits").select("sort_order").eq("group_id", h.groupId).order("sort_order", { ascending: false }).limit(1);
+  const lastQuery = supabase.from("habits").select("sort_order").eq("group_id", h.groupId);
+  const { data: last } = await (h.personal ? lastQuery.eq("owner_id", userId) : lastQuery.is("owner_id", null))
+    .order("sort_order", { ascending: false })
+    .limit(1);
   const { data, error } = await supabase
     .from("habits")
     .insert({
       ...row,
       group_id: h.groupId,
+      owner_id: h.personal ? userId : null,
       sort_order: Math.min((last?.[0]?.sort_order ?? 0) + 10, 10000),
     })
     .select("id")
@@ -345,22 +349,21 @@ export async function archiveHabit(habitId: string): Promise<ActionResult> {
 }
 
 /** Reordena intercambiando sort_order con el vecino. */
-export async function moveHabit(input: { groupId: string; habitId: string; direction: "up" | "down" }): Promise<ActionResult> {
+export async function moveHabit(input: { groupId: string; habitId: string; direction: "up" | "down"; personal?: boolean }): Promise<ActionResult> {
   const parsed = z
     .object({
       groupId: uuidSchema,
       habitId: uuidSchema,
       direction: z.enum(["up", "down"]),
+      personal: z.boolean().default(false),
     })
     .safeParse(input);
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
   const { supabase, userId } = await authed();
   if (!userId) return NOT_AUTHENTICATED;
 
-  const { data: habits, error } = await supabase
-    .from("habits")
-    .select("id, sort_order")
-    .eq("group_id", parsed.data.groupId)
+  const listQuery = supabase.from("habits").select("id, sort_order").eq("group_id", parsed.data.groupId);
+  const { data: habits, error } = await (parsed.data.personal ? listQuery.eq("owner_id", userId) : listQuery.is("owner_id", null))
     .is("archived_at", null)
     .order("sort_order")
     .order("created_at");

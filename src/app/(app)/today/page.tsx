@@ -16,7 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { PasswordUpdatedToast } from "./password-updated-toast";
-import { ShareStreakButton } from "@/components/social/share-streak-button";
+import { getYearPixels } from "@/lib/data/year";
+import { YearPixelsCard } from "@/components/year/year-pixels";
 import { ReviewPrompt } from "@/components/reviews/review-prompt";
 
 export const metadata: Metadata = { title: "Hoy" };
@@ -34,7 +35,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
   const weekStart = startOfIsoWeek(date);
 
   const [habits, logs, entryRes, workoutsRes] = await Promise.all([
-    getActiveHabits(supabase, activeGroup.id),
+    getActiveHabits(supabase, activeGroup.id, userId),
     getMyLogs(supabase, userId, activeGroup.id, weekStart, addDays(weekStart, 6)),
     supabase.from("daily_entries").select("did_today, improve_tomorrow, updated_at").eq("user_id", userId).eq("entry_date", date).maybeSingle(),
     supabase.from("workouts").select("id, type, duration_min, feeling").eq("user_id", userId).eq("workout_date", date).order("created_at"),
@@ -44,6 +45,8 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
   const full = isToday ? await hasFullAccess(session) : false;
   const trainingRow = full ? await loadTrainingProfile(supabase, userId) : null;
   const planToday = trainingRow ? todaysSession(planFromRow(trainingRow, today), today) : null;
+
+  const yearPixels = isToday && habits.length > 0 ? await getYearPixels(supabase, activeGroup.id, userId, today) : null;
 
   // Pedir opinión tras una semana de uso, en un buen momento (día completado) y sólo una vez.
   const weekOld = profile.created_at.slice(0, 10) <= addDays(today, -7);
@@ -93,18 +96,12 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
 
       {trackerHabits.length === 0 ? (
         <EmptyState
-          title="Tu grupo aún no tiene hábitos"
-          description={
-            activeGroup.role === "admin"
-              ? "Configura los hábitos del Year Arc desde la administración del grupo."
-              : "Pide al administrador del grupo que configure los hábitos."
-          }
+          title="Elige tus hábitos"
+          description="Cada persona tiene los suyos. Elige 3-5 para empezar: en 10 segundos estás marcando tu primer día."
           action={
-            activeGroup.role === "admin" ? (
-              <Button asChild>
-                <Link href="/group/admin">Configurar hábitos</Link>
-              </Button>
-            ) : null
+            <Button asChild variant="pro" size="lg">
+              <Link href="/habits">Elegir mis hábitos</Link>
+            </Button>
           }
         />
       ) : (
@@ -113,11 +110,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
 
       {askReview && trackerHabits.length > 0 && pendingRequired === 0 ? <ReviewPrompt /> : null}
 
-      {isToday && trackerHabits.length > 0 ? (
-        <div className="flex justify-end">
-          <ShareStreakButton compact />
-        </div>
-      ) : null}
+      {yearPixels ? <YearPixelsCard data={yearPixels} today={today} /> : null}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <details className="group rounded-3xl border border-border bg-surface" open={Boolean(entryRes.data?.did_today || entryRes.data?.improve_tomorrow)}>

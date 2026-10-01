@@ -19,7 +19,7 @@ export default async function GroupAdminPage({ searchParams }: PageProps<"/group
   const params = await searchParams;
 
   const [habits, invitationsRes, membersRes] = await Promise.all([
-    getAllHabits(supabase, activeGroup.id),
+    getAllHabits(supabase, activeGroup.id, null),
     supabase.from("group_invitations").select("*").eq("group_id", activeGroup.id).order("created_at", { ascending: false }).limit(50),
     supabase.from("group_members").select("user_id, role, joined_at").eq("group_id", activeGroup.id).order("joined_at").limit(1000),
   ]);
@@ -73,8 +73,8 @@ export default async function GroupAdminPage({ searchParams }: PageProps<"/group
       <Card>
         <CardHeader>
           <div>
-            <CardTitle className="text-base">Hábitos del Year Arc</CardTitle>
-            <CardDescription>Se aplican a todos los miembros del grupo.</CardDescription>
+            <CardTitle className="text-base">Hábitos comunes del grupo (opcional)</CardTitle>
+            <CardDescription>Cuentan para todos los miembros. Cada persona añade los suyos propios en Hoy › Mis hábitos.</CardDescription>
           </div>
         </CardHeader>
         <CardContent>

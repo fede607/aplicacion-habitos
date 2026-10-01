@@ -5,11 +5,13 @@ import { logServerError } from "../errors";
 import type { IsoDate } from "../dates";
 import type { DayStat } from "../stats";
 
-export async function getActiveHabits(supabase: ServerSupabase, groupId: string): Promise<HabitRow[]> {
+/** Hábitos activos que cuentan para `userId`: los comunes del grupo y los suyos. */
+export async function getActiveHabits(supabase: ServerSupabase, groupId: string, userId: string): Promise<HabitRow[]> {
   const { data, error } = await supabase
     .from("habits")
     .select("*")
     .eq("group_id", groupId)
+    .or(`owner_id.is.null,owner_id.eq.${userId}`)
     .eq("is_active", true)
     .is("archived_at", null)
     .order("sort_order")
@@ -18,11 +20,10 @@ export async function getActiveHabits(supabase: ServerSupabase, groupId: string)
   return data ?? [];
 }
 
-export async function getAllHabits(supabase: ServerSupabase, groupId: string): Promise<HabitRow[]> {
-  const { data, error } = await supabase
-    .from("habits")
-    .select("*")
-    .eq("group_id", groupId)
+/** Hábitos editables: los comunes del grupo (`owner` null) o los personales de `owner`. */
+export async function getAllHabits(supabase: ServerSupabase, groupId: string, owner: string | null): Promise<HabitRow[]> {
+  const base = supabase.from("habits").select("*").eq("group_id", groupId);
+  const { data, error } = await (owner ? base.eq("owner_id", owner) : base.is("owner_id", null))
     .is("archived_at", null)
     .order("sort_order")
     .order("created_at");

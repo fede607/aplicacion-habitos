@@ -3,7 +3,7 @@
 import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Flame, Swords, Target, Trophy, UserPlus } from "lucide-react";
+import { Flame, Target, Trophy, UserPlus } from "lucide-react";
 import { getBrowserClient } from "@/lib/supabase/client";
 import { toggleReaction } from "@/app/actions/social";
 import type { FeedItem } from "@/lib/data/social";
@@ -42,11 +42,7 @@ function Line({ item }: { item: FeedItem }) {
         </>
       );
     case "duel_accepted":
-      return (
-        <>
-          y <b>{item.opponent?.name ?? "alguien"}</b> se enfrentan en un duelo esta semana ⚔️
-        </>
-      );
+      return null;
     case "joined":
       return <>se ha unido al grupo 👋</>;
   }
@@ -56,7 +52,7 @@ const ICON = {
   day_complete: <Target className="size-3.5" />,
   achievement: <Trophy className="size-3.5" />,
   rank_up: <Flame className="size-3.5" />,
-  duel_accepted: <Swords className="size-3.5" />,
+  duel_accepted: null,
   joined: <UserPlus className="size-3.5" />,
 } as const;
 
@@ -95,7 +91,6 @@ export function ActivityFeed({ groupId, items, nowMs }: { groupId: string; items
       .channel(`group-feed-${groupId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "group_activity", filter: `group_id=eq.${groupId}` }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "activity_reactions", filter: `group_id=eq.${groupId}` }, refresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "duels", filter: `group_id=eq.${groupId}` }, refresh)
       .subscribe((status) => setLive(status === "SUBSCRIBED"));
     return () => {
       if (timer.current) clearTimeout(timer.current);

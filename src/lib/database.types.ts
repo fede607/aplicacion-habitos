@@ -91,6 +91,8 @@ export type HabitRow = {
   weight: number;
   created_by: string | null;
   archived_at: string | null;
+  /** Dueño del hábito personal; null = hábito común del grupo. */
+  owner_id: string | null;
 } & Timestamps;
 
 export type HabitRevisionRow = {
