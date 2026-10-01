@@ -13,9 +13,9 @@ const DESIGNS = {
     bg: "linear-gradient(160deg, #060a12 0%, #0b2540 55%, #3b1a0a 100%)",
   },
   "2": {
-    kicker: "TU AÑO EN PÍXELES",
-    title: ["365 días.", "365 píxeles.", "¿Lo pintas?"],
-    sub: "Elige tus hábitos y cada día cumplido se pinta de verde.",
+    kicker: "TU AÑO EN UNA LÍNEA",
+    title: ["Mira cómo", "sube tu", "constancia."],
+    sub: "Elige tus hábitos y cada día que cumples tu línea sube.",
     bg: "linear-gradient(160deg, #1a0633 0%, #3b0a4a 50%, #0b2540 100%)",
   },
   "3": {

@@ -91,7 +91,7 @@ function Preview({ kind }: { kind: "list" | "bars" | "grid" | "badge" }) {
   );
 }
 
-/** Pantalla Pro bloqueada: vista previa pixelada + promoción del plan Pro. */
+/** Pantalla Pro bloqueada: vista previa difuminada + promoción del plan Pro. */
 export function ProLocked({ feature }: { feature: ProFeature }) {
   const f = FEATURES[feature];
   return (
@@ -122,7 +122,7 @@ export function ProLocked({ feature }: { feature: ProFeature }) {
           <Link href="/pro" className="pro-gradient inline-flex h-14 items-center justify-center gap-2 rounded-2xl px-6 text-base font-bold">
             <Sparkles className="size-5" aria-hidden="true" /> Hazte Pro · {PRO_MONTH_EUR} €/mes
           </Link>
-          <p className="text-xs text-muted">o {PRO_YEAR_EUR} €/año (2 meses gratis). Tus hábitos y tu año en píxeles siguen siendo gratis.</p>
+          <p className="text-xs text-muted">o {PRO_YEAR_EUR} €/año (2 meses gratis). Tus hábitos y tu línea del año siguen siendo gratis.</p>
         </section>
       </div>
     </div>

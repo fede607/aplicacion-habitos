@@ -61,7 +61,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
         <li>Activamos tu Pro en cuanto llega el pago (normalmente el mismo día).</li>
         <li>
           {PRO_MONTH_EUR} € = 1 mes · {PRO_YEAR_EUR} € = 1 año{onTrial ? ", que empiezan cuando acabe tu mes gratis" : ""}. Si no renuevas, vuelves a la versión gratis
-          (tus hábitos, tu año en píxeles y grupos).
+          (tus hábitos, tu línea del año y grupos).
         </li>
       </ol>
     </div>
@@ -102,7 +102,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
       {params.locked && !fullAccess ? (
         <p className="flex items-start gap-2 rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-warning" role="status">
           <Lock className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          «{activeGroup.name}» es una sala Pro. Sin Pro puedes crear y marcar tus hábitos, ver tu año en píxeles y el grupo.
+          «{activeGroup.name}» es una sala Pro. Sin Pro puedes crear y marcar tus hábitos, ver tu línea del año y el grupo.
         </p>
       ) : null}
 
@@ -138,7 +138,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
             <>
               <p className="rounded-2xl border border-success/40 bg-success-soft p-4 text-sm text-foreground">
                 🎁 <b>Tienes Pro gratis hasta el {trialDate}.</b> Cuando acabe, si quieres seguir con Pro son <b>{PRO_MONTH_EUR} € al mes</b> o <b>{PRO_YEAR_EUR} € al año</b>. Si no pagas, sigues con la
-                versión gratis (tus hábitos, tu año en píxeles y grupos).
+                versión gratis (tus hábitos, tu línea del año y grupos).
               </p>
               {payBox}
             </>
@@ -182,7 +182,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
           <CreditCard className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {paypalOn
             ? "Se cobra cada mes el mismo día en que te suscribiste (p. ej. del 5 de enero al 5 de febrero). Puedes cancelar cuando quieras desde aquí o desde tu cuenta de PayPal."
-            : "Pagas por adelantado (1 mes o 1 año): no hay cobros automáticos ni nada que cancelar. Si no renuevas, vuelves a la versión gratis (tus hábitos, tu año en píxeles y grupos)."}
+            : "Pagas por adelantado (1 mes o 1 año): no hay cobros automáticos ni nada que cancelar. Si no renuevas, vuelves a la versión gratis (tus hábitos, tu línea del año y grupos)."}
         </p>
         <p>Cada persona tiene 1 mes de Pro gratis al entrar en su primer grupo de pago. Las salas gratuitas siguen siendo gratis.</p>
       </div>

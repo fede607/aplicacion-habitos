@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { LoaderCircle, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-/** Comparte la imagen de tu año en píxeles (o la descarga si no se puede compartir). */
+/** Comparte la imagen de tu línea del año (o la descarga si no se puede compartir). */
 export function ShareYearButton() {
   const [pending, start] = useTransition();
   return (

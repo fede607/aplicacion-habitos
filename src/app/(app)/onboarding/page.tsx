@@ -15,7 +15,7 @@ export default async function OnboardingPage() {
           🟩
         </p>
         <h1 className="mt-2 text-3xl font-black tracking-tight">{groups.length ? "Otro Year Arc" : `Hola, ${profile.display_name.split(" ")[0]}`}</h1>
-        <p className="mt-2 text-muted">Elige tus hábitos y cada día que cumplas se pintará un píxel de tu año.</p>
+        <p className="mt-2 text-muted">Elige tus hábitos y mira cómo sube tu línea de constancia día a día.</p>
       </header>
       <StartSoloButton />
       <details className="group rounded-3xl border border-border bg-surface">

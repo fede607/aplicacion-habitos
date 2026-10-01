@@ -16,8 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { PasswordUpdatedToast } from "./password-updated-toast";
-import { getYearPixels } from "@/lib/data/year";
-import { YearPixelsCard } from "@/components/year/year-pixels";
+import { getYearLine } from "@/lib/data/year";
+import { YearLineCard } from "@/components/year/year-line";
 import { ReviewPrompt } from "@/components/reviews/review-prompt";
 
 export const metadata: Metadata = { title: "Hoy" };
@@ -46,7 +46,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
   const trainingRow = full ? await loadTrainingProfile(supabase, userId) : null;
   const planToday = trainingRow ? todaysSession(planFromRow(trainingRow, today), today) : null;
 
-  const yearPixels = isToday && habits.length > 0 ? await getYearPixels(supabase, activeGroup.id, userId, today) : null;
+  const yearLine = isToday && habits.length > 0 ? await getYearLine(supabase, activeGroup.id, userId, today) : null;
 
   // Pedir opinión tras una semana de uso, en un buen momento (día completado) y sólo una vez.
   const weekOld = profile.created_at.slice(0, 10) <= addDays(today, -7);
@@ -110,7 +110,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
 
       {askReview && trackerHabits.length > 0 && pendingRequired === 0 ? <ReviewPrompt /> : null}
 
-      {yearPixels ? <YearPixelsCard data={yearPixels} today={today} /> : null}
+      {yearLine ? <YearLineCard data={yearLine} /> : null}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <details className="group rounded-3xl border border-border bg-surface" open={Boolean(entryRes.data?.did_today || entryRes.data?.improve_tomorrow)}>
