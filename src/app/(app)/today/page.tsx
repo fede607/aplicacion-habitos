@@ -19,6 +19,7 @@ import { PasswordUpdatedToast } from "./password-updated-toast";
 import { getYearLine } from "@/lib/data/year";
 import { YearLineCard } from "@/components/year/year-line";
 import { ReviewPrompt } from "@/components/reviews/review-prompt";
+import { RecoveryCard } from "@/components/recovery/recovery-card";
 
 export const metadata: Metadata = { title: "Hoy" };
 
@@ -46,6 +47,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
   const trainingRow = full ? await loadTrainingProfile(supabase, userId) : null;
   const planToday = trainingRow ? todaysSession(planFromRow(trainingRow, today), today) : null;
 
+  const { data: hasRecovery } = isToday ? await supabase.rpc("has_recovery_code") : { data: true };
   const yearLine = isToday && habits.length > 0 ? await getYearLine(supabase, activeGroup.id, userId, today) : null;
 
   // Pedir opinión tras una semana de uso, en un buen momento (día completado) y sólo una vez.
@@ -107,6 +109,8 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
       ) : (
         <TodayTracker key={date} date={date} habits={trackerHabits} initialStatuses={statuses} editable />
       )}
+
+      {hasRecovery === false ? <RecoveryCard hasCode={false} banner /> : null}
 
       {askReview && trackerHabits.length > 0 && pendingRequired === 0 ? <ReviewPrompt /> : null}
 

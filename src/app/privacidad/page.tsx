@@ -19,7 +19,7 @@ export default function PrivacyPage() {
       <h2>2. Qué datos tratamos y para qué</h2>
       <ul>
         <li>
-          <b>Cuenta:</b> email, nombre, nombre de usuario, contraseña (cifrada, nunca la vemos) y zona horaria. Para crear y proteger tu cuenta.
+          <b>Cuenta:</b> email, nombre, nombre de usuario, contraseña y clave de recuperación (ambas cifradas, nunca las vemos) y zona horaria. Para crear y proteger tu cuenta.
         </li>
         <li>
           <b>Uso de la app:</b> tus hábitos, lo que marcas cada día, notas, entrenamientos y grupos. Para darte el servicio (racha, gráficos,

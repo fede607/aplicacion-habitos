@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bell, Star, ChevronDown, ChevronRight, Palette, Plus, ShieldCheck, Smartphone, Sparkles, Trash2, UserRound, Users } from "lucide-react";
+import { Bell, KeyRound, Star, ChevronDown, ChevronRight, Palette, Plus, ShieldCheck, Smartphone, Sparkles, Trash2, UserRound, Users } from "lucide-react";
 import { requireSession } from "@/lib/data/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,11 +13,13 @@ import { PreferencesForm } from "@/components/settings/preferences-form";
 import { DeleteAccountForm, SignOutButton } from "@/components/settings/account-actions";
 import { LeaveGroupButton } from "@/components/admin/danger-zone";
 import { ReviewForm } from "@/components/reviews/review-form";
+import { RecoveryCard } from "@/components/recovery/recovery-card";
 
 export const metadata: Metadata = { title: "Perfil" };
 
 export default async function SettingsPage() {
   const { supabase, profile, settings, groups, activeGroup, email } = await requireSession();
+  const { data: hasRecovery } = await supabase.rpc("has_recovery_code");
   const { data: review } = await supabase.from("reviews").select("rating, body, allow_public, approved").eq("user_id", profile.id).maybeSingle();
   return (
     <div className="mx-auto grid max-w-2xl gap-5">
@@ -81,6 +83,9 @@ export default async function SettingsPage() {
         </Section>
         <Section icon={<Bell />} title="Avisos push" hint="Recordatorio si te quedan hábitos">
           <PushToggle />
+        </Section>
+        <Section icon={<KeyRound />} title="Clave de recuperación" hint={hasRecovery ? "Creada · para recuperar la contraseña" : "Sin crear · créala ya"}>
+          <RecoveryCard hasCode={hasRecovery === true} />
         </Section>
         <Section icon={<ShieldCheck />} title="Privacidad y recordatorios" hint="Quién ve tus datos">
           <PreferencesForm settings={settings} />
