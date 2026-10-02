@@ -33,8 +33,8 @@ export default function PrivacyPage() {
           <b>Pagos:</b> los gestiona PayPal. Nosotros no vemos ni guardamos tu tarjeta ni tu cuenta; sólo si tu Pro está activo y hasta cuándo.
         </li>
         <li>
-          <b>Avisos:</b> si los activas, tu email y la suscripción de notificaciones de tu navegador, para enviarte recordatorios. Puedes darte de
-          baja en un toque.
+          <b>Avisos:</b> si los activas, la suscripción de notificaciones de tu navegador o móvil, para enviarte recordatorios. Se desactivan en un
+          toque. No te enviamos correos.
         </li>
         <li>
           <b>Origen del registro:</b> si llegaste desde un enlace de campaña (p. ej. WhatsApp), guardamos ese origen para saber qué funciona.
@@ -62,7 +62,6 @@ export default function PrivacyPage() {
         <li>Supabase (base de datos y cuentas), servidores en la UE.</li>
         <li>Vercel (alojamiento de la web).</li>
         <li>PayPal (pagos).</li>
-        <li>El proveedor de email que envía los recordatorios.</li>
       </ul>
       <p>
         Dentro de un grupo, los demás miembros sólo ven lo que tú permites en Perfil › Privacidad (por ejemplo, tu porcentaje o tus hábitos). Tus

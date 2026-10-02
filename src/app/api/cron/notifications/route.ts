@@ -1,7 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { runNotifications } from "@/lib/notifications/run";
-import { isEmailConfigured } from "@/lib/email/mailer";
 import { isAdminConfigured } from "@/lib/supabase/admin";
 import { logServerError } from "@/lib/errors";
 
@@ -20,8 +19,8 @@ function authorized(request: NextRequest): boolean {
 /** Lo llama un cron cada hora (GitHub Actions, Vercel Cron o pg_cron). */
 async function handle(request: NextRequest) {
   if (!authorized(request)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  if (!isEmailConfigured() || !isAdminConfigured()) {
-    return NextResponse.json({ error: "email or service role not configured" }, { status: 503 });
+  if (!isAdminConfigured()) {
+    return NextResponse.json({ error: "service role not configured" }, { status: 503 });
   }
   try {
     const result = await runNotifications();

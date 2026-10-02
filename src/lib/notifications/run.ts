@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "../supabase/admin";
-import { sendEmail, type OutgoingEmail } from "../email/mailer";
+import { isEmailConfigured, sendEmail, type OutgoingEmail } from "../email/mailer";
 import { getSiteUrl } from "../env";
 import { logServerError } from "../errors";
 import { addDays, startOfIsoWeek, type IsoDate } from "../dates";
@@ -60,7 +60,8 @@ export async function runNotifications(options: { now?: Date; limit?: number } =
     return cache.get(key)!;
   };
 
-  for (const kind of ["daily_reminder", "weekly_summary"] as const) {
+  // Sin emails: sólo se envían si hay SMTP configurado (ahora no). Los avisos push van aparte.
+  for (const kind of isEmailConfigured() ? (["daily_reminder", "weekly_summary"] as const) : ([] as const)) {
     const { data: batch, error } = await admin.rpc("claim_notification_batch", {
       p_kind: kind,
       p_now: now.toISOString(),

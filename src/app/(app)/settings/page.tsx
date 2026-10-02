@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bell, Star, ChevronDown, ChevronRight, Mail, Palette, Plus, ShieldCheck, Smartphone, Sparkles, Trash2, UserRound, Users } from "lucide-react";
+import { Bell, Star, ChevronDown, ChevronRight, Palette, Plus, ShieldCheck, Smartphone, Sparkles, Trash2, UserRound, Users } from "lucide-react";
 import { requireSession } from "@/lib/data/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,16 +12,12 @@ import { ProfileForm } from "@/components/settings/profile-form";
 import { PreferencesForm } from "@/components/settings/preferences-form";
 import { DeleteAccountForm, SignOutButton } from "@/components/settings/account-actions";
 import { LeaveGroupButton } from "@/components/admin/danger-zone";
-import { NotificationsForm } from "@/components/settings/notifications-form";
-import { isEmailConfigured } from "@/lib/email/mailer";
 import { ReviewForm } from "@/components/reviews/review-form";
 
 export const metadata: Metadata = { title: "Perfil" };
 
 export default async function SettingsPage() {
   const { supabase, profile, settings, groups, activeGroup, email } = await requireSession();
-  const { data: notify } = await supabase.rpc("my_notification_email");
-  const n = notify?.[0];
   const { data: review } = await supabase.from("reviews").select("rating, body, allow_public, approved").eq("user_id", profile.id).maybeSingle();
   return (
     <div className="mx-auto grid max-w-2xl gap-5">
@@ -85,21 +81,6 @@ export default async function SettingsPage() {
         </Section>
         <Section icon={<Bell />} title="Avisos push" hint="Recordatorio si te quedan hábitos">
           <PushToggle />
-        </Section>
-        <Section icon={<Mail />} title="Emails" hint="Recordatorio diario y resumen semanal">
-          <NotificationsForm
-            state={{
-              accountEmail: n?.account_email ?? email,
-              accountConfirmed: n?.account_confirmed ?? false,
-              customEmail: n?.notification_email ?? null,
-              customVerified: n?.verified ?? false,
-              pendingEmail: n?.pending_email ?? null,
-              daily: settings.email_daily_reminder,
-              weekly: settings.email_weekly_summary,
-              reminderTime: settings.reminder_time,
-              emailConfigured: isEmailConfigured(),
-            }}
-          />
         </Section>
         <Section icon={<ShieldCheck />} title="Privacidad y recordatorios" hint="Quién ve tus datos">
           <PreferencesForm settings={settings} />
