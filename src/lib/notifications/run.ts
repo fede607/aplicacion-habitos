@@ -44,6 +44,9 @@ function describeError(e: unknown): string {
  * Procesa los envíos pendientes. Idempotente: la BD reserva cada
  * (usuario, tipo, periodo) antes de enviar, así que un cron repetido no duplica.
  */
+/** Year Arc no envía correos (decisión de producto). Sólo avisos push. */
+const EMAILS_ENABLED = false;
+
 export async function runNotifications(options: { now?: Date; limit?: number } = {}): Promise<RunResult> {
   const admin = createAdminClient();
   const now = options.now ?? new Date();
@@ -61,7 +64,7 @@ export async function runNotifications(options: { now?: Date; limit?: number } =
   };
 
   // Sin emails: sólo se envían si hay SMTP configurado (ahora no). Los avisos push van aparte.
-  for (const kind of isEmailConfigured() ? (["daily_reminder", "weekly_summary"] as const) : ([] as const)) {
+  for (const kind of EMAILS_ENABLED && isEmailConfigured() ? (["daily_reminder", "weekly_summary"] as const) : ([] as const)) {
     const { data: batch, error } = await admin.rpc("claim_notification_batch", {
       p_kind: kind,
       p_now: now.toISOString(),
