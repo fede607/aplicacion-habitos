@@ -2,5 +2,6 @@ User-agent: *
 Allow: /$
 Allow: /privacidad
 Allow: /terminos
+Allow: /opiniones
 Allow: /opengraph-image
 Disallow: /

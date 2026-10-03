@@ -1,5 +1,5 @@
 /** Rutas públicas (accesibles sin sesión). Todo lo demás exige sesión. */
-const PUBLIC_EXACT = new Set(["/", "/login", "/register", "/forgot-password", "/offline", "/unsubscribe", "/notifications/verify", "/instalar", "/w", "/promo", "/privacidad", "/terminos", "/opengraph-image"]);
+const PUBLIC_EXACT = new Set(["/", "/login", "/register", "/forgot-password", "/offline", "/unsubscribe", "/notifications/verify", "/instalar", "/w", "/promo", "/privacidad", "/terminos", "/opengraph-image", "/opiniones"]);
 // /api/* se autentica en cada route handler (secreto de cron o token de baja).
 const PUBLIC_PREFIXES = ["/auth/", "/api/", "/join/"];
 /** Páginas de autenticación: si ya hay sesión, se redirige a la app. */

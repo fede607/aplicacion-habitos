@@ -44,6 +44,10 @@ export function LegalPage({ title, children }: { title: string; children: React.
 export function LegalLinks({ className }: { className?: string }) {
   return (
     <p className={className}>
+      <Link href="/opiniones" className="underline">
+        Opiniones
+      </Link>{" "}
+      ·{" "}
       <Link href="/privacidad" className="underline">
         Privacidad
       </Link>{" "}

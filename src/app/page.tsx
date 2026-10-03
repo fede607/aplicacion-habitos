@@ -5,7 +5,7 @@ import { Logo } from "@/components/layout/logo";
 import { Button } from "@/components/ui/button";
 import { PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
 import { getPublicProof } from "@/lib/data/public-proof";
-import { ReviewCards, StatsStrip } from "@/components/reviews/social-proof";
+import { RatingSummary, ReviewCards, StatsStrip } from "@/components/reviews/social-proof";
 import { LegalLinks } from "@/components/legal/legal-page";
 
 // Opiniones y cifras reales: se refrescan cada 10 minutos.
@@ -139,10 +139,25 @@ export default async function LandingPage() {
               </Link>
             </div>
             <p className="mt-3 text-xs text-muted">1 mes de Pro gratis al empezar · sin tarjeta</p>
+            <RatingSummary stats={stats} reviews={reviews} className="mt-5" />
             <StatsStrip stats={stats} className="mt-8 max-w-md" />
           </div>
           <PhoneMock />
         </section>
+
+        {reviews.length ? (
+          <section className="mt-20" aria-labelledby="opiniones">
+            <h2 id="opiniones" className="text-center text-2xl font-black tracking-tight sm:text-3xl">
+              Lo que dicen quienes ya lo usan
+            </h2>
+            <ReviewCards reviews={reviews} limit={3} className="mt-8 lg:grid-cols-3" />
+            <p className="mt-5 text-center">
+              <Link href="/opiniones" className="font-semibold text-primary hover:underline">
+                Ver todas las opiniones →
+              </Link>
+            </p>
+          </section>
+        ) : null}
 
         <section className="mt-24 grid items-center gap-8 rounded-[2rem] bg-surface p-6 shadow-card sm:p-10 lg:grid-cols-2" aria-labelledby="linea">
           <div>
@@ -187,14 +202,6 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {reviews.length ? (
-          <section className="mt-24" aria-labelledby="opiniones">
-            <h2 id="opiniones" className="text-center text-2xl font-black tracking-tight sm:text-3xl">
-              Lo que dicen quienes ya lo usan
-            </h2>
-            <ReviewCards reviews={reviews} className="mt-8 lg:grid-cols-3" />
-          </section>
-        ) : null}
 
         <section className="mt-24" aria-labelledby="precio">
           <h2 id="precio" className="text-center text-2xl font-black tracking-tight sm:text-3xl">

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Star } from "lucide-react";
 import type { PublicReview, PublicStats } from "@/lib/data/public-proof";
 import { cn } from "@/lib/utils";
@@ -59,5 +60,22 @@ export function ReviewCards({ reviews, limit = 6, className }: { reviews: Public
         </li>
       ))}
     </ul>
+  );
+}
+
+/** Nota media real (sólo con al menos 3 valoraciones) + enlace a todas las opiniones. */
+export function RatingSummary({ stats, reviews, className }: { stats: PublicStats | null; reviews: PublicReview[]; className?: string }) {
+  const hasAvg = stats?.avg_rating !== null && stats?.avg_rating !== undefined && (stats?.ratings ?? 0) >= 3;
+  if (!hasAvg && !reviews.length) return null;
+  return (
+    <Link href="/opiniones" className={cn("inline-flex flex-wrap items-center gap-2 rounded-full bg-surface/80 px-4 py-2 text-sm shadow-card backdrop-blur hover:bg-surface", className)}>
+      <Stars value={hasAvg ? Math.round(Number(stats!.avg_rating)) : 5} />
+      {hasAvg ? (
+        <span>
+          <b>{String(stats!.avg_rating).replace(".", ",")}</b> <span className="text-muted">· {stats!.ratings} valoraciones</span>
+        </span>
+      ) : null}
+      <span className="font-semibold text-primary underline-offset-2 hover:underline">Ver opiniones</span>
+    </Link>
   );
 }

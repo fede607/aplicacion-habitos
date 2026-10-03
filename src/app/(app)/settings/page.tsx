@@ -46,6 +46,16 @@ export default async function SettingsPage() {
         <ChevronRight className="size-5 text-muted" aria-hidden="true" />
       </Link>
 
+      {!review ? (
+        <section className="grid gap-3 rounded-3xl border border-amber-400/50 bg-surface p-5 shadow-card" aria-labelledby="rate-title">
+          <h2 id="rate-title" className="flex items-center gap-2 font-bold">
+            <Star className="size-5 fill-amber-400 text-amber-400" aria-hidden="true" /> ¿Qué te parece Year Arc?
+          </h2>
+          <p className="text-sm text-muted">Tu opinión nos ayuda muchísimo a mejorar y a que más gente se anime. Te lleva 20 segundos.</p>
+          <ReviewForm initial={null} />
+        </section>
+      ) : null}
+
       <div className="grid gap-2">
         <Section icon={<UserRound />} title="Editar perfil" hint="Nombre, avatar y color">
           <ProfileForm profile={profile} />
@@ -90,13 +100,15 @@ export default async function SettingsPage() {
         <Section icon={<ShieldCheck />} title="Privacidad y recordatorios" hint="Quién ve tus datos">
           <PreferencesForm settings={settings} />
         </Section>
-        <Section
-          icon={<Star />}
-          title="Valorar Year Arc"
-          hint={review ? `Tu opinión: ${review.rating}★${review.approved ? " · publicada en la web" : ""}` : "Cuéntanos qué te parece"}
-        >
-          <ReviewForm initial={review ? { rating: review.rating, body: review.body, allowPublic: review.allow_public } : null} />
-        </Section>
+        {review ? (
+          <Section
+            icon={<Star />}
+            title="Valorar Year Arc"
+            hint={review ? `Tu opinión: ${review.rating}★${review.approved ? " · publicada en la web" : ""}` : "Cuéntanos qué te parece"}
+          >
+            <ReviewForm initial={review ? { rating: review.rating, body: review.body, allowPublic: review.allow_public } : null} />
+          </Section>
+        ) : null}
         <Section icon={<Palette />} title="Apariencia" hint="Claro, oscuro o automático">
           <ThemeToggle />
         </Section>

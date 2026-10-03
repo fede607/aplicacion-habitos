@@ -29,6 +29,7 @@ export default async function StaffPaymentsPage() {
     allowPublic: r.allow_public,
     approved: r.approved,
   }));
+  const pendingReviews = reviews.filter((r) => !r.approved && r.allowPublic && r.rating >= 4 && r.body.trim()).length;
   const m = metricsRows?.[0];
   const members: ProMember[] = (data ?? []).map((r) => ({
     userId: r.user_id,
@@ -54,6 +55,20 @@ export default async function StaffPaymentsPage() {
           {members.length} usuarios · {proCount} con Pro ahora mismo
         </p>
       </header>
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle className="text-base">Opiniones de usuarios {pendingReviews ? <span className="ml-1 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-black">{pendingReviews} por revisar</span> : null}</CardTitle>
+            <CardDescription>
+              Sólo aparecen en la web las que tú publiques, y sólo si su autor ha dado permiso. Si la edita, vuelve a revisión.
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ReviewsManager reviews={reviews} />
+        </CardContent>
+      </Card>
+
       {m ? (
         <section className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Métricas">
           {[
@@ -132,19 +147,6 @@ export default async function StaffPaymentsPage() {
         </CardHeader>
         <CardContent>
           <ProManager members={members} timeZone={profile.timezone} nowMs={new Date().getTime()} />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <div>
-            <CardTitle className="text-base">Opiniones de usuarios</CardTitle>
-            <CardDescription>
-              Sólo aparecen en la web las que tú publiques, y sólo si su autor ha dado permiso. Si la edita, vuelve a revisión.
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ReviewsManager reviews={reviews} />
         </CardContent>
       </Card>
     </div>
