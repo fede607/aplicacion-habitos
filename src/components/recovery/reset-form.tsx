@@ -12,7 +12,7 @@ import { CodeBox } from "./code-box";
 export function ResetWithCodeForm() {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [newCode, setNewCode] = useState<string | null>(null);
+  const [newCode, setNewCode] = useState<{ code: string; emailedTo: string | null } | null>(null);
 
   if (newCode) {
     return (
@@ -21,7 +21,7 @@ export function ResetWithCodeForm() {
           <CircleCheck className="size-5" aria-hidden="true" /> Contraseña cambiada
         </p>
         <p className="text-sm">Tu clave anterior ya no vale. Esta es la nueva: guárdala antes de seguir.</p>
-        <CodeBox code={newCode} />
+        <CodeBox code={newCode.code} emailedTo={newCode.emailedTo} />
         <Button asChild>
           <Link href="/login">Ya la he guardado · Iniciar sesión</Link>
         </Button>
@@ -40,7 +40,7 @@ export function ResetWithCodeForm() {
         setError(null);
         start(async () => {
           const res = await resetPasswordWithCode({ login: String(f.get("login") ?? ""), code: String(f.get("code") ?? ""), password });
-          if (res.ok) setNewCode(res.data.newCode);
+          if (res.ok) setNewCode({ code: res.data.newCode, emailedTo: res.data.emailedTo });
           else setError(res.error);
         });
       }}

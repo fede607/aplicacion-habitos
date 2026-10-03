@@ -50,3 +50,21 @@ export function verificationEmail(input: { name: string; url: string }) {
     text: `Hola ${input.name}, confirma tu email de notificaciones del Year Arc: ${input.url}\n\nSi no has sido tú, ignora este mensaje. El enlace caduca en 24 horas.`,
   };
 }
+
+/** Clave de recuperación (sólo se envía al email de la propia cuenta, al crearla). */
+export function recoveryCodeEmail(input: { name: string; code: string; siteUrl: string }) {
+  const title = "Tu clave de recuperación de Year Arc";
+  const url = `${input.siteUrl}/forgot-password`;
+  const html = layout({
+    preheader: "Guárdala: con ella puedes poner una contraseña nueva si olvidas la tuya.",
+    title,
+    body: `<p>Hola ${esc(input.name)}, esta es tu clave de recuperación:</p>
+<p style="margin:16px 0;padding:16px;border:2px dashed #0369a1;border-radius:14px;text-align:center;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:22px;font-weight:800;letter-spacing:.12em">${esc(input.code)}</p>
+<p>Si olvidas tu contraseña, entra en «¿Has olvidado la contraseña?», escribe tu usuario o email, esta clave y tu contraseña nueva.</p>
+<p style="color:#5a6a82;font-size:13px">No la compartas con nadie: Year Arc nunca te la pedirá. Cada vez que la uses o crees otra, esta dejará de valer. Si no has sido tú quien la ha creado, entra en la app y crea una nueva.</p>`,
+    ctaText: "Abrir Year Arc",
+    ctaUrl: url,
+  });
+  const text = `${title}\n\nHola ${input.name}, esta es tu clave de recuperación:\n\n${input.code}\n\nSi olvidas tu contraseña: ${url}\n\nNo la compartas con nadie. Si no has sido tú, entra en la app y crea una nueva.`;
+  return { subject: title, html, text };
+}

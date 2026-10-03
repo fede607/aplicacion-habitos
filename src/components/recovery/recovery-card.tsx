@@ -13,6 +13,7 @@ export function RecoveryCard({ hasCode, banner = false }: { hasCode: boolean; ba
   const router = useRouter();
   const [pending, start] = useTransition();
   const [code, setCode] = useState<string | null>(null);
+  const [emailedTo, setEmailedTo] = useState<string | null>(null);
 
   const generate = () =>
     start(async () => {
@@ -20,6 +21,7 @@ export function RecoveryCard({ hasCode, banner = false }: { hasCode: boolean; ba
       const res = await createMyRecoveryCode();
       if (!res.ok) return void toast.error(res.error);
       setCode(res.data.code);
+      setEmailedTo(res.data.emailedTo);
     });
 
   if (code) {
@@ -28,7 +30,7 @@ export function RecoveryCard({ hasCode, banner = false }: { hasCode: boolean; ba
         <h2 className="flex items-center gap-2 font-bold">
           <KeyRound className="size-5 text-primary" aria-hidden="true" /> Tu clave de recuperación
         </h2>
-        <CodeBox code={code} />
+        <CodeBox code={code} emailedTo={emailedTo} />
         <Button
           onClick={() => {
             setCode(null);
@@ -50,7 +52,7 @@ export function RecoveryCard({ hasCode, banner = false }: { hasCode: boolean; ba
             "Ya tienes una clave de recuperación. Si la has perdido, crea otra: la anterior dejará de valer."
           ) : (
             <>
-              <b>Protege tu cuenta.</b> Crea tu clave de recuperación: si olvidas la contraseña, con ella pones una nueva en un minuto, sin correos.
+              <b>Protege tu cuenta.</b> Crea tu clave de recuperación: si olvidas la contraseña, con ella pones una nueva en un minuto. Te la enviamos también a tu email.
             </>
           )}
         </p>

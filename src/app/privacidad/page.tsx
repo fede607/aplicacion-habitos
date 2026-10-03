@@ -34,7 +34,7 @@ export default function PrivacyPage() {
         </li>
         <li>
           <b>Avisos:</b> si los activas, la suscripción de notificaciones de tu navegador o móvil, para enviarte recordatorios. Se desactivan en un
-          toque. No te enviamos correos.
+          toque. No te enviamos publicidad ni recordatorios por correo: el único email que te enviamos es tu clave de recuperación, cuando la creas.
         </li>
         <li>
           <b>Origen del registro:</b> si llegaste desde un enlace de campaña (p. ej. WhatsApp), guardamos ese origen para saber qué funciona.

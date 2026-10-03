@@ -5,7 +5,7 @@ import { Check, Copy, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /** Muestra una clave de recuperación con botones para copiarla o descargarla. */
-export function CodeBox({ code }: { code: string }) {
+export function CodeBox({ code, emailedTo }: { code: string; emailedTo?: string | null }) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="grid gap-3">
@@ -39,6 +39,11 @@ export function CodeBox({ code }: { code: string }) {
           <Download aria-hidden="true" /> Guardar
         </Button>
       </div>
+      {emailedTo !== undefined ? (
+        <p className={`rounded-xl px-3 py-2 text-sm ${emailedTo ? "bg-success-soft text-success" : "bg-warning-soft text-warning"}`}>
+          {emailedTo ? `📧 También te la hemos enviado a ${emailedTo}.` : "No hemos podido enviártela por email: cópiala o guárdala ahora."}
+        </p>
+      ) : null}
       <p className="text-xs text-muted">Guárdala donde no la pierdas (captura, notas o gestor de contraseñas). No la compartas con nadie: sólo se muestra ahora.</p>
     </div>
   );
