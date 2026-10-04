@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Check, Dumbbell, Flame, ChartSpline, Medal, ShieldCheck, Smartphone, Users } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import { Button } from "@/components/ui/button";
-import { PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
+import { PAYMENTS_OPEN, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
 import { getPublicProof } from "@/lib/data/public-proof";
 import { RatingSummary, ReviewCards, StatsStrip } from "@/components/reviews/social-proof";
 import { LegalLinks } from "@/components/legal/legal-page";
@@ -222,10 +222,16 @@ export default async function LandingPage() {
             <div className="relative rounded-3xl border-2 border-primary bg-surface p-6 shadow-card">
               <span className="pro-gradient absolute -top-3 right-5 rounded-full px-3 py-1 text-xs font-bold">1 mes gratis</span>
               <p className="font-bold">Pro</p>
-              <p className="mt-1 text-4xl font-black">
-                {PRO_MONTH_EUR} €<span className="text-base font-semibold text-muted">/mes</span>
-              </p>
-              <p className="text-sm text-muted">o {PRO_YEAR_EUR} €/año (2 meses gratis)</p>
+              {PAYMENTS_OPEN ? (
+                <>
+                  <p className="mt-1 text-4xl font-black">
+                    {PRO_MONTH_EUR} €<span className="text-base font-semibold text-muted">/mes</span>
+                  </p>
+                  <p className="text-sm text-muted">o {PRO_YEAR_EUR} €/año (2 meses gratis)</p>
+                </>
+              ) : (
+                <p className="mt-1 text-2xl font-black">Próximamente</p>
+              )}
               <ul className="mt-5 grid gap-2 text-sm">
                 {PRO.map((f) => (
                   <li key={f} className="flex gap-2">

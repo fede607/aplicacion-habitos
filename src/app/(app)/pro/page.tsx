@@ -4,7 +4,7 @@ import { CheckCircle2, CreditCard, Lock, ShieldCheck, Sparkles } from "lucide-re
 import { hasFullAccess, requireGroup } from "@/lib/data/session";
 import { confirmPaypal } from "@/app/actions/billing";
 import { isPaypalConfigured } from "@/lib/billing/paypal";
-import { PAYPAL_ME_PAY_URL, PAYPAL_ME_YEAR_URL, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
+import { PAYMENTS_OPEN, PAYPAL_ME_PAY_URL, PAYPAL_ME_YEAR_URL, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDateOnly } from "@/lib/dates";
 import { Badge } from "@/components/ui/badge";
@@ -71,7 +71,11 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
   );
 
   // Con PayPal configurado: suscripción automática (sin nada que hacer a mano). Si no, PayPal.me.
-  const payBox = paypalOn ? (
+  const payBox = !PAYMENTS_OPEN ? (
+    <p className="rounded-2xl bg-surface-2 p-4 text-sm text-muted">
+      Pro todavía no se puede comprar: Year Arc está en acceso privado. Cuando abramos la venta te avisaremos antes de cobrar nada.
+    </p>
+  ) : paypalOn ? (
     <div className="grid gap-3">
       <SubscribeButton period="year" label={`Year Pro · ${PRO_YEAR_EUR} € al año (2 meses gratis)`} />
       <SubscribeButton period="month" label={`Mensual · ${PRO_MONTH_EUR} € al mes`} />
@@ -99,7 +103,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
       ) : null}
       {trialOver && !fullAccess ? (
         <p className="rounded-2xl border border-warning/40 bg-warning-soft p-4 text-sm text-warning" role="status">
-          Tu mes gratis de Pro terminó el {trialDate}. Para seguir con Pro: {PRO_MONTH_EUR} € al mes o {PRO_YEAR_EUR} € al año.
+          Tu mes gratis de Pro terminó el {trialDate}.{PAYMENTS_OPEN ? ` Para seguir con Pro: ${PRO_MONTH_EUR} € al mes o ${PRO_YEAR_EUR} € al año.` : ""}
         </p>
       ) : null}
       {params.locked && !fullAccess ? (
@@ -112,9 +116,13 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
       <Card className="aurora">
         <CardContent className="grid gap-5 p-5 sm:p-6">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <p className="tabular text-4xl font-black tracking-tight">
-              {PRO_MONTH_EUR} € <span className="text-base font-medium text-muted">/ mes · o {PRO_YEAR_EUR} € / año</span>
-            </p>
+            {PAYMENTS_OPEN ? (
+              <p className="tabular text-4xl font-black tracking-tight">
+                {PRO_MONTH_EUR} € <span className="text-base font-medium text-muted">/ mes · o {PRO_YEAR_EUR} € / año</span>
+              </p>
+            ) : (
+              <p className="text-2xl font-black tracking-tight">Year Arc Pro</p>
+            )}
             {lifetime ? <Badge tone="success">Pro para siempre</Badge> : active ? <Badge tone="success">Pro activo</Badge> : onTrial ? <Badge tone="success">Mes gratis</Badge> : isStaff ? <Badge tone="primary">Propietario: acceso total</Badge> : null}
           </div>
 
@@ -140,8 +148,15 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
           ) : onTrial ? (
             <>
               <p className="rounded-2xl border border-success/40 bg-success-soft p-4 text-sm text-foreground">
-                🎁 <b>Tienes Pro gratis hasta el {trialDate}.</b> Cuando acabe, si quieres seguir con Pro son <b>{PRO_MONTH_EUR} € al mes</b> o <b>{PRO_YEAR_EUR} € al año</b>. Si no pagas, sigues con la
-                versión gratis (tus hábitos, tu línea del año y grupos).
+                🎁 <b>Tienes Pro gratis hasta el {trialDate}.</b>{" "}
+                {PAYMENTS_OPEN ? (
+                  <>
+                    Cuando acabe, si quieres seguir con Pro son <b>{PRO_MONTH_EUR} € al mes</b> o <b>{PRO_YEAR_EUR} € al año</b>. Si no pagas, sigues con la versión gratis (tus
+                    hábitos, tu línea del año y grupos).
+                  </>
+                ) : (
+                  "Después sigues con la versión gratis (tus hábitos, tu línea del año y grupos)."
+                )}
               </p>
               {payBox}
             </>

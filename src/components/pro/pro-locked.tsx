@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Check, Lock, Sparkles } from "lucide-react";
-import { PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
+import { PAYMENTS_OPEN, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
 
 export type ProFeature = "plan" | "workouts" | "dashboard" | "rank" | "progress" | "calendar";
 
@@ -120,9 +120,11 @@ export function ProLocked({ feature }: { feature: ProFeature }) {
             ))}
           </ul>
           <Link href="/pro" className="pro-gradient inline-flex h-14 items-center justify-center gap-2 rounded-2xl px-6 text-base font-bold">
-            <Sparkles className="size-5" aria-hidden="true" /> Hazte Pro · {PRO_MONTH_EUR} €/mes
+            <Sparkles className="size-5" aria-hidden="true" /> {PAYMENTS_OPEN ? `Hazte Pro · ${PRO_MONTH_EUR} €/mes` : "Ver Pro"}
           </Link>
-          <p className="text-xs text-muted">o {PRO_YEAR_EUR} €/año (2 meses gratis). Tus hábitos y tu línea del año siguen siendo gratis.</p>
+          <p className="text-xs text-muted">
+            {PAYMENTS_OPEN ? `o ${PRO_YEAR_EUR} €/año (2 meses gratis). ` : "Pro todavía no está a la venta. "}Tus hábitos y tu línea del año siguen siendo gratis.
+          </p>
         </section>
       </div>
     </div>
