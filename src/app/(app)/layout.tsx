@@ -84,7 +84,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             >
               <Sparkles className="size-5 shrink-0 text-primary" aria-hidden="true" />
               <span className="min-w-0 flex-1 text-foreground">
-                <b>Desbloquea tu plan, progreso y rango.</b>
+                <b>Desbloquea tu plan, progreso y rango.</b> <span className="text-muted">Desde 1,67 €/mes.</span>
               </span>
               <span className="pro-gradient shrink-0 rounded-full px-3 py-1.5 text-xs font-bold">Ver Pro</span>
             </Link>
