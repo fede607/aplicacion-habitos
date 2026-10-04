@@ -6,6 +6,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
  * - Validación de campos en el servidor.
  * - Límite de 5 altas por IP y hora y 300 en total por hora (signup_rate_check).
  * - Cloudflare Turnstile si TURNSTILE_SECRET_KEY está configurado.
+ * - Acceso privado: si está activado, exige una invitación personal de un solo uso.
  * Crea la cuenta con el email confirmado y devuelve la sesión.
  */
 
@@ -21,6 +22,7 @@ function cors(_req: Request) {
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,}$/;
 const USERNAME = /^[a-z0-9_]{3,24}$/;
 const SOURCE = /^[a-z0-9_-]{1,32}$/;
+const PRIVATE_MSG = "Year Arc está en acceso privado: necesitas una invitación personal. Pídesela a quien te habló de la app.";
 
 Deno.serve(async (req: Request) => {
   const headers = cors(req);
@@ -38,6 +40,7 @@ Deno.serve(async (req: Request) => {
     const inviteCode = typeof body.inviteCode === "string" ? body.inviteCode.slice(0, 64) : undefined;
     const source = typeof body.source === "string" && SOURCE.test(body.source.toLowerCase()) ? body.source.toLowerCase() : undefined;
     const captchaToken = typeof body.captchaToken === "string" ? body.captchaToken : "";
+    const accessCode = typeof body.accessCode === "string" ? body.accessCode.slice(0, 32) : "";
 
     if (!EMAIL.test(email) || email.length > 254) return json({ error: "Email no válido.", field: "email" }, 400);
     if (password.length < 8 || password.length > 72 || !/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
@@ -67,6 +70,12 @@ Deno.serve(async (req: Request) => {
     const { error: rateErr } = await admin.rpc("signup_rate_check", { p_ip: ip });
     if (rateErr) return json({ error: "Demasiados registros seguidos. Espera un rato e inténtalo de nuevo." }, 429);
 
+    const { data: inviteOnly } = await admin.rpc("signup_is_invite_only");
+    if (inviteOnly) {
+      const { data: ok } = await admin.rpc("access_code_check", { p_code: accessCode });
+      if (!ok) return json({ error: accessCode ? "Esta invitación no es válida, ya se ha usado o ha caducado. Pide una nueva." : PRIVATE_MSG, field: "access" }, 403);
+    }
+
     const { data: available } = await admin.rpc("username_available", { p_username: username });
     if (available === false) return json({ error: "username_taken", field: "username" }, 400);
 
@@ -81,6 +90,7 @@ Deno.serve(async (req: Request) => {
         terms_accepted_at: new Date().toISOString(),
         ...(inviteCode ? { invite_code: inviteCode } : {}),
         ...(source ? { signup_source: source } : {}),
+        ...(accessCode ? { access_code: accessCode } : {}),
       },
     });
 
@@ -89,6 +99,8 @@ Deno.serve(async (req: Request) => {
       let msg = "No se ha podido crear la cuenta. Inténtalo de nuevo.";
       if (/already registered|already been registered|email.*(taken|exists)|ya existe/i.test(raw)) {
         msg = "Ya existe una cuenta con ese email. Prueba a iniciar sesión.";
+      } else if (/access code/i.test(raw) || (inviteOnly && createErr.status === 500)) {
+        msg = "Esta invitación no es válida, ya se ha usado o ha caducado. Pide una nueva.";
       } else if (inviteCode && (/invit|invite/i.test(raw) || createErr.status === 500)) {
         msg = "El enlace de invitación no es válido o ya ha caducado.";
       } else if (/password/i.test(raw)) {

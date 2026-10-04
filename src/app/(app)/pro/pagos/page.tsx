@@ -7,6 +7,7 @@ import { PAYPAL_ME_URL, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProManager, type ProMember } from "@/components/admin/pro-manager";
 import { ReviewsManager } from "@/components/admin/reviews-manager";
+import { AccessManager, type AccessCode } from "@/components/admin/access-manager";
 
 export const metadata: Metadata = { title: "Pagos Pro" };
 
@@ -20,6 +21,15 @@ export default async function StaffPaymentsPage() {
     supabase.rpc("staff_reviews"),
   ]);
   const { data: sources } = await supabase.rpc("staff_signup_sources");
+  const [{ data: inviteOnly }, { data: codeRows }] = await Promise.all([supabase.rpc("signup_is_invite_only"), supabase.rpc("staff_access_codes")]);
+  const codes: AccessCode[] = (codeRows ?? []).map((c) => ({
+    code: c.code,
+    note: c.note,
+    expiresAt: c.expires_at,
+    usedAt: c.used_at,
+    usedBy: c.used_username,
+    revoked: c.revoked,
+  }));
   const reviews = (reviewRows ?? []).map((r) => ({
     id: r.id,
     username: r.username,
@@ -55,6 +65,19 @@ export default async function StaffPaymentsPage() {
           {members.length} usuarios · {proCount} con Pro ahora mismo
         </p>
       </header>
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle className="text-base">Invitaciones de acceso</CardTitle>
+            <CardDescription>
+              Cada enlace sirve para crear una sola cuenta y caduca en 14 días. Si alguien lo reenvía, sólo podrá usarlo la primera persona.
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <AccessManager inviteOnly={!!inviteOnly} codes={codes} />
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <div>

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { Sparkles, Users } from "lucide-react";
+import { Lock, Sparkles, Users } from "lucide-react";
 import { SOURCE_COOKIE, cleanSource } from "@/lib/signup-source";
 import { RegisterForm } from "@/components/auth/register-form";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, isAdminConfigured } from "@/lib/supabase/admin";
+import { ContactLine } from "@/components/legal/legal-page";
 import { inviteFromParams } from "@/lib/invite";
 import { safeNextPath } from "@/lib/validation";
 import { enabledOAuthProviders } from "@/lib/auth-providers";
@@ -19,6 +21,39 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   const next = typeof params.next === "string" ? safeNextPath(params.next) : undefined;
   const code = inviteFromParams(params);
   const source = cleanSource(typeof params.src === "string" ? params.src : (await cookies()).get(SOURCE_COOKIE)?.value);
+
+  const access = typeof params.acceso === "string" ? params.acceso.slice(0, 32) : undefined;
+  const supabaseAnon = await createClient();
+  const { data: inviteOnly } = await supabaseAnon.rpc("signup_is_invite_only");
+  let accessOk = false;
+  if (inviteOnly && access && isAdminConfigured()) {
+    const { data } = await createAdminClient().rpc("access_code_check", { p_code: access });
+    accessOk = data === true;
+  }
+  if (inviteOnly && !accessOk) {
+    return (
+      <div className="grid gap-6 text-center">
+        <span className="mx-auto grid size-14 place-items-center rounded-full bg-primary-soft text-primary">
+          <Lock className="size-7" aria-hidden="true" />
+        </span>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Year Arc está en acceso privado</h1>
+          <p className="mt-2 text-sm text-muted">
+            {access
+              ? "Esta invitación no es válida, ya se ha usado o ha caducado. Cada invitación sirve para una sola persona: pide una nueva a quien te la mandó."
+              : "Por ahora sólo se puede entrar con una invitación personal. Pídesela a quien te habló de la app."}
+          </p>
+        </div>
+        <p className="text-sm text-muted">
+          ¿Ya tienes cuenta?{" "}
+          <Link href="/login" className="font-semibold text-primary hover:underline">
+            Entra
+          </Link>
+        </p>
+        <ContactLine />
+      </div>
+    );
+  }
 
   const proof = await getPublicProof();
   let invite: { code: string; groupName: string } | null = null;
@@ -51,7 +86,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
           <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
           <span>
             {inviteProblem ? "Esta invitación no es válida o ha caducado, pero puedes registrarte igual y crear tu grupo. " : ""}
-            Gratis y con <b>1 mes de Pro</b> de regalo.
+            {accessOk ? <b>Tienes una invitación personal. </b> : null}Gratis y con <b>1 mes de Pro</b> de regalo.
           </span>
         </p>
       )}
@@ -71,7 +106,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
             .
           </p>
         ) : null}
-        <RegisterForm next={next} invite={invite?.code} source={source} />
+        <RegisterForm next={next} invite={invite?.code} source={source} access={accessOk ? access : undefined} />
       </div>
       <StatsStrip stats={proof.stats} />
       <ReviewCards reviews={proof.reviews} limit={2} className="sm:grid-cols-1" />

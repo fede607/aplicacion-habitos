@@ -444,6 +444,15 @@ export type Database = {
       };
       create_recovery_code: { Args: Record<string, never>; Returns: string };
       has_recovery_code: { Args: Record<string, never>; Returns: boolean };
+      signup_is_invite_only: { Args: Record<string, never>; Returns: boolean };
+      access_code_check: { Args: { p_code: string }; Returns: boolean };
+      staff_create_access_code: { Args: { p_note?: string; p_days?: number }; Returns: string };
+      staff_access_codes: {
+        Args: Record<string, never>;
+        Returns: { code: string; note: string; created_at: string; expires_at: string; used_at: string | null; used_username: string | null; revoked: boolean }[];
+      };
+      staff_revoke_access_code: { Args: { p_code: string }; Returns: undefined };
+      staff_set_invite_only: { Args: { p_on: boolean }; Returns: undefined };
       recovery_redeem: { Args: { p_login: string; p_code: string; p_ip: string }; Returns: { user_id: string; new_code: string }[] };
       staff_signup_sources: { Args: Record<string, never>; Returns: { source: string; last_30d: number; total: number }[] };
       staff_set_review_approved: { Args: { p_review_id: string; p_approved: boolean }; Returns: undefined };

@@ -15,7 +15,7 @@ const noop = () => () => {};
  * Registro abierto (con invitación opcional). Usa la Edge Function `register-user`
  * para crear la cuenta con email ya confirmado y devolver la sesión.
  */
-export function RegisterForm({ next, invite, source }: { next?: string; invite?: string; source?: string }) {
+export function RegisterForm({ next, invite, source, access }: { next?: string; invite?: string; source?: string; access?: string }) {
   const router = useRouter();
   const timezone = useSyncExternalStore(
     noop,
@@ -78,6 +78,7 @@ export function RegisterForm({ next, invite, source }: { next?: string; invite?:
               displayName: parsed.data.displayName,
               timezone: parsed.data.timezone,
               inviteCode: invite,
+              accessCode: access,
               source,
               acceptTerms: true,
               captchaToken: captcha.token ?? undefined,
