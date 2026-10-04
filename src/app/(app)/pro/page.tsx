@@ -10,6 +10,8 @@ import { formatDateOnly } from "@/lib/dates";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CancelButton, SubscribeButton } from "@/components/billing/billing-buttons";
+import { ReviewsShowcase } from "@/components/reviews/social-proof";
+import { getPublicProof } from "@/lib/data/public-proof";
 
 export const metadata: Metadata = { title: "Year Arc Pro" };
 
@@ -30,12 +32,13 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
 
   const session = await requireGroup();
   const { supabase, userId, activeGroup, profile } = session;
-  const [{ data: sub }, fullAccess, { data: trialEnd }, { data: isStaff }, { data: lifetime }] = await Promise.all([
+  const [{ data: sub }, fullAccess, { data: trialEnd }, { data: isStaff }, { data: lifetime }, proof] = await Promise.all([
     supabase.from("subscriptions").select("status, current_period_end, cancel_at_period_end, paypal_subscription_id").eq("user_id", userId).maybeSingle(),
     hasFullAccess(session),
     supabase.rpc("my_pro_trial_end"),
     supabase.rpc("am_i_staff"),
     supabase.rpc("my_pro_lifetime"),
+    getPublicProof(),
   ]);
   const active = !!sub && ["active", "trialing", "past_due"].includes(sub.status);
   const nextDate = sub?.current_period_end ? formatDateOnly(sub.current_period_end, profile.timezone) : null;
@@ -172,6 +175,8 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
           )}
         </CardContent>
       </Card>
+
+      <ReviewsShowcase stats={proof.stats} reviews={proof.reviews} title="Opiniones de quienes ya lo usan" />
 
       <div className="grid gap-2 text-xs text-muted">
         <p className="flex items-start gap-2">

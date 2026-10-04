@@ -14,13 +14,18 @@ import { DeleteAccountForm, SignOutButton } from "@/components/settings/account-
 import { LeaveGroupButton } from "@/components/admin/danger-zone";
 import { ReviewForm } from "@/components/reviews/review-form";
 import { RecoveryCard } from "@/components/recovery/recovery-card";
+import { ReviewsShowcase } from "@/components/reviews/social-proof";
+import { getPublicProof } from "@/lib/data/public-proof";
 
 export const metadata: Metadata = { title: "Perfil" };
 
 export default async function SettingsPage() {
   const { supabase, profile, settings, groups, activeGroup, email } = await requireSession();
-  const { data: hasRecovery } = await supabase.rpc("has_recovery_code");
-  const { data: review } = await supabase.from("reviews").select("rating, body, allow_public, approved").eq("user_id", profile.id).maybeSingle();
+  const [{ data: hasRecovery }, { data: review }, proof] = await Promise.all([
+    supabase.rpc("has_recovery_code"),
+    supabase.from("reviews").select("rating, body, allow_public, approved").eq("user_id", profile.id).maybeSingle(),
+    getPublicProof(),
+  ]);
   return (
     <div className="mx-auto grid max-w-2xl gap-5">
       <header className="flex items-center gap-4">
@@ -55,6 +60,8 @@ export default async function SettingsPage() {
           <ReviewForm initial={null} />
         </section>
       ) : null}
+
+      <ReviewsShowcase stats={proof.stats} reviews={proof.reviews} />
 
       <div className="grid gap-2">
         <Section icon={<UserRound />} title="Editar perfil" hint="Nombre, avatar y color">

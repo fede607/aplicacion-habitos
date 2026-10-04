@@ -33,12 +33,12 @@ export function ReviewsManager({ reviews }: { reviews: StaffReview[] }) {
             {!r.allowPublic ? <Badge>Privada</Badge> : null}
           </div>
           {r.body ? <p className="text-sm">{r.body}</p> : <p className="text-sm text-muted">(sin texto)</p>}
-          {r.allowPublic && r.body && r.rating >= 4 ? (
+          {r.allowPublic && r.rating >= 4 ? (
             <Button size="sm" variant={r.approved ? "outline" : "primary"} disabled={pending} onClick={() => set(r.id, !r.approved)} className="justify-self-start">
               {r.approved ? "Quitar de la web" : "Publicar en la web"}
             </Button>
           ) : (
-            <p className="text-xs text-muted">{r.allowPublic ? "Sólo se publican opiniones de 4-5 estrellas con texto." : "No ha dado permiso para publicarla."}</p>
+            <p className="text-xs text-muted">{r.allowPublic ? "Sólo se publican opiniones de 4-5 estrellas." : "No ha dado permiso para publicarla."}</p>
           )}
         </li>
       ))}

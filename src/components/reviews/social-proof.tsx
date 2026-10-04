@@ -44,22 +44,59 @@ export function StatsStrip({ stats, className }: { stats: PublicStats | null; cl
 }
 
 export function ReviewCards({ reviews, limit = 6, className }: { reviews: PublicReview[]; limit?: number; className?: string }) {
-  if (!reviews.length) return null;
+  const withText = reviews.filter((r) => r.body.trim()).slice(0, limit);
+  const starsOnly = reviews.filter((r) => !r.body.trim()).slice(0, Math.max(limit, 12));
+  if (!withText.length && !starsOnly.length) return null;
   return (
-    <ul className={cn("grid gap-3 sm:grid-cols-2", className)}>
-      {reviews.slice(0, limit).map((r) => (
-        <li key={`${r.name}-${r.created_at}`} className="grid gap-2 rounded-3xl border border-border bg-surface/80 p-4 shadow-card backdrop-blur">
-          <Stars value={r.rating} />
-          <p className="text-sm text-pretty">“{r.body}”</p>
-          <p className="flex items-center gap-2 text-xs font-semibold">
-            <span className="grid size-6 place-items-center rounded-full text-[13px]" style={{ backgroundColor: r.avatar_color }} aria-hidden="true">
-              {r.avatar_emoji ?? r.name.slice(0, 1).toUpperCase()}
-            </span>
-            {r.name} <span className="font-normal text-muted">· usuario de Year Arc</span>
-          </p>
-        </li>
-      ))}
-    </ul>
+    <div className="grid gap-3">
+      {withText.length ? (
+        <ul className={cn("grid gap-3 sm:grid-cols-2", className)}>
+          {withText.map((r) => (
+            <li key={`${r.name}-${r.created_at}`} className="grid gap-2 rounded-3xl border border-border bg-surface/80 p-4 shadow-card backdrop-blur">
+              <Stars value={r.rating} />
+              <p className="text-sm text-pretty">“{r.body}”</p>
+              <p className="flex items-center gap-2 text-xs font-semibold">
+                <Avatar r={r} />
+                {r.name} <span className="font-normal text-muted">· usuario de Year Arc</span>
+              </p>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {starsOnly.length ? (
+        <ul className="flex flex-wrap justify-center gap-2" aria-label="Valoraciones con estrellas">
+          {starsOnly.map((r) => (
+            <li key={`${r.name}-${r.created_at}`} className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/80 px-3 py-1.5 text-xs font-semibold shadow-card backdrop-blur">
+              <Avatar r={r} />
+              {r.name}
+              <Stars value={r.rating} />
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+function Avatar({ r }: { r: PublicReview }) {
+  return (
+    <span className="grid size-6 place-items-center rounded-full text-[13px]" style={{ backgroundColor: r.avatar_color }} aria-hidden="true">
+      {r.avatar_emoji ?? r.name.slice(0, 1).toUpperCase()}
+    </span>
+  );
+}
+
+/** Bloque de opiniones dentro de la app (Perfil y Pro). */
+export function ReviewsShowcase({ stats, reviews, title = "Lo que dicen de Year Arc" }: { stats: PublicStats | null; reviews: PublicReview[]; title?: string }) {
+  if (!reviews.length && !(stats && stats.ratings >= 3)) return null;
+  return (
+    <section className="grid gap-3" aria-label="Opiniones">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-bold tracking-tight">{title}</h2>
+        <RatingSummary stats={stats} reviews={reviews} />
+      </div>
+      <ReviewCards reviews={reviews} limit={4} />
+    </section>
   );
 }
 
