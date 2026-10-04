@@ -118,7 +118,7 @@ export default async function LandingPage() {
       <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
         <Logo />
         <Button asChild variant="ghost">
-          <Link href="/login">Entrar</Link>
+          <Link href="/login">Ya tengo cuenta</Link>
         </Button>
       </header>
 

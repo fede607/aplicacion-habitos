@@ -62,6 +62,14 @@ export function LoginForm({ next }: { next?: string }) {
       }}
     >
       <FormError message={error} />
+      {error && !errors.email && !errors.password ? (
+        <p className="rounded-2xl bg-primary/10 px-4 py-3 text-sm">
+          ¿Es tu primera vez en Year Arc?{" "}
+          <Link href="/register" className="font-bold text-primary underline-offset-2 hover:underline">
+            Crea tu cuenta gratis →
+          </Link>
+        </p>
+      ) : null}
       <Field label="Email" htmlFor="email" error={errors.email}>
         <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" required aria-invalid={!!errors.email} />
       </Field>
