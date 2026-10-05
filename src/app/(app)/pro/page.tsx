@@ -4,7 +4,7 @@ import { CheckCircle2, CreditCard, Lock, ShieldCheck, Sparkles } from "lucide-re
 import { hasFullAccess, requireGroup } from "@/lib/data/session";
 import { confirmPaypal } from "@/app/actions/billing";
 import { isPaypalConfigured } from "@/lib/billing/paypal";
-import { PAYMENTS_OPEN, PAYPAL_ME_PAY_URL, PAYPAL_ME_YEAR_URL, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
+import { PAYPAL_ME_PAY_URL, PAYPAL_ME_YEAR_URL, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
 import { buttonVariants } from "@/components/ui/button";
 import { formatDateOnly } from "@/lib/dates";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CancelButton, SubscribeButton } from "@/components/billing/billing-buttons";
 import { ReviewsShowcase } from "@/components/reviews/social-proof";
 import { getPublicProof } from "@/lib/data/public-proof";
+import { getPaymentsOpen } from "@/lib/billing/payments";
 
 export const metadata: Metadata = { title: "Year Arc Pro" };
 
@@ -32,13 +33,14 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
 
   const session = await requireGroup();
   const { supabase, userId, activeGroup, profile } = session;
-  const [{ data: sub }, fullAccess, { data: trialEnd }, { data: isStaff }, { data: lifetime }, proof] = await Promise.all([
+  const [{ data: sub }, fullAccess, { data: trialEnd }, { data: isStaff }, { data: lifetime }, proof, PAYMENTS_OPEN] = await Promise.all([
     supabase.from("subscriptions").select("status, current_period_end, cancel_at_period_end, paypal_subscription_id").eq("user_id", userId).maybeSingle(),
     hasFullAccess(session),
     supabase.rpc("my_pro_trial_end"),
     supabase.rpc("am_i_staff"),
     supabase.rpc("my_pro_lifetime"),
     getPublicProof(),
+    getPaymentsOpen(),
   ]);
   const active = !!sub && ["active", "trialing", "past_due"].includes(sub.status);
   const nextDate = sub?.current_period_end ? formatDateOnly(sub.current_period_end, profile.timezone) : null;
@@ -123,7 +125,7 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
             ) : (
               <p className="text-2xl font-black tracking-tight">Year Arc Pro</p>
             )}
-            {lifetime ? <Badge tone="success">Pro para siempre</Badge> : active ? <Badge tone="success">Pro activo</Badge> : onTrial ? <Badge tone="success">Mes gratis</Badge> : isStaff ? <Badge tone="primary">Propietario: acceso total</Badge> : null}
+            {!PAYMENTS_OPEN && !isStaff ? <Badge tone="success">Gratis para todos</Badge> : lifetime ? <Badge tone="success">Pro para siempre</Badge> : active ? <Badge tone="success">Pro activo</Badge> : onTrial ? <Badge tone="success">Mes gratis</Badge> : isStaff ? <Badge tone="primary">Propietario: acceso total</Badge> : null}
           </div>
 
           <ul className="grid gap-2 text-sm">
@@ -141,6 +143,11 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
                 <Sparkles aria-hidden="true" /> Gestionar pagos Pro
               </Link>
             </div>
+          ) : !PAYMENTS_OPEN ? (
+            <p className="rounded-2xl border border-success/40 bg-success-soft p-4 text-sm text-foreground">
+              🎁 <b>Ahora mismo Pro es gratis para todos</b> mientras Year Arc está en acceso privado. Si algún día empieza a costar dinero, te avisaremos antes y tendrás 1 mes gratis
+              más. Nunca se te cobrará nada sin que tú lo pagues.
+            </p>
           ) : lifetime ? (
             <p className="rounded-2xl border border-success/40 bg-success-soft p-4 text-sm text-foreground">
               ⭐ <b>Tienes Pro para siempre</b>, regalo de Year Arc. No tienes que pagar nada nunca.

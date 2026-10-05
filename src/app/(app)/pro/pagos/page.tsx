@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ProManager, type ProMember } from "@/components/admin/pro-manager";
 import { ReviewsManager } from "@/components/admin/reviews-manager";
 import { AccessManager, type AccessCode } from "@/components/admin/access-manager";
+import { PaymentsSwitch } from "@/components/admin/payments-switch";
+import { getPaymentsOpen } from "@/lib/billing/payments";
 
 export const metadata: Metadata = { title: "Pagos Pro" };
 
@@ -21,7 +23,7 @@ export default async function StaffPaymentsPage() {
     supabase.rpc("staff_reviews"),
   ]);
   const { data: sources } = await supabase.rpc("staff_signup_sources");
-  const [{ data: inviteOnly }, { data: codeRows }] = await Promise.all([supabase.rpc("signup_is_invite_only"), supabase.rpc("staff_access_codes")]);
+  const [{ data: inviteOnly }, { data: codeRows }, paymentsOpen] = await Promise.all([supabase.rpc("signup_is_invite_only"), supabase.rpc("staff_access_codes"), getPaymentsOpen()]);
   const codes: AccessCode[] = (codeRows ?? []).map((c) => ({
     code: c.code,
     note: c.note,
@@ -65,6 +67,7 @@ export default async function StaffPaymentsPage() {
           {members.length} usuarios · {proCount} con Pro ahora mismo
         </p>
       </header>
+      <PaymentsSwitch open={paymentsOpen} />
       <Card>
         <CardHeader>
           <div>

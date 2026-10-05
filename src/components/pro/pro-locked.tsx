@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Check, Lock, Sparkles } from "lucide-react";
-import { PAYMENTS_OPEN, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
+import { PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
+import { getPaymentsOpen } from "@/lib/billing/payments";
 
 export type ProFeature = "plan" | "workouts" | "dashboard" | "rank" | "progress" | "calendar";
 
@@ -92,7 +93,8 @@ function Preview({ kind }: { kind: "list" | "bars" | "grid" | "badge" }) {
 }
 
 /** Pantalla Pro bloqueada: vista previa difuminada + promoción del plan Pro. */
-export function ProLocked({ feature }: { feature: ProFeature }) {
+export async function ProLocked({ feature }: { feature: ProFeature }) {
+  const PAYMENTS_OPEN = await getPaymentsOpen();
   const f = FEATURES[feature];
   return (
     <div className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl">

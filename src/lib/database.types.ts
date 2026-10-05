@@ -445,6 +445,8 @@ export type Database = {
       create_recovery_code: { Args: Record<string, never>; Returns: string };
       has_recovery_code: { Args: Record<string, never>; Returns: boolean };
       signup_is_invite_only: { Args: Record<string, never>; Returns: boolean };
+      payments_open: { Args: Record<string, never>; Returns: boolean };
+      staff_set_payments_open: { Args: { p_on: boolean }; Returns: undefined };
       access_code_check: { Args: { p_code: string }; Returns: boolean };
       staff_create_access_code: { Args: { p_note?: string; p_days?: number }; Returns: string };
       staff_access_codes: {

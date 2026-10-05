@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Check, Dumbbell, Flame, ChartSpline, Medal, ShieldCheck, Smartphone, Users } from "lucide-react";
 import { Logo } from "@/components/layout/logo";
 import { Button } from "@/components/ui/button";
-import { PAYMENTS_OPEN, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
+import { PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
+import { getPaymentsOpen } from "@/lib/billing/payments";
 import { getPublicProof } from "@/lib/data/public-proof";
 import { RatingSummary, ReviewCards, StatsStrip } from "@/components/reviews/social-proof";
 import { LegalLinks } from "@/components/legal/legal-page";
@@ -112,7 +113,7 @@ function LineDemo() {
 }
 
 export default async function LandingPage() {
-  const { reviews, stats } = await getPublicProof();
+  const [{ reviews, stats }, PAYMENTS_OPEN] = await Promise.all([getPublicProof(), getPaymentsOpen()]);
   return (
     <div className="aurora min-h-dvh">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
@@ -220,7 +221,7 @@ export default async function LandingPage() {
               </ul>
             </div>
             <div className="relative rounded-3xl border-2 border-primary bg-surface p-6 shadow-card">
-              <span className="pro-gradient absolute -top-3 right-5 rounded-full px-3 py-1 text-xs font-bold">1 mes gratis</span>
+              <span className="pro-gradient absolute -top-3 right-5 rounded-full px-3 py-1 text-xs font-bold">{PAYMENTS_OPEN ? "1 mes gratis" : "Gratis"}</span>
               <p className="font-bold">Pro</p>
               {PAYMENTS_OPEN ? (
                 <>
@@ -230,7 +231,7 @@ export default async function LandingPage() {
                   <p className="text-sm text-muted">o {PRO_YEAR_EUR} €/año (2 meses gratis)</p>
                 </>
               ) : (
-                <p className="mt-1 text-2xl font-black">Próximamente</p>
+                <p className="mt-1 text-2xl font-black">Gratis por ahora</p>
               )}
               <ul className="mt-5 grid gap-2 text-sm">
                 {PRO.map((f) => (

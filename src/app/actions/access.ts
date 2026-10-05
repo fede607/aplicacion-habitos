@@ -35,3 +35,13 @@ export async function staffSetInviteOnly(on: boolean): Promise<ActionResult> {
   revalidatePath("/register");
   return { ok: true, data: undefined };
 }
+
+/** Staff: abre o cierra la venta de Pro (cerrada = Pro gratis para todos). */
+export async function staffSetPaymentsOpen(on: boolean): Promise<ActionResult> {
+  const { supabase, userId } = await authed();
+  if (!userId) return NOT_AUTHENTICATED;
+  const { error } = await supabase.rpc("staff_set_payments_open", { p_on: on });
+  if (error) return fail(error, "staffSetPaymentsOpen");
+  revalidatePath("/", "layout");
+  return { ok: true, data: undefined };
+}

@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { ContactLine, LEGAL_OWNER, LegalPage } from "@/components/legal/legal-page";
-import { PAYMENTS_OPEN, PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
+import { PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
+import { getPaymentsOpen } from "@/lib/billing/payments";
 
 export const metadata: Metadata = { title: "Términos de uso", robots: { index: true, follow: true } };
 
-export default function TermsPage() {
+export const revalidate = 600;
+
+export default async function TermsPage() {
+  const PAYMENTS_OPEN = await getPaymentsOpen();
   return (
     <LegalPage title="Términos de uso">
       <p>
@@ -23,7 +27,7 @@ export default function TermsPage() {
         <li>El plan gratis incluye tus hábitos, tu racha, tu línea del año y los grupos.</li>
         <li>
           {PAYMENTS_OPEN ? `Pro cuesta ${PRO_MONTH_EUR} €/mes o ${PRO_YEAR_EUR} €/año (IVA incluido) e incluye` : "Pro todavía no está a la venta: antes de cobrar nada avisaremos del precio. Incluye"} el plan de entreno, el registro de entrenos y las
-          estadísticas avanzadas. Las cuentas nuevas tienen 1 mes de Pro gratis, sin tarjeta.
+          estadísticas avanzadas. {PAYMENTS_OPEN ? "Las cuentas nuevas tienen 1 mes de Pro gratis, sin tarjeta." : "Mientras no esté a la venta, Pro es gratis para todos."}
         </li>
         <li>Pagas por adelantado. No hay renovación automática salvo que contrates una suscripción de PayPal, que puedes cancelar cuando quieras.</li>
         <li>
