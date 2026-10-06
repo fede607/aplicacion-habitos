@@ -18,10 +18,11 @@ export default async function GroupAdminPage({ searchParams }: PageProps<"/group
   const { supabase, userId, activeGroup, today, profile } = await requireGroupAdmin();
   const params = await searchParams;
 
-  const [habits, invitationsRes, membersRes] = await Promise.all([
+  const [habits, invitationsRes, membersRes, { data: canInvite }] = await Promise.all([
     getAllHabits(supabase, activeGroup.id, null),
     supabase.from("group_invitations").select("*").eq("group_id", activeGroup.id).order("created_at", { ascending: false }).limit(50),
     supabase.from("group_members").select("user_id, role, joined_at").eq("group_id", activeGroup.id).order("joined_at").limit(1000),
+    supabase.rpc("i_can_invite"),
   ]);
   const memberRows = membersRes.data ?? [];
   const { data: profiles } = await supabase
@@ -58,17 +59,23 @@ export default async function GroupAdminPage({ searchParams }: PageProps<"/group
         </p>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <div>
-            <CardTitle className="text-base">Invitaciones</CardTitle>
-            <CardDescription>Comparte el enlace o el código. Puedes hacer que caduquen, limitar usos o revocarlas.</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <InvitationsManager groupId={activeGroup.id} invitations={invitationsRes.data ?? []} siteUrl={getSiteUrl()} nowIso={new Date().toISOString()} timeZone={profile.timezone} />
-        </CardContent>
-      </Card>
+      {canInvite ? (
+        <Card>
+          <CardHeader>
+            <div>
+              <CardTitle className="text-base">Invitaciones</CardTitle>
+              <CardDescription>Comparte el enlace o el código. Puedes hacer que caduquen, limitar usos o revocarlas.</CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <InvitationsManager groupId={activeGroup.id} invitations={invitationsRes.data ?? []} siteUrl={getSiteUrl()} nowIso={new Date().toISOString()} timeZone={profile.timezone} />
+          </CardContent>
+        </Card>
+      ) : (
+        <p className="rounded-2xl bg-surface-2 px-4 py-3 text-sm text-muted">
+          Year Arc está en acceso privado: sólo el equipo de Year Arc puede invitar a gente nueva. Si quieres añadir a alguien, pídeselo.
+        </p>
+      )}
 
       <Card>
         <CardHeader>

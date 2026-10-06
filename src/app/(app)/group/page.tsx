@@ -64,13 +64,14 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
         .order("created_at", { ascending: false })
         .limit(10)
     : Promise.resolve({ data: [] as { code: string; expires_at: string | null; max_uses: number | null; use_count: number }[] });
-  const [membersRes, visibilityRes, statsRows, workoutsRes, feed, invitesRes] = await Promise.all([
+  const [membersRes, visibilityRes, statsRows, workoutsRes, feed, invitesRes, { data: canInvite }] = await Promise.all([
     supabase.from("group_members").select("user_id, role, joined_at").eq("group_id", activeGroup.id).order("joined_at").limit(1000),
     supabase.rpc("group_member_visibility", { p_group_id: activeGroup.id }),
     getDailyStats(supabase, activeGroup.id, from, today),
     supabase.rpc("group_workout_summary", { p_group_id: activeGroup.id, p_from: from, p_to: today }),
     getGroupFeed(supabase, activeGroup.id, userId),
     inviteQuery,
+    supabase.rpc("i_can_invite"),
   ]);
   const { data: proIds } = await supabase.rpc("group_pro_members", { p_group_id: activeGroup.id });
   const proSet = new Set(proIds ?? []);
@@ -159,9 +160,9 @@ export default async function GroupPage({ searchParams }: PageProps<"/group">) {
         </div>
       </header>
 
-      <GroupActions siteUrl={getSiteUrl()} />
+      <GroupActions siteUrl={getSiteUrl()} canCreate={!!canInvite} />
 
-      {isAdmin && inviteCode ? (
+      {isAdmin && canInvite && inviteCode ? (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Invita a tus amigos a «{activeGroup.name}»</CardTitle>

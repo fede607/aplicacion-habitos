@@ -6,7 +6,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
  * - Validación de campos en el servidor.
  * - Límite de 5 altas por IP y hora y 300 en total por hora (signup_rate_check).
  * - Cloudflare Turnstile si TURNSTILE_SECRET_KEY está configurado.
- * - Acceso privado: si está activado, exige una invitación personal de un solo uso.
+ * - Acceso privado: si está activado, exige un enlace de grupo del staff o una invitación personal.
  * Crea la cuenta con el email confirmado y devuelve la sesión.
  */
 
@@ -72,8 +72,17 @@ Deno.serve(async (req: Request) => {
 
     const { data: inviteOnly } = await admin.rpc("signup_is_invite_only");
     if (inviteOnly) {
-      const { data: ok } = await admin.rpc("access_code_check", { p_code: accessCode });
-      if (!ok) return json({ error: accessCode ? "Esta invitación no es válida, ya se ha usado o ha caducado. Pide una nueva." : PRIVATE_MSG, field: "access" }, 403);
+      // Vale un enlace de grupo del staff o una invitación de acceso de un solo uso.
+      let ok = false;
+      if (inviteCode) {
+        const { data: preview } = await admin.rpc("invite_signup_preview", { p_code: inviteCode });
+        ok = preview?.[0]?.status === "valid";
+      }
+      if (!ok && accessCode) {
+        const { data } = await admin.rpc("access_code_check", { p_code: accessCode });
+        ok = data === true;
+      }
+      if (!ok) return json({ error: accessCode || inviteCode ? "Esta invitación no es válida, ya se ha usado o ha caducado. Pide una nueva." : PRIVATE_MSG, field: "access" }, 403);
     }
 
     const { data: available } = await admin.rpc("username_available", { p_username: username });

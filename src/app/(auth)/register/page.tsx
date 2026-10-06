@@ -24,13 +24,20 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
 
   const access = typeof params.acceso === "string" ? params.acceso.slice(0, 32) : undefined;
   const supabaseAnon = await createClient();
+  let invite: { code: string; groupName: string } | null = null;
+  let inviteProblem = false;
+  if (code) {
+    const { data } = await supabaseAnon.rpc("invite_signup_preview", { p_code: code });
+    if (data?.[0]?.status === "valid" && data[0].group_name) invite = { code, groupName: data[0].group_name };
+    else inviteProblem = true;
+  }
   const { data: inviteOnly } = await supabaseAnon.rpc("signup_is_invite_only");
   let accessOk = false;
   if (inviteOnly && access && isAdminConfigured()) {
     const { data } = await createAdminClient().rpc("access_code_check", { p_code: access });
     accessOk = data === true;
   }
-  if (inviteOnly && !accessOk) {
+  if (inviteOnly && !accessOk && !invite) {
     return (
       <div className="grid gap-6 text-center">
         <span className="mx-auto grid size-14 place-items-center rounded-full bg-primary-soft text-primary">
@@ -39,7 +46,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Year Arc está en acceso privado</h1>
           <p className="mt-2 text-sm text-muted">
-            {access
+            {access || code
               ? "Esta invitación no es válida, ya se ha usado o ha caducado. Cada invitación sirve para una sola persona: pide una nueva a quien te la mandó."
               : "Por ahora sólo se puede entrar con una invitación personal. Pídesela a quien te habló de la app."}
           </p>
@@ -56,16 +63,6 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   }
 
   const proof = await getPublicProof();
-  let invite: { code: string; groupName: string } | null = null;
-  let inviteProblem = false;
-  if (code) {
-    const supabase = await createClient();
-    const { data } = await supabase.rpc("invite_signup_preview", {
-      p_code: code,
-    });
-    if (data?.[0]?.status === "valid" && data[0].group_name) invite = { code, groupName: data[0].group_name };
-    else inviteProblem = true;
-  }
 
   return (
     <div className="grid gap-6">

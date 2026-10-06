@@ -22,7 +22,7 @@ const STATUS_TEXT: Record<string, string> = {
 
 /**
  * Puerta de entrada al grupo. Sin sesión: muestra el grupo y lleva a crear cuenta
- * (con el código) o a entrar. Con sesión: botón para unirse.
+ * (con el código) o a entrar. Con sesión: entra directamente en el grupo.
  */
 export default async function JoinPage({ params }: PageProps<"/join/[code]">) {
   const { code: raw } = await params;
@@ -41,6 +41,10 @@ export default async function JoinPage({ params }: PageProps<"/join/[code]">) {
     else if (data?.[0]) {
       if (data[0].already_member) redirect("/today");
       status = data[0].status;
+      if (status === "valid") {
+        const { data: joined } = await session.supabase.rpc("join_group", { p_code: code });
+        if (joined?.[0]?.group_id) redirect("/today");
+      }
       groupName = data[0].group_name;
       memberCount = data[0].member_count;
       description = data[0].group_description;

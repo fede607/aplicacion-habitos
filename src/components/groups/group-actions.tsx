@@ -66,7 +66,7 @@ export function InviteCodeBox({ code, siteUrl }: { code: string; siteUrl: string
 }
 
 /** Los dos botones del apartado Grupo: crear (instantáneo) y unirse con código. */
-export function GroupActions({ siteUrl }: { siteUrl: string }) {
+export function GroupActions({ siteUrl, canCreate = true }: { siteUrl: string; canCreate?: boolean }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [created, setCreated] = useState<{ code: string | null } | null>(null);
@@ -83,11 +83,13 @@ export function GroupActions({ siteUrl }: { siteUrl: string }) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-3">
-        <Button size="xl" variant="pro" disabled={pending} onClick={create}>
-          {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Plus aria-hidden="true" />}
-          Crear grupo
-        </Button>
+      <div className={canCreate ? "grid grid-cols-2 gap-3" : "grid gap-3"}>
+        {canCreate ? (
+          <Button size="xl" variant="pro" disabled={pending} onClick={create}>
+            {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <Plus aria-hidden="true" />}
+            Crear grupo
+          </Button>
+        ) : null}
         <Button size="xl" variant="outline" onClick={() => setJoinOpen(true)}>
           <UserPlus aria-hidden="true" /> Unirse a grupo
         </Button>
