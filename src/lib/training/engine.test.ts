@@ -229,3 +229,26 @@ describe("computeNutrition", () => {
     expect(n.proteinG).toBeLessThan(130 * 1.4);
   });
 });
+
+describe("dietGuide", () => {
+  const adult = { age: 30, sex: "male" as const, heightCm: 180, weightKg: 80, level: "beginner" as const, trainingType: "gym" as const, daysPerWeek: 3, sessionMinutes: 60, limitations: [] };
+  it("incluye comidas de ejemplo y consejos para cada objetivo", () => {
+    for (const goal of ["fat_loss", "recomp", "muscle", "strength", "endurance", "health"] as const) {
+      const plan = generatePlan({ ...adult, goal });
+      expect(plan.diet.meals).toHaveLength(4);
+      expect(plan.diet.eatMore.length).toBeGreaterThan(3);
+      expect(plan.diet.dont.length).toBeGreaterThan(3);
+      expect(plan.diet.proteinPerMeal).toBe(Math.round(plan.nutrition.proteinG / 4));
+    }
+  });
+  it("a un menor no le recomienda déficit ni suplementos", () => {
+    const plan = generatePlan({ ...adult, age: 15, goal: "fat_loss" });
+    expect(plan.diet.dont.join(" ")).toMatch(/suplementos/);
+    expect(plan.diet.dont.join(" ")).toMatch(/déficit/);
+    expect(plan.diet.limit.join(" ")).not.toMatch(/Alcohol/);
+  });
+  it("con déficit avisa de no bajar de las calorías objetivo", () => {
+    const plan = generatePlan({ ...adult, goal: "fat_loss" });
+    expect(plan.diet.dont.join(" ")).toContain(String(plan.nutrition.targetKcal));
+  });
+});

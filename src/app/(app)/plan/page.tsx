@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ProLocked } from "@/components/pro/pro-locked";
 import Link from "next/link";
-import { AlertTriangle, Apple, ChevronDown, Clock, Dumbbell, Flame, Moon, Repeat2, Settings2, Star, TrendingUp } from "lucide-react";
+import { AlertTriangle, Apple, Ban, Check, ChevronDown, Clock, Dumbbell, Flame, Minus, Moon, Repeat2, Settings2, Star, TrendingUp, Utensils } from "lucide-react";
 import { requireProPage } from "@/lib/data/session";
 import { planFromRow, todaysSession } from "@/lib/training/user-plan";
 import { applyPhase, cyclePhase, FOCUS_LABELS } from "@/lib/training/engine";
@@ -175,6 +175,26 @@ export default async function PlanPage() {
         </p>
       </section>
 
+      <Collapsible icon={<Utensils className="size-5 text-success" aria-hidden="true" />} title="Qué comer y qué evitar" open>
+        <div className="grid gap-5 text-sm">
+          <div className="grid gap-2">
+            <h3 className="font-semibold">Un día de ejemplo · ~{plan.diet.proteinPerMeal} g de proteína por comida</h3>
+            <ul className="grid gap-2">
+              {plan.diet.meals.map((m) => (
+                <li key={m.name} className="rounded-2xl bg-surface-2 p-3">
+                  <b>{m.name}:</b> {m.idea}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <DietList title="Come más" icon={<Check className="size-4 text-success" aria-hidden="true" />} items={plan.diet.eatMore} />
+          <DietList title="Reduce" icon={<Minus className="size-4 text-warning" aria-hidden="true" />} items={plan.diet.limit} />
+          <DietList title="Lo que no debes hacer" icon={<Ban className="size-4 text-danger" aria-hidden="true" />} items={plan.diet.dont} />
+          <DietList title="Alrededor del entreno" icon={<Dumbbell className="size-4 text-primary" aria-hidden="true" />} items={plan.diet.training} />
+          <p className="text-xs text-muted">{plan.diet.disclaimer}</p>
+        </div>
+      </Collapsible>
+
       <Collapsible icon={<TrendingUp className="size-5 text-primary" aria-hidden="true" />} title="Cómo progresar">
         <ul className="grid list-disc gap-1.5 pl-5 text-sm">
           {[...plan.progression, ...plan.tips].map((t) => (
@@ -188,6 +208,22 @@ export default async function PlanPage() {
       </Collapsible>
 
       <p className="px-1 text-xs text-muted">{plan.warnings.at(-1)}</p>
+    </div>
+  );
+}
+
+function DietList({ title, icon, items }: { title: string; icon: React.ReactNode; items: string[] }) {
+  return (
+    <div className="grid gap-2">
+      <h3 className="font-semibold">{title}</h3>
+      <ul className="grid gap-1.5">
+        {items.map((t) => (
+          <li key={t} className="flex gap-2">
+            <span className="mt-0.5 shrink-0">{icon}</span>
+            <span>{t}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

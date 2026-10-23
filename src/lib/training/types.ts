@@ -1,3 +1,5 @@
+import type { DietGuide } from "./diet";
+
 export const GOALS = ["fat_loss", "recomp", "muscle", "strength", "endurance", "health"] as const;
 export const LEVELS = ["beginner", "intermediate", "advanced"] as const;
 export const TRAINING_TYPES = ["gym", "home_dumbbells", "bodyweight", "running", "mixed"] as const;
@@ -77,6 +79,7 @@ export type TrainingPlan = {
   days: PlannedDay[];
   restDays: number[];
   nutrition: Nutrition;
+  diet: DietGuide;
   progression: string[];
   tips: string[];
   warnings: string[];

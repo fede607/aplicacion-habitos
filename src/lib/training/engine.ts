@@ -1,5 +1,6 @@
 import { pickExercise, type Equipment, type Pattern } from "./library";
 import type { CyclePhase, Focus, Goal, Level, Limitation, Nutrition, PlannedDay, PlannedExercise, TrainingPlan, TrainingProfile } from "./types";
+import { dietGuide } from "./diet";
 
 /**
  * Generador de planes de entrenamiento. Puro y determinista: el mismo perfil
@@ -535,12 +536,14 @@ export function generatePlan(input: TrainingProfile): TrainingPlan {
     "Plan orientativo generado a partir de tus datos: no sustituye a un médico, nutricionista o entrenador. Si tienes alguna condición médica, consúltalo antes de empezar.",
   );
 
+  const nutrition = computeNutrition(pg, goal);
   return {
     title,
     summary,
     days,
     restDays,
-    nutrition: computeNutrition(pg, goal),
+    nutrition,
+    diet: dietGuide(pg, goal, nutrition),
     progression,
     tips,
     warnings,
