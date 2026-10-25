@@ -9,6 +9,7 @@ import { ProManager, type ProMember } from "@/components/admin/pro-manager";
 import { ReviewsManager } from "@/components/admin/reviews-manager";
 import { AccessManager, type AccessCode } from "@/components/admin/access-manager";
 import { PaymentsSwitch } from "@/components/admin/payments-switch";
+import { MarketingPush } from "@/components/admin/marketing-push";
 import { getPaymentsOpen } from "@/lib/billing/payments";
 
 export const metadata: Metadata = { title: "Pagos Pro" };
@@ -23,7 +24,13 @@ export default async function StaffPaymentsPage() {
     supabase.rpc("staff_reviews"),
   ]);
   const { data: sources } = await supabase.rpc("staff_signup_sources");
-  const [{ data: inviteOnly }, { data: codeRows }, paymentsOpen] = await Promise.all([supabase.rpc("signup_is_invite_only"), supabase.rpc("staff_access_codes"), getPaymentsOpen()]);
+  const [{ data: inviteOnly }, { data: codeRows }, paymentsOpen, { data: audienceRows }] = await Promise.all([
+    supabase.rpc("signup_is_invite_only"),
+    supabase.rpc("staff_access_codes"),
+    getPaymentsOpen(),
+    supabase.rpc("staff_marketing_audience"),
+  ]);
+  const audience = audienceRows?.[0];
   const codes: AccessCode[] = (codeRows ?? []).map((c) => ({
     code: c.code,
     note: c.note,
@@ -68,6 +75,17 @@ export default async function StaffPaymentsPage() {
         </p>
       </header>
       <PaymentsSwitch open={paymentsOpen} />
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle className="text-base">Aviso de novedades</CardTitle>
+            <CardDescription>Sólo llega a quien activó «Novedades y ofertas» en su perfil. Máximo uno cada 7 días.</CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <MarketingPush people={audience?.people ?? 0} lastSentAt={audience?.last_sent_at ?? null} />
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <div>

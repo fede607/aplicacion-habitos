@@ -30,6 +30,8 @@ export type UserSettingsRow = {
   show_in_comparison: boolean;
   reminder_enabled: boolean;
   reminder_time: string;
+  /** Avisos de novedades y ofertas (opt-in, por defecto no). */
+  marketing_push: boolean;
   active_group_id: string | null;
   email_daily_reminder: boolean;
   email_weekly_summary: boolean;
@@ -466,6 +468,8 @@ export type Database = {
       payments_open: { Args: Record<string, never>; Returns: boolean };
       i_can_invite: { Args: Record<string, never>; Returns: boolean };
       create_personal_space: { Args: Record<string, never>; Returns: string };
+      staff_marketing_audience: { Args: Record<string, never>; Returns: { people: number; last_sent_at: string | null }[] };
+      staff_marketing_claim: { Args: Record<string, never>; Returns: string[] };
       start_challenge: { Args: { p_title: string; p_emoji: string; p_days: number }; Returns: string };
       toggle_challenge_day: { Args: { p_challenge_id: string; p_day: string }; Returns: boolean };
       abandon_challenge: { Args: { p_challenge_id: string }; Returns: undefined };

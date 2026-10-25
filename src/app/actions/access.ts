@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { sendPushToUser } from "@/lib/push/server";
 import { fail, type ActionResult } from "@/lib/errors";
 import { authed, NOT_AUTHENTICATED } from "./_helpers";
 
@@ -44,4 +46,25 @@ export async function staffSetPaymentsOpen(on: boolean): Promise<ActionResult> {
   if (error) return fail(error, "staffSetPaymentsOpen");
   revalidatePath("/", "layout");
   return { ok: true, data: undefined };
+}
+
+const marketingSchema = z.object({
+  title: z.string().trim().min(3, "Escribe un título").max(60, "Máximo 60 caracteres"),
+  body: z.string().trim().min(3, "Escribe el mensaje").max(160, "Máximo 160 caracteres"),
+});
+
+/** Staff: envía un aviso de novedades a quien lo tiene activado (máx. 1 cada 7 días). */
+export async function staffSendMarketingPush(input: z.input<typeof marketingSchema>): Promise<ActionResult<{ people: number; delivered: number }>> {
+  const parsed = marketingSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Revisa el mensaje." };
+  const { supabase, userId } = await authed();
+  if (!userId) return NOT_AUTHENTICATED;
+  const { data: ids, error } = await supabase.rpc("staff_marketing_claim");
+  if (error) return fail(error, "staffSendMarketingPush", error.code === "WA429" ? "Ya enviaste un aviso de novedades hace menos de 7 días." : undefined);
+  let delivered = 0;
+  for (const id of ids ?? []) {
+    delivered += await sendPushToUser(id, { title: parsed.data.title, body: parsed.data.body, url: "/pro", tag: "novedades" });
+  }
+  revalidatePath("/pro/pagos");
+  return { ok: true, data: { people: (ids ?? []).length, delivered } };
 }

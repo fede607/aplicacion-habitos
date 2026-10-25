@@ -48,6 +48,7 @@ export async function updatePreferences(input: z.input<typeof preferencesSchema>
       show_in_comparison: s.showInComparison,
       reminder_enabled: s.reminderEnabled,
       reminder_time: s.reminderTime,
+      marketing_push: s.marketingPush,
     })
     .eq("user_id", userId);
   if (error) return fail(error, "updatePreferences");

@@ -184,6 +184,7 @@ export const preferencesSchema = z.object({
   showInComparison: z.boolean(),
   reminderEnabled: z.boolean(),
   reminderTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora no válida"),
+  marketingPush: z.boolean().default(false),
 });
 
 /** Ruta interna segura para redirecciones post-login (evita open redirects). */

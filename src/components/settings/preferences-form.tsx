@@ -29,6 +29,7 @@ export function PreferencesForm({ settings }: { settings: UserSettingsRow }) {
     showInComparison: settings.show_in_comparison,
     reminderEnabled: settings.reminder_enabled,
     reminderTime: settings.reminder_time.slice(0, 5),
+    marketingPush: settings.marketing_push,
   });
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -57,6 +58,16 @@ export function PreferencesForm({ settings }: { settings: UserSettingsRow }) {
         <Field label="Hora del recordatorio" htmlFor="pref-time" className="max-w-48" hint="También la usa el recordatorio por email.">
           <Input id="pref-time" type="time" value={form.reminderTime} onChange={(e) => set("reminderTime", e.target.value)} />
         </Field>
+      </fieldset>
+      <fieldset className="grid gap-2">
+        <legend className="mb-2 text-sm font-semibold">Novedades</legend>
+        <ToggleRow
+          id="pref-marketing"
+          title="Novedades y ofertas de Year Arc"
+          description="Como mucho un aviso a la semana con funciones nuevas o descuentos. Nunca de terceros. Puedes quitarlo cuando quieras."
+          checked={form.marketingPush}
+          onChange={(v) => set("marketingPush", v)}
+        />
       </fieldset>
       <Button type="submit" disabled={pending} className="justify-self-start">
         {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : null}
