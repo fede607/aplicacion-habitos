@@ -4,10 +4,10 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowRight, LoaderCircle } from "lucide-react";
-import { quickCreateGroup } from "@/app/actions/groups";
+import { createPersonalSpace } from "@/app/actions/challenges";
 import { Button } from "@/components/ui/button";
 
-/** Empezar en un toque: crea tu espacio (puedes invitar a amigos luego) y te lleva a elegir hábitos. */
+/** Empezar en un toque: crea tu espacio personal (individual) y te lleva a elegir hábitos. */
 export function StartSoloButton() {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -19,7 +19,7 @@ export function StartSoloButton() {
       disabled={pending}
       onClick={() =>
         start(async () => {
-          const res = await quickCreateGroup();
+          const res = await createPersonalSpace();
           if (!res.ok) return void toast.error(res.error);
           router.push("/habits");
           router.refresh();

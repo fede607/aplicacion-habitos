@@ -49,9 +49,25 @@ export type GroupRow = {
   comparison_enabled: boolean;
   max_members: number;
   requires_pro: boolean;
+  /** Espacio personal (versión individual): sin invitaciones ni comparaciones. */
+  is_personal: boolean;
   created_by: string | null;
   deleted_at: string | null;
 } & Timestamps;
+
+export type PersonalChallengeRow = {
+  id: string;
+  user_id: string;
+  emoji: string;
+  title: string;
+  days: 7 | 21 | 30;
+  started_on: string;
+  completed_at: string | null;
+  abandoned_at: string | null;
+  created_at: string;
+};
+
+export type ChallengeCheckinRow = { challenge_id: string; day: string; created_at: string };
 
 export type GroupMemberRow = {
   group_id: string;
@@ -303,6 +319,8 @@ export type Database = {
       workouts: Table<WorkoutRow>;
       achievements: Table<AchievementRow>;
       user_achievements: Table<UserAchievementRow>;
+      personal_challenges: Table<PersonalChallengeRow>;
+      challenge_checkins: Table<ChallengeCheckinRow>;
     };
     Views: Record<string, never>;
     Functions: {
@@ -447,6 +465,10 @@ export type Database = {
       signup_is_invite_only: { Args: Record<string, never>; Returns: boolean };
       payments_open: { Args: Record<string, never>; Returns: boolean };
       i_can_invite: { Args: Record<string, never>; Returns: boolean };
+      create_personal_space: { Args: Record<string, never>; Returns: string };
+      start_challenge: { Args: { p_title: string; p_emoji: string; p_days: number }; Returns: string };
+      toggle_challenge_day: { Args: { p_challenge_id: string; p_day: string }; Returns: boolean };
+      abandon_challenge: { Args: { p_challenge_id: string }; Returns: undefined };
       staff_set_payments_open: { Args: { p_on: boolean }; Returns: undefined };
       access_code_check: { Args: { p_code: string }; Returns: boolean };
       staff_create_access_code: { Args: { p_note?: string; p_days?: number }; Returns: string };

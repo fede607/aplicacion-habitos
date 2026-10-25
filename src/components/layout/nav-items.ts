@@ -1,4 +1,4 @@
-import { ChartNoAxesColumn, Dumbbell, House, Sparkles, UserRound, Users, type LucideIcon } from "lucide-react";
+import { ChartNoAxesColumn, Dumbbell, House, Sparkles, Target, UserRound, Users, type LucideIcon } from "lucide-react";
 
 export type NavItem = {
   href: string;
@@ -42,7 +42,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Progreso",
     icon: ChartNoAxesColumn,
     mobile: true,
-    match: ["/dashboard", "/progress", "/rank", "/calendar"],
+    match: ["/dashboard", "/progress", "/rank", "/calendar", "/retos"],
   },
   {
     href: "/settings",
@@ -75,15 +75,29 @@ export const SECTION_TABS: {
     ],
   },
   {
-    match: ["/dashboard", "/progress", "/rank", "/calendar"],
+    match: ["/dashboard", "/progress", "/rank", "/calendar", "/retos"],
     tabs: [
       { href: "/dashboard", label: "Resumen" },
+      { href: "/retos", label: "Retos" },
       { href: "/rank", label: "Rango" },
       { href: "/progress", label: "Logros" },
       { href: "/calendar", label: "Calendario" },
     ],
   },
 ];
+
+/**
+ * Versión individual (espacio personal): la pestaña Grupo se cambia por Retos
+ * y Retos deja de colgar de Progreso.
+ */
+export function navItemsFor(personal: boolean): NavItem[] {
+  if (!personal) return NAV_ITEMS;
+  return NAV_ITEMS.map((item) => {
+    if (item.href === "/group") return { href: "/retos", label: "Retos", icon: Target, mobile: true, free: true, match: ["/retos"] };
+    if (item.href === "/dashboard") return { ...item, match: item.match.filter((m) => m !== "/retos") };
+    return item;
+  });
+}
 
 export function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);

@@ -4,16 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
-import { isActivePath, NAV_ITEMS, SECTION_TABS } from "./nav-items";
+import { isActivePath, navItemsFor, SECTION_TABS } from "./nav-items";
 
 // Las pestañas Pro se abren igualmente: sin Pro muestran una vista previa difuminada.
 const isActive = (pathname: string, match: string[]) => match.some((m) => isActivePath(pathname, m));
 
-export function SidebarNav({ locked = false }: { locked?: boolean }) {
+export function SidebarNav({ locked = false, personal = false }: { locked?: boolean; personal?: boolean }) {
   const pathname = usePathname();
   return (
     <nav aria-label="Principal" className="grid gap-1">
-      {NAV_ITEMS.map(({ href, label, icon: Icon, free, match }) => {
+      {navItemsFor(personal).map(({ href, label, icon: Icon, free, match }) => {
         const active = isActive(pathname, match.length ? match : [href]);
         return (
           <Link
@@ -35,12 +35,12 @@ export function SidebarNav({ locked = false }: { locked?: boolean }) {
   );
 }
 
-export function BottomNav({ locked = false }: { locked?: boolean }) {
+export function BottomNav({ locked = false, personal = false }: { locked?: boolean; personal?: boolean }) {
   const pathname = usePathname();
   return (
     <nav aria-label="Principal" className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/90 backdrop-blur-lg lg:hidden">
       <ul className="mx-auto grid max-w-lg grid-cols-5">
-        {NAV_ITEMS.filter((i) => i.mobile).map(({ href, label, icon: Icon, free, match }) => {
+        {navItemsFor(personal).filter((i) => i.mobile).map(({ href, label, icon: Icon, free, match }) => {
           const active = isActive(pathname, match);
           return (
             <li key={href}>
@@ -67,8 +67,10 @@ export function BottomNav({ locked = false }: { locked?: boolean }) {
 }
 
 /** Pestañas de sección (Entreno: plan/registro · Progreso: resumen/rango/logros/calendario). */
-export function SectionTabs() {
+export function SectionTabs({ personal = false }: { personal?: boolean }) {
   const pathname = usePathname();
+  // En la versión individual Retos es una pestaña principal, no una sección de Progreso.
+  if (personal && pathname === "/retos") return null;
   const section = SECTION_TABS.find((s) => isActive(pathname, s.match));
   // En pantallas de detalle (p. ej. /workouts/new) no se muestran.
   if (!section || !section.tabs.some((t) => t.href === pathname)) return null;

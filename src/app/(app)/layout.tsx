@@ -15,6 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { profile, groups, activeGroup } = session;
   const groupOptions = groups.map((g) => ({ id: g.id, name: g.name }));
   const locked = activeGroup ? !(await hasFullAccess(session as GroupSession)) : false;
+  const personal = activeGroup?.is_personal ?? false;
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[16rem_1fr]">
@@ -26,13 +27,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Link href="/today" className="px-2 pt-2" aria-label="Year Arc, inicio">
           <Logo />
         </Link>
-        {activeGroup ? (
+        {activeGroup && !personal ? (
           <div className="rounded-xl bg-surface-2 px-3 py-2">
             <p className="text-[11px] font-semibold tracking-wider text-muted uppercase">Grupo</p>
             <p className="truncate text-sm font-semibold">{activeGroup.name}</p>
           </div>
         ) : null}
-        <SidebarNav locked={locked} />
+        <SidebarNav locked={locked} personal={personal} />
         <Link href="/settings" className="mt-auto flex items-center gap-3 rounded-xl p-2 transition-colors hover:bg-surface-2">
           <Avatar name={profile.display_name} emoji={profile.avatar_emoji} color={profile.avatar_color} size="sm" />
           <span className="min-w-0">
@@ -90,12 +91,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </Link>
           ) : null}
           <InstallAppBanner />
-          <SectionTabs />
+          <SectionTabs personal={personal} />
           {children}
         </main>
       </div>
 
-      <BottomNav locked={locked} />
+      <BottomNav locked={locked} personal={personal} />
     </div>
   );
 }

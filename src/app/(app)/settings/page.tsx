@@ -83,7 +83,7 @@ export default async function SettingsPage() {
                     </div>
                     {g.id === activeGroup?.id ? <Badge tone="primary">Activo</Badge> : null}
                     {g.role === "admin" ? <Badge>Admin</Badge> : null}
-                    <LeaveGroupButton groupId={g.id} groupName={g.name} />
+                    {g.is_personal ? <Badge>Individual</Badge> : <LeaveGroupButton groupId={g.id} groupName={g.name} />}
                   </li>
                 ))}
               </ul>
