@@ -5,7 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
  * Alta de cuentas (registro abierto). Protecciones:
  * - Validación de campos en el servidor.
  * - Límite de 5 altas por IP y hora y 300 en total por hora (signup_rate_check).
- * - Cloudflare Turnstile si TURNSTILE_SECRET_KEY está configurado.
+ * - Cloudflare Turnstile si TURNSTILE_SECRET_KEY está configurado (no hace falta con invitación válida).
  * - Acceso privado: si está activado, exige un enlace de grupo del staff o una invitación personal.
  * Crea la cuenta con el email confirmado y devuelve la sesión.
  */
@@ -55,10 +55,29 @@ Deno.serve(async (req: Request) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { autoRefreshToken: false, persistSession: false } });
 
-    // Anti-bots: CAPTCHA (si está configurado) y límite de altas.
-    const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY");
     const ip = (req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown").trim();
-    if (turnstileSecret) {
+    // Límite de altas por IP y global (también frena probar códigos de invitación al azar).
+    const { error: rateErr } = await admin.rpc("signup_rate_check", { p_ip: ip });
+    if (rateErr) return json({ error: "Demasiados registros seguidos. Espera un rato e inténtalo de nuevo." }, 429);
+
+    // Acceso privado: vale un enlace de grupo del staff o una invitación de acceso de un solo uso.
+    const { data: inviteOnly } = await admin.rpc("signup_is_invite_only");
+    let invited = false;
+    if (inviteOnly) {
+      if (inviteCode) {
+        const { data: preview } = await admin.rpc("invite_signup_preview", { p_code: inviteCode });
+        invited = preview?.[0]?.status === "valid";
+      }
+      if (!invited && accessCode) {
+        const { data } = await admin.rpc("access_code_check", { p_code: accessCode });
+        invited = data === true;
+      }
+      if (!invited) return json({ error: accessCode || inviteCode ? "Esta invitación no es válida, ya se ha usado o ha caducado. Pide una nueva." : PRIVATE_MSG, field: "access" }, 403);
+    }
+
+    // Anti-bots: CAPTCHA (si está configurado) salvo con invitación válida (un bot no puede tenerla).
+    const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY");
+    if (turnstileSecret && !invited) {
       const form = new FormData();
       form.append("secret", turnstileSecret);
       form.append("response", captchaToken);
@@ -66,23 +85,6 @@ Deno.serve(async (req: Request) => {
       const verify = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
       const result = (await verify.json()) as { success?: boolean };
       if (!result.success) return json({ error: "Completa la verificación anti-bots e inténtalo de nuevo." }, 400);
-    }
-    const { error: rateErr } = await admin.rpc("signup_rate_check", { p_ip: ip });
-    if (rateErr) return json({ error: "Demasiados registros seguidos. Espera un rato e inténtalo de nuevo." }, 429);
-
-    const { data: inviteOnly } = await admin.rpc("signup_is_invite_only");
-    if (inviteOnly) {
-      // Vale un enlace de grupo del staff o una invitación de acceso de un solo uso.
-      let ok = false;
-      if (inviteCode) {
-        const { data: preview } = await admin.rpc("invite_signup_preview", { p_code: inviteCode });
-        ok = preview?.[0]?.status === "valid";
-      }
-      if (!ok && accessCode) {
-        const { data } = await admin.rpc("access_code_check", { p_code: accessCode });
-        ok = data === true;
-      }
-      if (!ok) return json({ error: accessCode || inviteCode ? "Esta invitación no es válida, ya se ha usado o ha caducado. Pide una nueva." : PRIVATE_MSG, field: "access" }, 403);
     }
 
     const { data: available } = await admin.rpc("username_available", { p_username: username });

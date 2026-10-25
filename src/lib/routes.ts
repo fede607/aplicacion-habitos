@@ -14,3 +14,6 @@ export function isAuthPage(pathname: string): boolean {
 }
 
 export const APP_HOME = "/today";
+
+/** Cookie con la invitación de acceso personal (para no perderla al salir del registro). */
+export const ACCESS_COOKIE = "ya_acceso";

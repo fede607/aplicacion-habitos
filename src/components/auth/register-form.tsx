@@ -11,6 +11,17 @@ import { CAPTCHA_LOAD_ERROR, CAPTCHA_PENDING, useCaptcha } from "./use-captcha";
 
 const noop = () => () => {};
 
+/** «José Pérez» → «jose_perez»: minúsculas, sin tildes ni espacios (3-24 caracteres). */
+function toUsername(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[\s.-]+/g, "_")
+    .replace(/[^a-z0-9_]/g, "")
+    .slice(0, 24);
+}
+
 /**
  * Registro abierto (con invitación opcional). Usa la Edge Function `register-user`
  * para crear la cuenta con email ya confirmado y devolver la sesión.
@@ -27,6 +38,10 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const captcha = useCaptcha();
   const [accepted, setAccepted] = useState(false);
+  // Con invitación (de un solo uso) no hace falta el anti-bots: un bot no puede tener una.
+  const needCaptcha = !access && !invite;
+  const [username, setUsername] = useState("");
+  const [usernameTouched, setUsernameTouched] = useState(false);
 
   return (
     <form
@@ -51,7 +66,7 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
           setError("Para continuar, confirma que tienes 14 años o más y aceptas los términos.");
           return;
         }
-        if (!captcha.ready) {
+        if (needCaptcha && !captcha.ready) {
           setError(CAPTCHA_PENDING);
           return;
         }
@@ -130,12 +145,27 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
     >
       <FormError message={error} />
       <Field label="Nombre" htmlFor="displayName" error={errors.displayName}>
-        <Input id="displayName" name="displayName" autoComplete="name" maxLength={40} required aria-invalid={!!errors.displayName} />
+        <Input
+          id="displayName"
+          name="displayName"
+          autoComplete="name"
+          maxLength={40}
+          required
+          aria-invalid={!!errors.displayName}
+          onChange={(e) => {
+            if (!usernameTouched) setUsername(toUsername(e.target.value));
+          }}
+        />
       </Field>
-      <Field label="Nombre de usuario" htmlFor="username" error={errors.username} hint="3-24 caracteres: minúsculas, números o _">
+      <Field label="Nombre de usuario" htmlFor="username" error={errors.username} hint="Se rellena solo; puedes cambiarlo (minúsculas, números o _)">
         <Input
           id="username"
           name="username"
+          value={username}
+          onChange={(e) => {
+            setUsernameTouched(true);
+            setUsername(toUsername(e.target.value));
+          }}
           autoComplete="username"
           autoCapitalize="none"
           spellCheck={false}
@@ -164,8 +194,12 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
           .
         </span>
       </label>
-      <Turnstile onToken={captcha.setToken} resetSignal={captcha.resetSignal} onLoadError={captcha.onLoadError} />
-      {captcha.loadError ? <FormError message={CAPTCHA_LOAD_ERROR} /> : null}
+      {needCaptcha ? (
+        <>
+          <Turnstile onToken={captcha.setToken} resetSignal={captcha.resetSignal} onLoadError={captcha.onLoadError} />
+          {captcha.loadError ? <FormError message={CAPTCHA_LOAD_ERROR} /> : null}
+        </>
+      ) : null}
       <SubmitButton pending={pending} pendingText="Creando cuenta…">
         Crear cuenta
       </SubmitButton>

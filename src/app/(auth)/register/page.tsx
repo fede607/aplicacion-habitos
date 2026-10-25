@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { Lock, Sparkles, Users } from "lucide-react";
 import { SOURCE_COOKIE, cleanSource } from "@/lib/signup-source";
+import { ACCESS_COOKIE } from "@/lib/routes";
 import { RegisterForm } from "@/components/auth/register-form";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, isAdminConfigured } from "@/lib/supabase/admin";
@@ -22,7 +23,8 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   const code = inviteFromParams(params);
   const source = cleanSource(typeof params.src === "string" ? params.src : (await cookies()).get(SOURCE_COOKIE)?.value);
 
-  const access = typeof params.acceso === "string" ? params.acceso.slice(0, 32) : undefined;
+  const cookieStore = await cookies();
+  const access = (typeof params.acceso === "string" ? params.acceso : cookieStore.get(ACCESS_COOKIE)?.value)?.slice(0, 32);
   const supabaseAnon = await createClient();
   let invite: { code: string; groupName: string } | null = null;
   let inviteProblem = false;

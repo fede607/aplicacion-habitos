@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { buildCsp } from "@/lib/security-headers";
-import { APP_HOME, isAuthPage, isPublicPath } from "@/lib/routes";
+import { ACCESS_COOKIE, APP_HOME, isAuthPage, isPublicPath } from "@/lib/routes";
 
 /**
  * Proxy (antes "middleware"):
@@ -64,6 +64,12 @@ export async function proxy(request: NextRequest) {
     home.pathname = APP_HOME;
     home.search = "";
     return redirectTo(home);
+  }
+
+  // Invitación de acceso: se recuerda 14 días para no perderla si la persona sale del registro.
+  const acceso = request.nextUrl.searchParams.get("acceso");
+  if (pathname === "/register" && acceso && /^[A-Za-z0-9-]{6,32}$/.test(acceso)) {
+    response.cookies.set(ACCESS_COOKIE, acceso, { maxAge: 60 * 60 * 24 * 14, path: "/", sameSite: "lax", httpOnly: true, secure: isHttps });
   }
 
   response.headers.set("Content-Security-Policy", csp);
