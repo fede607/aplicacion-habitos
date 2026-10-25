@@ -36,7 +36,7 @@ begin
   select id into v_id from public.groups where created_by = p_user and is_personal and deleted_at is null;
   if v_id is null then
     insert into public.groups (name, description, start_date, end_date, created_by, is_personal, max_members, comparison_enabled)
-    values ('Mi Year Arc', '', v_start, v_start + 365, p_user, true, 1, false)
+    values ('Mi Year Arc', '', v_start, v_start + 365, p_user, true, 2, false)
     returning id into v_id;
     insert into public.group_members (group_id, user_id, role) values (v_id, p_user, 'admin');
   end if;
@@ -175,7 +175,6 @@ create table if not exists public.personal_challenges (
 );
 create index if not exists personal_challenges_user_idx on public.personal_challenges (user_id, created_at desc);
 alter table public.personal_challenges enable row level security;
-drop policy if exists personal_challenges_select on public.personal_challenges;
 create policy personal_challenges_select on public.personal_challenges for select to authenticated using (user_id = (select auth.uid()));
 
 create table if not exists public.challenge_checkins (
@@ -185,7 +184,6 @@ create table if not exists public.challenge_checkins (
   primary key (challenge_id, day)
 );
 alter table public.challenge_checkins enable row level security;
-drop policy if exists challenge_checkins_select on public.challenge_checkins;
 create policy challenge_checkins_select on public.challenge_checkins for select to authenticated using (
   exists (select 1 from public.personal_challenges c where c.id = challenge_id and c.user_id = (select auth.uid()))
 );
