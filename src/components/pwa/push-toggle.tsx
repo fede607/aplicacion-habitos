@@ -30,8 +30,11 @@ function detect(): Promise<State> {
     .catch(() => "unsupported" as State);
 }
 
-/** Activa/desactiva los avisos push en ESTE dispositivo. */
-export function PushToggle() {
+/**
+ * Activa/desactiva los avisos push en ESTE dispositivo.
+ * variant="card": tarjeta llamativa para Hoy; sólo aparece mientras no estén activados.
+ */
+export function PushToggle({ variant = "settings" }: { variant?: "settings" | "card" }) {
   const [state, setState] = useState<State>("loading");
   const [pending, startTransition] = useTransition();
 
@@ -92,6 +95,33 @@ export function PushToggle() {
       else toast.error(res.error);
     });
 
+  if (variant === "card") {
+    if (state === "loading" || state === "unsupported" || state === "on") return null;
+    return (
+      <section className="grid gap-3 rounded-3xl border-2 border-primary/40 bg-primary-soft p-4" aria-label="Activar avisos">
+        <p className="flex items-center gap-2 font-bold">
+          <BellRing className="size-5 text-primary" aria-hidden="true" /> Activa los avisos para no olvidarte nunca
+        </p>
+        <p className="text-sm text-muted">
+          {state === "ios-install"
+            ? "En iPhone primero instala la app: botón Compartir → «Añadir a pantalla de inicio». Ábrela desde el icono y vuelve aquí."
+            : state === "denied"
+              ? "Bloqueaste los avisos. Toca el candado junto a la dirección → Notificaciones → Permitir, y recarga."
+              : "Te avisamos por la mañana, a tu hora de recordatorio y con una última llamada si aún te falta algo. Sólo si te queda algo por hacer."}
+        </p>
+        {state === "off" ? (
+          <Button variant="pro" size="lg" disabled={pending} onClick={enable} className="justify-self-start">
+            {pending ? <LoaderCircle className="animate-spin" aria-hidden="true" /> : <BellRing aria-hidden="true" />} Activar avisos
+          </Button>
+        ) : state === "ios-install" ? (
+          <a href="/instalar" className="text-sm font-semibold text-primary underline">
+            Ver cómo instalarla
+          </a>
+        ) : null}
+      </section>
+    );
+  }
+
   if (state === "loading") return <p className="text-sm text-muted">Comprobando tu dispositivo…</p>;
   if (state === "ios-install")
     return (
@@ -113,8 +143,8 @@ export function PushToggle() {
     <div className="grid gap-3">
       <p className="text-sm text-muted">
         {state === "on"
-          ? "Activados en este dispositivo. Te avisaremos a tu hora de recordatorio si te quedan hábitos por marcar."
-          : "Recibe un aviso en el móvil a tu hora de recordatorio si te quedan hábitos por marcar, para no perder la racha."}
+          ? "Activados en este dispositivo. Te avisamos a las 9:00, a tu hora de recordatorio y con una última llamada, sólo si te queda algo por marcar."
+          : "Recibe avisos en el móvil (mañana, tu hora de recordatorio y última llamada) si te quedan hábitos o retos por marcar."}
       </p>
       <div className="flex flex-wrap gap-2">
         {state === "on" ? (

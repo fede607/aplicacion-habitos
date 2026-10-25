@@ -9,6 +9,7 @@ import { statsFrom } from "../data/stats-range";
 import type { GroupRow, HabitLogStatus, HabitRow, NotificationKind } from "../database.types";
 import { composeDailyReminder, composeWeeklySummary } from "./compose";
 import { sendPushToUser } from "../push/server";
+import { pushReminderText, type Pending } from "./push-text";
 
 type Admin = ReturnType<typeof createAdminClient>;
 type Claim = {
@@ -113,16 +114,13 @@ export async function runNotifications(options: { now?: Date; limit?: number } =
     try {
       const ctx = await loadGroup(claim.group_id, claim.local_date);
       const pending = ctx ? await pendingToday(admin, claim.user_id, ctx, claim.local_date) : null;
-      if (!pending || pending.pending.length === 0) {
+      if (!pending || pending.pending.length + pending.challenges.length === 0) {
         status = "skipped";
       } else {
-        const first = claim.display_name.trim().split(/\s+/)[0] || "crack";
-        const list = pending.pending.slice(0, 3).join(", ") + (pending.pending.length > 3 ? "…" : "");
         const delivered = await sendPushToUser(claim.user_id, {
-          title: pending.streak > 0 ? `🔥 ${first}, no pierdas tu racha de ${pending.streak} días` : `⏰ ${first}, te quedan ${pending.pending.length} hábitos`,
-          body: `Pendientes: ${list}. Márcalos en 10 segundos.`,
-          url: "/today",
-          tag: `reminder-${claim.period_key}`,
+          ...pushReminderText(claim.display_name, claim.period_key, pending),
+          url: pending.pending.length ? "/today" : "/retos",
+          tag: `reminder-${claim.local_date}`,
         });
         status = delivered > 0 ? "sent" : "skipped";
       }
@@ -147,15 +145,25 @@ function habitsFor(ctx: GroupContext, userId: string): HabitRow[] {
   return ctx.habits.filter((h) => h.owner_id === null || h.owner_id === userId);
 }
 
-/** Hábitos obligatorios de hoy aún sin registrar y racha actual. */
-async function pendingToday(admin: Admin, userId: string, ctx: GroupContext, today: IsoDate): Promise<{ pending: string[]; streak: number }> {
+/** Hábitos obligatorios y retos personales de hoy aún sin marcar, y racha actual. */
+async function pendingToday(admin: Admin, userId: string, ctx: GroupContext, today: IsoDate): Promise<Pending> {
   const required = habitsFor(ctx, userId).filter((h) => isRequiredOn(h, today));
-  if (required.length === 0) return { pending: [], streak: 0 };
-  const { data: logs } = await admin.from("habit_logs").select("habit_id").eq("user_id", userId).eq("group_id", ctx.group.id).eq("log_date", today);
-  const logged = new Set((logs ?? []).map((l) => l.habit_id));
+  const [logsRes, challengesRes] = await Promise.all([
+    required.length
+      ? admin.from("habit_logs").select("habit_id").eq("user_id", userId).eq("group_id", ctx.group.id).eq("log_date", today)
+      : Promise.resolve({ data: [] as { habit_id: string }[] }),
+    admin.from("personal_challenges").select("id, title, days, started_on").eq("user_id", userId).is("completed_at", null).is("abandoned_at", null),
+  ]);
+  const logged = new Set((logsRes.data ?? []).map((l) => l.habit_id));
+  const running = (challengesRes.data ?? []).filter((c) => c.started_on <= today && addDays(c.started_on, c.days - 1) >= today);
+  const { data: checked } = running.length
+    ? await admin.from("challenge_checkins").select("challenge_id").in("challenge_id", running.map((c) => c.id)).eq("day", today)
+    : { data: [] as { challenge_id: string }[] };
+  const done = new Set((checked ?? []).map((c) => c.challenge_id));
   return {
     pending: required.filter((h) => !logged.has(h.id)).map((h) => h.name),
-    streak: computeStreaks(ctx.series.get(userId) ?? [], ctx.group.streak_threshold, today).current,
+    challenges: running.filter((c) => !done.has(c.id)).map((c) => c.title),
+    streak: required.length ? computeStreaks(ctx.series.get(userId) ?? [], ctx.group.streak_threshold, today).current : 0,
   };
 }
 

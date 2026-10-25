@@ -20,6 +20,7 @@ import { getYearLine } from "@/lib/data/year";
 import { YearLineCard } from "@/components/year/year-line";
 import { ReviewPrompt } from "@/components/reviews/review-prompt";
 import { RecoveryCard } from "@/components/recovery/recovery-card";
+import { PushToggle } from "@/components/pwa/push-toggle";
 
 export const metadata: Metadata = { title: "Hoy" };
 
@@ -109,6 +110,8 @@ export default async function TodayPage({ searchParams }: PageProps<"/today">) {
       ) : (
         <TodayTracker key={date} date={date} habits={trackerHabits} initialStatuses={statuses} editable />
       )}
+
+      <PushToggle variant="card" />
 
       {hasRecovery === false ? <RecoveryCard hasCode={false} banner /> : null}
 
