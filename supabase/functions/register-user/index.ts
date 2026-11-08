@@ -5,7 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
  * Alta de cuentas (registro abierto). Protecciones:
  * - Validación de campos en el servidor.
  * - Límite de 5 altas por IP y hora y 300 en total por hora (signup_rate_check).
- * - Cloudflare Turnstile si TURNSTILE_SECRET_KEY está configurado (no hace falta con invitación válida).
+ * - Cloudflare Turnstile si TURNSTILE_SECRET_KEY está configurado (sólo se lo salta una invitación personal válida).
  * - Acceso privado: si está activado, exige un enlace de grupo del staff o una invitación personal.
  * Crea la cuenta con el email confirmado y devuelve la sesión.
  */
@@ -55,29 +55,20 @@ Deno.serve(async (req: Request) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { autoRefreshToken: false, persistSession: false } });
 
-    const ip = (req.headers.get("cf-connecting-ip") ?? req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown").trim();
-    // Límite de altas por IP y global (también frena probar códigos de invitación al azar).
-    const { error: rateErr } = await admin.rpc("signup_rate_check", { p_ip: ip });
-    if (rateErr) return json({ error: "Demasiados registros seguidos. Espera un rato e inténtalo de nuevo." }, 429);
+    // IP real puesta por Cloudflare (X-Forwarded-For lo puede falsear el cliente).
+    const ip = (req.headers.get("cf-connecting-ip") ?? req.headers.get("x-real-ip") ?? "unknown").trim();
 
-    // Acceso privado: vale un enlace de grupo del staff o una invitación de acceso de un solo uso.
-    const { data: inviteOnly } = await admin.rpc("signup_is_invite_only");
-    let invited = false;
-    if (inviteOnly) {
-      if (inviteCode) {
-        const { data: preview } = await admin.rpc("invite_signup_preview", { p_code: inviteCode });
-        invited = preview?.[0]?.status === "valid";
-      }
-      if (!invited && accessCode) {
-        const { data } = await admin.rpc("access_code_check", { p_code: accessCode });
-        invited = data === true;
-      }
-      if (!invited) return json({ error: accessCode || inviteCode ? "Esta invitación no es válida, ya se ha usado o ha caducado. Pide una nueva." : PRIVATE_MSG, field: "access" }, 403);
+    // Invitación de acceso de un solo uso: la manda el staff a una sola persona, un bot no puede tenerla.
+    let accessOk = false;
+    if (accessCode) {
+      const { data } = await admin.rpc("access_code_check", { p_code: accessCode });
+      accessOk = data === true;
     }
 
-    // Anti-bots: CAPTCHA (si está configurado) salvo con invitación válida (un bot no puede tenerla).
+    // Anti-bots primero (salvo invitación personal válida), para que peticiones sin verificar
+    // no gasten el cupo de altas de todos.
     const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY");
-    if (turnstileSecret && !invited) {
+    if (turnstileSecret && !accessOk) {
       const form = new FormData();
       form.append("secret", turnstileSecret);
       form.append("response", captchaToken);
@@ -85,6 +76,21 @@ Deno.serve(async (req: Request) => {
       const verify = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
       const result = (await verify.json()) as { success?: boolean };
       if (!result.success) return json({ error: "Completa la verificación anti-bots e inténtalo de nuevo." }, 400);
+    }
+
+    // Límite de altas por IP y global (también frena probar códigos de invitación al azar).
+    const { error: rateErr } = await admin.rpc("signup_rate_check", { p_ip: ip });
+    if (rateErr) return json({ error: "Demasiados registros seguidos. Espera un rato e inténtalo de nuevo." }, 429);
+
+    // Acceso privado: vale un enlace de grupo del staff o una invitación de acceso de un solo uso.
+    const { data: inviteOnly } = await admin.rpc("signup_is_invite_only");
+    if (inviteOnly && !accessOk) {
+      let invited = false;
+      if (inviteCode) {
+        const { data: preview } = await admin.rpc("invite_signup_preview", { p_code: inviteCode });
+        invited = preview?.[0]?.status === "valid";
+      }
+      if (!invited) return json({ error: accessCode || inviteCode ? "Esta invitación no es válida, ya se ha usado o ha caducado. Pide una nueva." : PRIVATE_MSG, field: "access" }, 403);
     }
 
     const { data: available } = await admin.rpc("username_available", { p_username: username });
@@ -101,7 +107,7 @@ Deno.serve(async (req: Request) => {
         terms_accepted_at: new Date().toISOString(),
         ...(inviteCode ? { invite_code: inviteCode } : {}),
         ...(source ? { signup_source: source } : {}),
-        ...(accessCode ? { access_code: accessCode } : {}),
+        ...(accessOk ? { access_code: accessCode } : {}),
       },
     });
 

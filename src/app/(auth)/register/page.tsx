@@ -21,10 +21,10 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   const params = await searchParams;
   const next = typeof params.next === "string" ? safeNextPath(params.next) : undefined;
   const code = inviteFromParams(params);
-  const source = cleanSource(typeof params.src === "string" ? params.src : (await cookies()).get(SOURCE_COOKIE)?.value);
-
   const cookieStore = await cookies();
-  const access = (typeof params.acceso === "string" ? params.acceso : cookieStore.get(ACCESS_COOKIE)?.value)?.slice(0, 32);
+  const source = cleanSource(typeof params.src === "string" ? params.src : cookieStore.get(SOURCE_COOKIE)?.value);
+  const accessFromUrl = typeof params.acceso === "string" ? params.acceso.slice(0, 32) : undefined;
+  const access = accessFromUrl ?? cookieStore.get(ACCESS_COOKIE)?.value?.slice(0, 32);
   const supabaseAnon = await createClient();
   let invite: { code: string; groupName: string } | null = null;
   let inviteProblem = false;
@@ -35,7 +35,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   }
   const { data: inviteOnly } = await supabaseAnon.rpc("signup_is_invite_only");
   let accessOk = false;
-  if (inviteOnly && access && isAdminConfigured()) {
+  if (access && isAdminConfigured()) {
     const { data } = await createAdminClient().rpc("access_code_check", { p_code: access });
     accessOk = data === true;
   }
@@ -48,7 +48,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Year Arc está en acceso privado</h1>
           <p className="mt-2 text-sm text-muted">
-            {access || code
+            {accessFromUrl || code
               ? "Esta invitación no es válida, ya se ha usado o ha caducado. Cada invitación sirve para una sola persona: pide una nueva a quien te la mandó."
               : "Por ahora sólo se puede entrar con una invitación personal. Pídesela a quien te habló de la app."}
           </p>
@@ -64,6 +64,8 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
     );
   }
 
+  // Google/Apple no llevan la invitación personal: con ella, sólo registro con correo.
+  const hideOAuth = Boolean(inviteOnly && accessOk && !invite);
   const proof = await getPublicProof();
 
   return (
@@ -91,8 +93,8 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
       )}
 
       <div className="grid gap-4 rounded-3xl border border-border bg-surface p-5 shadow-card sm:p-6">
-        <OAuthButtons providers={enabledOAuthProviders()} invite={invite?.code} next={next} />
-        {enabledOAuthProviders().length ? (
+        {!hideOAuth ? <OAuthButtons providers={enabledOAuthProviders()} invite={invite?.code} next={next} /> : null}
+        {enabledOAuthProviders().length && !hideOAuth ? (
           <p className="text-center text-xs text-muted">
             Al continuar con Google o Apple confirmas que tienes 14 años o más y aceptas los{" "}
             <Link href="/terminos" className="underline">

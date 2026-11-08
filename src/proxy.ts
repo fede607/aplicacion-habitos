@@ -70,6 +70,9 @@ export async function proxy(request: NextRequest) {
   const acceso = request.nextUrl.searchParams.get("acceso");
   if (pathname === "/register" && acceso && /^[A-Za-z0-9-]{6,32}$/.test(acceso)) {
     response.cookies.set(ACCESS_COOKIE, acceso, { maxAge: 60 * 60 * 24 * 14, path: "/", sameSite: "lax", httpOnly: true, secure: isHttps });
+  } else if (isAuthenticated && request.cookies.has(ACCESS_COOKIE)) {
+    // Ya tiene cuenta: la invitación recordada sobra (y no debe reaparecer en otro registro en este equipo).
+    response.cookies.delete(ACCESS_COOKIE);
   }
 
   response.headers.set("Content-Security-Policy", csp);

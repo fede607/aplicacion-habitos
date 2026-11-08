@@ -19,7 +19,22 @@ function toUsername(value: string): string {
     .toLowerCase()
     .replace(/[\s.-]+/g, "_")
     .replace(/[^a-z0-9_]/g, "")
-    .slice(0, 24);
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 24)
+    .replace(/_+$/, "");
+}
+
+/** Variante libre de un nombre de usuario: añade cifras al final (y garantiza 3+ caracteres). */
+function withDigits(base: string): string {
+  const digits = String(Math.floor(100 + Math.random() * 900));
+  return `${(base || "user").slice(0, 24 - digits.length)}${digits}`;
+}
+
+/** Nombre de usuario sugerido a partir del nombre: siempre válido (3-24, a-z0-9_). */
+function suggestUsername(name: string): string {
+  const base = toUsername(name);
+  return base.length >= 3 ? base : base ? withDigits(base) : "";
 }
 
 /**
@@ -38,8 +53,9 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const captcha = useCaptcha();
   const [accepted, setAccepted] = useState(false);
-  // Con invitación (de un solo uso) no hace falta el anti-bots: un bot no puede tener una.
-  const needCaptcha = !access && !invite;
+  // Con invitación personal (de un solo uso) no hace falta el anti-bots: un bot no puede tener una.
+  // Los enlaces de grupo se pueden reenviar, así que con ellos sí se pide.
+  const needCaptcha = !access;
   const [username, setUsername] = useState("");
   const [usernameTouched, setUsernameTouched] = useState(false);
 
@@ -111,7 +127,14 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
 
           if (!resp.ok || result.error) {
             if (result.field === "username") {
-              setErrors({ username: "Ese nombre de usuario ya está cogido." });
+              if (!usernameTouched) {
+                // Lo generamos nosotros: proponemos uno libre en vez de dejar a la persona atascada.
+                const alt = withDigits(parsed.data.username);
+                setUsername(alt);
+                setErrors({ username: `Ese ya estaba cogido. Te proponemos «${alt}»: pulsa otra vez Crear cuenta.` });
+              } else {
+                setErrors({ username: "Ese nombre de usuario ya está cogido." });
+              }
             }
             setError(result.error ?? "No se ha podido crear la cuenta. Inténtalo de nuevo.");
             setPending(false);
@@ -153,7 +176,7 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
           required
           aria-invalid={!!errors.displayName}
           onChange={(e) => {
-            if (!usernameTouched) setUsername(toUsername(e.target.value));
+            if (!usernameTouched) setUsername(suggestUsername(e.target.value));
           }}
         />
       </Field>
