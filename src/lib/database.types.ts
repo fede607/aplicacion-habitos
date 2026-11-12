@@ -439,6 +439,7 @@ export type Database = {
         Args: Record<string, never>;
         Returns: { name: string; avatar_emoji: string | null; avatar_color: string; rating: number; body: string; created_at: string }[];
       };
+      signup_spots: { Args: Record<string, never>; Returns: { total: number; spots_left: number }[] };
       public_stats: {
         Args: Record<string, never>;
         Returns: {

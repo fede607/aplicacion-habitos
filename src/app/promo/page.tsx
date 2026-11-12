@@ -1,16 +1,22 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { requireSession } from "@/lib/data/session";
 import { Logo } from "@/components/layout/logo";
 import { CopyText } from "./copy-text";
 
 export const metadata: Metadata = { title: "Kit para estados", robots: { index: false } };
 
 const CAPTIONS = [
-  "Este año me he propuesto no fallar ni un día 🔥 Mi línea de constancia en Year Arc no para de subir: cada día que cumplo mis hábitos, sube. ¿Te animas? 👉 winterarc-2026.vercel.app/w",
-  "Así va mi año 👇 Esta línea es mi constancia día a día. Elige tus hábitos y traza la tuya, es gratis 👉 winterarc-2026.vercel.app/w",
-  "Me está funcionando esto para entrenar y ser constante 💪 Te hace un plan a tu medida y el primer mes de Pro es gratis 👉 winterarc-2026.vercel.app/w",
+  "🚨 Sólo 90 plazas. Abro Year Arc, la app con la que llevo mis hábitos y mi entreno, y cuando se llenen se cierra el registro. Gratis y con 1 mes de Pro de regalo. Coge la tuya 👉 winterarc-2026.vercel.app/w",
+  "Quedan pocas plazas 🔥 Sólo entran 90 personas en Year Arc: tus hábitos, tu entreno y tu año pintado día a día. Si la quieres, que sea hoy 👉 winterarc-2026.vercel.app/w",
+  "¿Este año sí? 💪 Year Arc te hace un plan a tu medida y te avisa para que no falles ni un día. Sólo 90 plazas y no se va a volver a abrir pronto 👉 winterarc-2026.vercel.app/w",
 ];
 
-export default function PromoPage() {
+export default async function PromoPage() {
+  // Sólo el staff reparte la app: el kit de anuncios no es público.
+  const { supabase } = await requireSession();
+  const { data: isStaff } = await supabase.rpc("am_i_staff");
+  if (!isStaff) notFound();
   return (
     <main className="mx-auto grid max-w-3xl gap-8 px-4 py-8">
       <header className="grid gap-2">

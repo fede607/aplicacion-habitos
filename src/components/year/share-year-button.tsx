@@ -21,7 +21,7 @@ export function ShareYearButton() {
             const blob = await res.blob();
             const file = new File([blob], "mi-ano-year-arc.png", { type: "image/png" });
             if (navigator.canShare?.({ files: [file] })) {
-              await navigator.share({ files: [file], title: "Mi año en Year Arc", text: "Así va mi año 🔥 Hazte el tuyo: winterarc-2026.vercel.app/w" });
+              await navigator.share({ files: [file], title: "Mi año en Year Arc", text: "Así va mi año 🔥" });
               return;
             }
             const url = URL.createObjectURL(blob);

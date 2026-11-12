@@ -118,7 +118,7 @@ function StreakCard({ name, headline, sub, percent, best }: CardProps) {
       </div>
 
       <div style={{ fontSize: 36, color: "#94a3b8" }}>
-        ¿Te atreves? winterarc-2026.vercel.app
+        Year Arc · 365 días
       </div>
     </div>
   );

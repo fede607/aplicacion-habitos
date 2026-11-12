@@ -21,7 +21,7 @@ export function ShareStreakButton({ className, compact }: { className?: string; 
           await navigator.share({
             files: [file],
             title: "Mi racha en Year Arc",
-            text: "Mi racha en Year Arc 🔥 ¿Te unes?",
+            text: "Mi racha en Year Arc 🔥",
           });
           return;
         }

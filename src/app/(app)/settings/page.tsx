@@ -46,7 +46,7 @@ export default async function SettingsPage() {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block font-bold">Year Arc Pro</span>
-          <span className="block text-sm text-muted">Tu plan, estado de suscripción e invitar amigos</span>
+          <span className="block text-sm text-muted">Tu plan y estado de suscripción</span>
         </span>
         <ChevronRight className="size-5 text-muted" aria-hidden="true" />
       </Link>

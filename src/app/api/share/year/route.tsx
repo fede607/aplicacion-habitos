@@ -67,7 +67,7 @@ function YearCard({ name, data }: { name: string; data: YearLine }) {
         ))}
       </div>
 
-      <div style={{ display: "flex", fontSize: 34, color: "#94a3b8" }}>Traza la tuya: winterarc-2026.vercel.app/w</div>
+      <div style={{ display: "flex", fontSize: 34, color: "#94a3b8" }}>Year Arc · 365 días</div>
     </div>
   );
 }

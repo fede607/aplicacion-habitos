@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
 import { getPaymentsOpen } from "@/lib/billing/payments";
 import { getPublicProof } from "@/lib/data/public-proof";
+import { getSignupSpots } from "@/lib/data/signup-spots";
+import { SpotsBadge } from "@/components/auth/spots-badge";
 import { RatingSummary, ReviewCards, StatsStrip } from "@/components/reviews/social-proof";
 import { LegalLinks } from "@/components/legal/legal-page";
 
 // Opiniones y cifras reales: se refrescan cada 10 minutos.
-export const revalidate = 600;
+// 60 s: las plazas que quedan tienen que estar al día.
+export const revalidate = 60;
 
 export const metadata: Metadata = { robots: { index: true, follow: true }, alternates: { canonical: "/" } };
 
@@ -113,7 +116,7 @@ function LineDemo() {
 }
 
 export default async function LandingPage() {
-  const [{ reviews, stats }, PAYMENTS_OPEN] = await Promise.all([getPublicProof(), getPaymentsOpen()]);
+  const [{ reviews, stats }, PAYMENTS_OPEN, spots] = await Promise.all([getPublicProof(), getPaymentsOpen(), getSignupSpots()]);
   return (
     <div className="aurora min-h-dvh">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5 sm:px-6">
@@ -131,9 +134,10 @@ export default async function LandingPage() {
             <p className="mt-5 max-w-xl text-lg text-muted text-pretty">
               Tus hábitos, tu entreno y tu año pintado día a día. 365 días para convertirte en quien quieres ser.
             </p>
-            <div className="mt-8 grid gap-3 sm:flex sm:items-center">
+            <SpotsBadge spots={spots} className="mt-6 max-w-md" />
+            <div className="mt-6 grid gap-3 sm:flex sm:items-center">
               <Button asChild size="xl" variant="pro" className="px-8">
-                <Link href="/register">Empezar gratis</Link>
+                <Link href="/register">{spots && spots.left > 0 ? "Coger mi plaza gratis" : "Empezar gratis"}</Link>
               </Button>
               <Link href="/instalar" className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-muted hover:text-foreground sm:px-4">
                 <Smartphone className="size-4" aria-hidden="true" /> Instalar la app en el móvil

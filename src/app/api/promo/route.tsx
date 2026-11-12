@@ -7,19 +7,19 @@ const LINK = "winterarc-2026.vercel.app/w";
 
 const DESIGNS = {
   "1": {
-    kicker: "RETO DE 365 DÍAS",
+    kicker: "SOLO 90 PLAZAS",
     title: ["Este año", "es para", "construirte."],
     sub: "Tus hábitos, tu entreno y tu año pintado día a día. Gratis.",
     bg: "linear-gradient(160deg, #060a12 0%, #0b2540 55%, #3b1a0a 100%)",
   },
   "2": {
-    kicker: "TU AÑO EN UNA LÍNEA",
+    kicker: "QUEDAN POCAS PLAZAS",
     title: ["Mira cómo", "sube tu", "constancia."],
     sub: "Elige tus hábitos y cada día que cumples tu línea sube.",
     bg: "linear-gradient(160deg, #1a0633 0%, #3b0a4a 50%, #0b2540 100%)",
   },
   "3": {
-    kicker: "1 MES PRO GRATIS",
+    kicker: "SOLO 90 PLAZAS · 1 MES PRO GRATIS",
     title: ["Tu plan de", "entreno a", "tu medida."],
     sub: "Rutina, series y calorías según tu cuerpo y objetivo.",
     bg: "linear-gradient(160deg, #04140d 0%, #0b3b2a 55%, #0b2540 100%)",
@@ -62,9 +62,10 @@ function Card({ d }: { d: (typeof DESIGNS)[keyof typeof DESIGNS] }) {
             fontWeight: 900,
           }}
         >
-          Empieza gratis →
+          Coge tu plaza gratis →
         </div>
         <div style={{ display: "flex", fontSize: 44, marginTop: 36, color: "#e2e8f0", fontWeight: 700 }}>{LINK}</div>
+        <div style={{ display: "flex", fontSize: 34, marginTop: 18, color: "#fdba74", fontWeight: 700 }}>Cuando se llenen, se cierra el registro</div>
       </div>
     </div>
   );

@@ -13,6 +13,8 @@ import { safeNextPath } from "@/lib/validation";
 import { enabledOAuthProviders } from "@/lib/auth-providers";
 import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import { getPublicProof } from "@/lib/data/public-proof";
+import { getSignupSpots } from "@/lib/data/signup-spots";
+import { SpotsBadge } from "@/components/auth/spots-badge";
 import { ReviewCards, StatsStrip } from "@/components/reviews/social-proof";
 
 export const metadata: Metadata = { title: "Crear cuenta" };
@@ -64,6 +66,29 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
     );
   }
 
+  // Plazas de lanzamiento: sin invitación y sin plazas libres, el registro está cerrado.
+  const spots = inviteOnly ? null : await getSignupSpots();
+  if (spots && spots.left <= 0 && !invite) {
+    return (
+      <div className="grid gap-6 text-center">
+        <span className="mx-auto grid size-14 place-items-center rounded-full bg-primary-soft text-primary">
+          <Lock className="size-7" aria-hidden="true" />
+        </span>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Plazas agotadas</h1>
+          <p className="mt-2 text-sm text-muted">Las {spots.total} plazas de lanzamiento de Year Arc ya están cogidas. Escríbenos y te avisamos si se abre alguna más.</p>
+        </div>
+        <p className="text-sm text-muted">
+          ¿Ya tienes cuenta?{" "}
+          <Link href="/login" className="font-semibold text-primary hover:underline">
+            Entra
+          </Link>
+        </p>
+        <ContactLine />
+      </div>
+    );
+  }
+
   // Google/Apple no llevan la invitación personal: con ella, sólo registro con correo.
   const hideOAuth = Boolean(inviteOnly && accessOk && !invite);
   const proof = await getPublicProof();
@@ -75,6 +100,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
         <p className="mt-1 text-sm text-muted">Crea tu cuenta, elige tus hábitos y empieza a pintar tu año.</p>
       </div>
 
+      {!invite ? <SpotsBadge spots={spots} /> : null}
       {invite ? (
         <p role="status" className="flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary-soft px-4 py-3 text-sm">
           <Users className="size-5 shrink-0 text-primary" aria-hidden="true" />

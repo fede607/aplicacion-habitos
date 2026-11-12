@@ -22,6 +22,7 @@ function cors(_req: Request) {
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,}$/;
 const USERNAME = /^[a-z0-9_]{3,24}$/;
 const SOURCE = /^[a-z0-9_-]{1,32}$/;
+const FULL_MSG = "Las plazas de lanzamiento de Year Arc están agotadas. Escríbenos y te avisamos si se abre alguna más.";
 const PRIVATE_MSG = "Year Arc está en acceso privado: necesitas una invitación personal. Pídesela a quien te habló de la app.";
 
 Deno.serve(async (req: Request) => {
@@ -95,6 +96,12 @@ Deno.serve(async (req: Request) => {
       if (!invited) return json({ error: accessCode || inviteCode ? "Esta invitación no es válida, ya se ha usado o ha caducado. Pide una nueva." : PRIVATE_MSG, field: "access" }, 403);
     }
 
+    // Plazas de lanzamiento: en registro abierto y sin invitación, si no quedan no se crea la cuenta.
+    if (!inviteOnly && !inviteCode) {
+      const { data: spots } = await admin.rpc("signup_spots");
+      if (spots?.[0] && spots[0].spots_left <= 0) return json({ error: FULL_MSG, field: "access" }, 403);
+    }
+
     const { data: available } = await admin.rpc("username_available", { p_username: username });
     if (available === false) return json({ error: "username_taken", field: "username" }, 400);
 
@@ -119,6 +126,8 @@ Deno.serve(async (req: Request) => {
       let msg = "No se ha podido crear la cuenta. Inténtalo de nuevo.";
       if (/already registered|already been registered|email.*(taken|exists)|ya existe/i.test(raw)) {
         msg = "Ya existe una cuenta con ese email. Prueba a iniciar sesión.";
+      } else if (/signup full/i.test(raw)) {
+        msg = FULL_MSG;
       } else if (/access code/i.test(raw) || (inviteOnly && createErr.status === 500)) {
         msg = "Esta invitación no es válida, ya se ha usado o ha caducado. Pide una nueva.";
       } else if (inviteCode && (/invit|invite/i.test(raw) || createErr.status === 500)) {
