@@ -34,7 +34,7 @@ export default function PrivacyPage() {
         </li>
         <li>
           <b>Avisos:</b> si los activas, la suscripción de notificaciones de tu navegador o móvil, para enviarte recordatorios. Se desactivan en un
-          toque. Sólo si activas «Novedades y ofertas» en tu perfil te enviaremos, como mucho una vez a la semana, avisos de funciones nuevas o
+          toque. Sólo si activas «Novedades y ofertas» (al registrarte o en tu perfil) te enviaremos, como mucho una vez a la semana, avisos de funciones nuevas o
           descuentos de Year Arc (nunca de terceros); puedes quitarlo cuando quieras. No te enviamos publicidad ni recordatorios por correo: el único
           email que te enviamos es tu clave de recuperación, cuando la creas.
         </li>

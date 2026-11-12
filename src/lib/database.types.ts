@@ -32,6 +32,8 @@ export type UserSettingsRow = {
   reminder_time: string;
   /** Avisos de novedades y ofertas (opt-in, por defecto no). */
   marketing_push: boolean;
+  /** Cuándo se dio el consentimiento de novedades (null si no lo hay). */
+  marketing_consent_at: string | null;
   active_group_id: string | null;
   email_daily_reminder: boolean;
   email_weekly_summary: boolean;

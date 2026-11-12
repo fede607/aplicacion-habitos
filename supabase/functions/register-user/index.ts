@@ -41,6 +41,8 @@ Deno.serve(async (req: Request) => {
     const source = typeof body.source === "string" && SOURCE.test(body.source.toLowerCase()) ? body.source.toLowerCase() : undefined;
     const captchaToken = typeof body.captchaToken === "string" ? body.captchaToken : "";
     const accessCode = typeof body.accessCode === "string" ? body.accessCode.slice(0, 32) : "";
+    // Casilla opcional del registro: novedades y ofertas (sólo cuenta un "sí" explícito).
+    const marketingOptIn = body.marketingOptIn === true;
 
     if (!EMAIL.test(email) || email.length > 254) return json({ error: "Email no válido.", field: "email" }, 400);
     if (password.length < 8 || password.length > 72 || !/[a-zA-Z]/.test(password) || !/\d/.test(password)) {
@@ -108,6 +110,7 @@ Deno.serve(async (req: Request) => {
         ...(inviteCode ? { invite_code: inviteCode } : {}),
         ...(source ? { signup_source: source } : {}),
         ...(accessOk ? { access_code: accessCode } : {}),
+        ...(marketingOptIn ? { marketing_opt_in: true } : {}),
       },
     });
 

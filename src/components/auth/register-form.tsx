@@ -53,6 +53,8 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const captcha = useCaptcha();
   const [accepted, setAccepted] = useState(false);
+  // Opcional y desmarcada por defecto: el consentimiento tiene que ser una acción de la persona.
+  const [marketing, setMarketing] = useState(false);
   // Con invitación personal (de un solo uso) no hace falta el anti-bots: un bot no puede tener una.
   // Los enlaces de grupo se pueden reenviar, así que con ellos sí se pide.
   const needCaptcha = !access;
@@ -112,6 +114,7 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
               accessCode: access,
               source,
               acceptTerms: true,
+              marketingOptIn: marketing,
               captchaToken: captcha.token ?? undefined,
             }),
           });
@@ -215,6 +218,12 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
             política de privacidad
           </a>
           .
+        </span>
+      </label>
+      <label className="flex items-start gap-2.5 text-sm">
+        <input type="checkbox" checked={marketing} onChange={(e) => setMarketing(e.target.checked)} className="mt-0.5 size-5 shrink-0 accent-[var(--primary)]" />
+        <span>
+          Quiero recibir novedades y ofertas de Year Arc <span className="text-muted">(opcional; como mucho un aviso a la semana y puedes quitarlo cuando quieras en tu perfil)</span>.
         </span>
       </label>
       {needCaptcha ? (
