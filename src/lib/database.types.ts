@@ -224,6 +224,9 @@ export type TrainingProfileRow = {
   focus: "balanced" | "glutes_legs" | "chest_arms" | "back_posture" | "shoulders" | "core";
   preferred_days: number[];
   updated_at: string;
+  /** Cuándo y con qué texto se dio el consentimiento de datos de salud. */
+  consent_at: string;
+  consent_version: string;
 };
 
 export type ReviewRow = {

@@ -16,7 +16,7 @@ import { CAPTCHA_LOAD_ERROR, CAPTCHA_PENDING, useCaptcha } from "./use-captcha";
  * Supabase Auth se aplican por la IP de cada persona y no a la IP compartida del
  * servidor. La sesión queda en cookies que el servidor valida en cada petición.
  */
-export function LoginForm({ next }: { next?: string }) {
+export function LoginForm({ next, defaultEmail }: { next?: string; defaultEmail?: string }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +58,7 @@ export function LoginForm({ next }: { next?: string }) {
         } catch {
           setError("Sin conexión. Inténtalo de nuevo.");
           setPending(false);
+          captcha.reset();
         }
       }}
     >
@@ -71,7 +72,7 @@ export function LoginForm({ next }: { next?: string }) {
         </p>
       ) : null}
       <Field label="Email" htmlFor="email" error={errors.email}>
-        <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" required aria-invalid={!!errors.email} />
+        <Input id="email" name="email" type="email" autoComplete="email" inputMode="email" defaultValue={defaultEmail} required aria-invalid={!!errors.email} />
       </Field>
       <Field label="Contraseña" htmlFor="password" error={errors.password}>
         <Input id="password" name="password" type="password" autoComplete="current-password" required aria-invalid={!!errors.password} />

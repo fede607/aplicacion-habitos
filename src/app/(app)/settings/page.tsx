@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bell, KeyRound, Star, ChevronDown, ChevronRight, Palette, Plus, ShieldCheck, Smartphone, Sparkles, Trash2, UserRound, Users } from "lucide-react";
+import { Bell, Download, KeyRound, Star, ChevronDown, ChevronRight, Palette, Plus, ShieldCheck, Smartphone, Sparkles, Trash2, UserRound, Users } from "lucide-react";
 import { requireSession } from "@/lib/data/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -118,6 +118,12 @@ export default async function SettingsPage() {
         ) : null}
         <Section icon={<Palette />} title="Apariencia" hint="Claro, oscuro o automático">
           <ThemeToggle />
+        </Section>
+        <Section icon={<Download />} title="Tus datos" hint="Descárgalos cuando quieras, gratis">
+          <p className="mb-3 text-sm text-muted">Un archivo CSV con tu cuenta, preferencias, datos físicos, hábitos, entrenos, notas y opinión.</p>
+          <a href="/api/export" className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border bg-surface px-3 text-sm font-semibold hover:bg-surface-2">
+            <Download className="size-4" aria-hidden="true" /> Descargar mis datos
+          </a>
         </Section>
         <Section icon={<Trash2 />} title="Eliminar cuenta" hint={email ?? ""} danger>
           <p className="mb-3 text-sm text-muted">

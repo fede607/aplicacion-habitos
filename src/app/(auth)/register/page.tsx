@@ -90,7 +90,7 @@ export default async function RegisterPage({ searchParams }: PageProps<"/registe
   }
 
   // Google/Apple no llevan la invitación personal: con ella, sólo registro con correo.
-  const hideOAuth = Boolean(inviteOnly && accessOk && !invite);
+  const hideOAuth = Boolean((inviteOnly && accessOk && !invite) || (spots && spots.left <= 0));
   const proof = await getPublicProof();
 
   return (

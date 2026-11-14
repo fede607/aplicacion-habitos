@@ -33,10 +33,23 @@ export async function saveTrainingProfile(input: z.input<typeof trainingProfileS
       focus: p.focus,
       preferred_days: [...new Set(p.preferredDays)].sort((a, b) => a - b),
       updated_at: new Date().toISOString(),
+      // Cada guardado lleva la casilla de consentimiento marcada: se renueva la fecha.
+      consent_at: new Date().toISOString(),
+      consent_version: "plan-2026-11",
     },
     { onConflict: "user_id" },
   );
   if (error) return fail(error, "saveTrainingProfile");
+  revalidatePath("/plan");
+  return { ok: true, data: undefined };
+}
+
+/** Retira el consentimiento de datos físicos: borra tu perfil de entreno (el plan deja de calcularse). */
+export async function deleteTrainingProfile(): Promise<ActionResult> {
+  const { supabase, userId } = await authed();
+  if (!userId) return NOT_AUTHENTICATED;
+  const { error } = await supabase.from("training_profiles").delete().eq("user_id", userId);
+  if (error) return fail(error, "deleteTrainingProfile");
   revalidatePath("/plan");
   return { ok: true, data: undefined };
 }

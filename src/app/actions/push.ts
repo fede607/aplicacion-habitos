@@ -5,8 +5,15 @@ import { fail, logServerError, type ActionResult } from "@/lib/errors";
 import { getVapidKeys, sendPushToUser } from "@/lib/push/server";
 import { authed, NOT_AUTHENTICATED } from "./_helpers";
 
+// Sólo servicios de push reales: el servidor hace POST a este endpoint (evita usarlo contra otros sitios).
+const PUSH_HOSTS = [/^fcm\.googleapis\.com$/, /^updates\.push\.services\.mozilla\.com$/, /\.push\.apple\.com$/, /\.notify\.windows\.com$/, /^android\.googleapis\.com$/];
+
 const subscriptionSchema = z.object({
-  endpoint: z.url().startsWith("https://").max(1000),
+  endpoint: z
+    .url()
+    .startsWith("https://")
+    .max(1000)
+    .refine((u) => PUSH_HOSTS.some((re) => re.test(new URL(u).hostname)), "Servicio de notificaciones no admitido."),
   keys: z.object({ p256dh: z.string().min(10).max(200), auth: z.string().min(4).max(100) }),
 });
 

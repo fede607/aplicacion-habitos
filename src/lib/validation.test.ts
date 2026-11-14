@@ -17,6 +17,9 @@ describe("safeNextPath (anti open-redirect)", () => {
     ["/\\evil.com", "/today"],
     ["javascript:alert(1)", "/today"],
     ["/ok\r\nSet-Cookie: x", "/today"],
+    ["/\t/evil.com", "/today"],
+    ["/%09/evil.com", "/%09/evil.com"],
+    ["/register?src=whatsapp", "/register?src=whatsapp"],
     [null, "/today"],
   ])("%s -> %s", (input, expected) => {
     expect(safeNextPath(input as string | null)).toBe(expected);

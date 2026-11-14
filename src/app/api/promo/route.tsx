@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 /** Carteles 1080×1920 para estados de WhatsApp / historias. ?v=1|2|3 */
 
@@ -11,7 +11,15 @@ const PAPER = "#f5f1e8";
 const HOT = "linear-gradient(100deg, #ff7a18 0%, #ff3d77 55%, #9b5cff 100%)";
 
 const fontFile = (name: string) => readFile(join(process.cwd(), "assets/fonts", name));
-const fonts = Promise.all([fontFile("anton-latin-400-normal.woff"), fontFile("inter-latin-500-normal.woff"), fontFile("inter-latin-700-normal.woff")]);
+let fontsPromise: Promise<Buffer[]> | null = null;
+/** Fuentes en memoria; si una lectura falla, se reintenta en la siguiente petición. */
+function loadFonts() {
+  fontsPromise ??= Promise.all([fontFile("anton-latin-400-normal.woff"), fontFile("inter-latin-500-normal.woff"), fontFile("inter-latin-700-normal.woff")]).catch((e) => {
+    fontsPromise = null;
+    throw e;
+  });
+  return fontsPromise;
+}
 
 const display = { fontFamily: "Anton", textTransform: "uppercase" as const, lineHeight: 0.95 };
 
@@ -191,8 +199,13 @@ const DESIGNS = { "1": Seats, "2": Year, "3": Plan } as const;
 
 export async function GET(request: NextRequest) {
   const v = request.nextUrl.searchParams.get("v") ?? "1";
-  const Design = DESIGNS[(v in DESIGNS ? v : "1") as keyof typeof DESIGNS];
-  const [anton, inter500, inter700] = await fonts;
+  // Sólo 3 diseños: cualquier otra cosa (o parámetros extra para saltarse la caché) se redirige al canónico.
+  const known = Object.hasOwn(DESIGNS, v);
+  if (!known || [...request.nextUrl.searchParams.keys()].some((k) => k !== "v")) {
+    return NextResponse.redirect(new URL(`/api/promo?v=${known ? v : "1"}`, request.url), 308);
+  }
+  const Design = DESIGNS[v as keyof typeof DESIGNS];
+  const [anton, inter500, inter700] = await loadFonts();
   return new ImageResponse(<Design />, {
     width: 1080,
     height: 1920,
@@ -201,6 +214,6 @@ export async function GET(request: NextRequest) {
       { name: "Inter", data: inter500, weight: 500, style: "normal" },
       { name: "Inter", data: inter700, weight: 700, style: "normal" },
     ],
-    headers: { "Cache-Control": "public, max-age=3600" },
+    headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" },
   });
 }

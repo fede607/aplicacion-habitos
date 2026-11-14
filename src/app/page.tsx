@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PRO_MONTH_EUR, PRO_YEAR_EUR } from "@/lib/billing/paypal-me";
 import { getPaymentsOpen } from "@/lib/billing/payments";
 import { getPublicProof } from "@/lib/data/public-proof";
+import { cleanSource } from "@/lib/signup-source";
 import { getSignupSpots } from "@/lib/data/signup-spots";
 import { SpotsBadge } from "@/components/auth/spots-badge";
 import { RatingSummary, ReviewCards, StatsStrip } from "@/components/reviews/social-proof";
@@ -115,7 +116,10 @@ function LineDemo() {
   );
 }
 
-export default async function LandingPage() {
+export default async function LandingPage({ searchParams }: PageProps<"/">) {
+  const params = await searchParams;
+  const src = cleanSource(typeof params.src === "string" ? params.src : undefined);
+  const registerHref = src ? `/register?src=${src}` : "/register";
   const [{ reviews, stats }, PAYMENTS_OPEN, spots] = await Promise.all([getPublicProof(), getPaymentsOpen(), getSignupSpots()]);
   return (
     <div className="aurora min-h-dvh">
@@ -137,7 +141,7 @@ export default async function LandingPage() {
             <SpotsBadge spots={spots} className="mt-6 max-w-md" />
             <div className="mt-6 grid gap-3 sm:flex sm:items-center">
               <Button asChild size="xl" variant="pro" className="px-8">
-                <Link href="/register">{spots && spots.left > 0 ? "Coger mi plaza gratis" : "Empezar gratis"}</Link>
+                <Link href={registerHref}>{spots && spots.left > 0 ? "Coger mi plaza gratis" : "Empezar gratis"}</Link>
               </Button>
               <Link href="/instalar" className="inline-flex items-center justify-center gap-2 text-sm font-semibold text-muted hover:text-foreground sm:px-4">
                 <Smartphone className="size-4" aria-hidden="true" /> Instalar la app en el móvil
@@ -251,7 +255,7 @@ export default async function LandingPage() {
         <section className="mt-24 rounded-[2rem] bg-surface p-8 text-center shadow-card sm:p-12">
           <h2 className="text-3xl font-black tracking-tight text-balance">¿Empiezas hoy o dentro de un año desearás haber empezado hoy?</h2>
           <Button asChild size="xl" variant="pro" className="mt-6 px-8">
-            <Link href="/register">Empezar mi Year Arc</Link>
+            <Link href={registerHref}>Empezar mi Year Arc</Link>
           </Button>
         </section>
       </main>

@@ -3,7 +3,7 @@ import type { SignupSpots } from "@/lib/data/signup-spots";
 
 /** Aviso de plazas limitadas (cifra real, sale de la base de datos). */
 export function SpotsBadge({ spots, className = "" }: { spots: SignupSpots | null; className?: string }) {
-  if (!spots) return null;
+  if (!spots || spots.total <= 0) return null;
   const taken = spots.total - spots.left;
   const pct = Math.min(100, Math.round((taken / spots.total) * 100));
   return (

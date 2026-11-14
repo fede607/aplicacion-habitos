@@ -61,16 +61,18 @@ export async function startPaypalCheckout(period: "month" | "year" = "month"): P
 }
 
 /** Tras volver de PayPal: consulta la suscripción a PayPal y comprueba que es de este usuario. */
-export async function confirmPaypal(subscriptionId: string): Promise<void> {
-  if (!isPaypalConfigured() || !/^I-[A-Z0-9]+$/.test(subscriptionId)) return;
+export async function confirmPaypal(subscriptionId: string): Promise<boolean> {
+  if (!isPaypalConfigured() || !/^I-[A-Z0-9]+$/.test(subscriptionId)) return false;
   const { userId } = await authed();
-  if (!userId) return;
+  if (!userId) return false;
   try {
     const sub = await paypal<PaypalSubscription>(`/v1/billing/subscriptions/${subscriptionId}`);
-    if (sub.custom_id !== userId) return;
+    if (sub.custom_id !== userId) return false;
     await syncPaypalSubscription(sub);
+    return sub.status === "ACTIVE";
   } catch (e) {
     logServerError("confirmPaypal", e);
+    return false;
   }
 }
 

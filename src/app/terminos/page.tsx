@@ -17,7 +17,7 @@ export default async function TermsPage() {
 
       <h2>1. Cuenta</h2>
       <ul>
-        <li>Necesitas al menos 14 años, o el consentimiento de tu madre, padre o tutor.</li>
+        <li>Necesitas tener al menos 14 años.</li>
         <li>Eres responsable de tu contraseña y de lo que se haga con tu cuenta.</li>
         <li>No uses la app para molestar a otros ni para publicar contenido ofensivo o ilegal en nombres de grupos, hábitos u opiniones.</li>
       </ul>

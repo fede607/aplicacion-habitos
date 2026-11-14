@@ -10,6 +10,7 @@ import type { PlannedDay } from "@/lib/training/types";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { TrainingProfileForm, type TrainingFormValues } from "@/components/training/training-profile-form";
+import { DeleteTrainingData } from "@/components/training/delete-training-data";
 
 export const metadata: Metadata = { title: "Mi plan de entrenamiento" };
 
@@ -205,6 +206,7 @@ export default async function PlanPage() {
 
       <Collapsible icon={<Settings2 className="size-5 text-ember" aria-hidden="true" />} title="Cambiar mis datos u objetivo">
         <TrainingProfileForm initial={initial} currentYear={currentYear} />
+        <DeleteTrainingData />
       </Collapsible>
 
       <p className="px-1 text-xs text-muted">{plan.warnings.at(-1)}</p>

@@ -16,7 +16,7 @@ export function ReviewForm({ initial, onDone }: { initial?: ReviewValues | null;
   const [pending, start] = useTransition();
   const [rating, setRating] = useState(initial?.rating ?? 0);
   const [body, setBody] = useState(initial?.body ?? "");
-  const [allowPublic, setAllowPublic] = useState(initial?.allowPublic ?? true);
+  const [allowPublic, setAllowPublic] = useState(initial?.allowPublic ?? false);
 
   return (
     <form

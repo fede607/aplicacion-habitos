@@ -80,6 +80,8 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
           setError("Revisa los campos.");
           return;
         }
+        // Los campos ya están bien: quitamos los avisos de un intento anterior.
+        setErrors({});
         if (!accepted) {
           setError("Para continuar, confirma que tienes 14 años o más y aceptas los términos.");
           return;
@@ -119,7 +121,8 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
             }),
           });
 
-          const result = (await resp.json()) as {
+          // Un 502/504 del proveedor puede no traer JSON: no es "sin conexión".
+          const result = (await resp.json().catch(() => ({ error: "El servidor no responde. Inténtalo de nuevo en un minuto." }))) as {
             created?: boolean;
             fallback?: boolean;
             access_token?: string;
@@ -148,7 +151,7 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
           if (result.fallback) {
             // Cuenta creada pero no se pudo obtener sesión automáticamente
             router.replace(
-              `/login?message=${encodeURIComponent("Cuenta creada. Inicia sesión para entrar.")}&email=${encodeURIComponent(parsed.data.email)}`,
+              `/login?created=1&email=${encodeURIComponent(parsed.data.email)}`,
             );
             return;
           }
@@ -162,10 +165,16 @@ export function RegisterForm({ next, invite, source, access }: { next?: string; 
             const target = invite ? "/today" : safeNextPath(next, "/onboarding");
             router.replace(target);
             router.refresh();
+            return;
           }
+          // Respuesta inesperada: nunca dejar el botón girando para siempre.
+          setError("No se ha podido completar el registro. Si ya se creó la cuenta, entra con tu email.");
+          setPending(false);
+          captcha.reset();
         } catch {
           setError("Sin conexión. Inténtalo de nuevo.");
           setPending(false);
+          captcha.reset();
         }
       }}
     >

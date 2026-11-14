@@ -63,7 +63,13 @@ export async function staffSendMarketingPush(input: z.input<typeof marketingSche
   if (error) return fail(error, "staffSendMarketingPush", error.code === "WA429" ? "Ya enviaste un aviso de novedades hace menos de 7 días." : undefined);
   let delivered = 0;
   for (const id of ids ?? []) {
-    delivered += await sendPushToUser(id, { title: parsed.data.title, body: parsed.data.body, url: "/pro", tag: "novedades" });
+    // Publicidad identificada y con baja en el propio aviso (LSSI arts. 20 y 22).
+    delivered += await sendPushToUser(id, {
+      title: `Publi · ${parsed.data.title}`,
+      body: `${parsed.data.body}\nQuítalo en Perfil › Novedades.`,
+      url: "/settings#novedades",
+      tag: "novedades",
+    });
   }
   revalidatePath("/pro/pagos");
   return { ok: true, data: { people: (ids ?? []).length, delivered } };

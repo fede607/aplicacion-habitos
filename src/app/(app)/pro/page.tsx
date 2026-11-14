@@ -27,8 +27,8 @@ const FEATURES = [
 
 export default async function ProPage({ searchParams }: PageProps<"/pro">) {
   const params = await searchParams;
-  if (params.paypal === "success" && typeof params.subscription_id === "string") await confirmPaypal(params.subscription_id);
-  const paid = params.paypal === "success";
+  // Sólo se dice "pago completado" si PayPal confirma la suscripción activa.
+  const paid = params.paypal === "success" && typeof params.subscription_id === "string" ? await confirmPaypal(params.subscription_id) : false;
   const paypalOn = isPaypalConfigured();
 
   const session = await requireGroup();
@@ -142,6 +142,16 @@ export default async function ProPage({ searchParams }: PageProps<"/pro">) {
               <Link href="/pro/pagos" className={buttonVariants({ variant: "pro", size: "xl", className: "w-full" })}>
                 <Sparkles aria-hidden="true" /> Gestionar pagos Pro
               </Link>
+            </div>
+          ) : active && !manual && !sub.cancel_at_period_end && !PAYMENTS_OPEN ? (
+            <div className="grid gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
+              <p>
+                Ahora Pro es gratis para todos, pero tu suscripción de PayPal sigue activa (próximo cobro: <b>{nextDate}</b>). Cancélala si no quieres
+                más cobros.
+              </p>
+              <div>
+                <CancelButton />
+              </div>
             </div>
           ) : !PAYMENTS_OPEN ? (
             <p className="rounded-2xl border border-success/40 bg-success-soft p-4 text-sm text-foreground">

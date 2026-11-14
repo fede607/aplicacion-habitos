@@ -342,7 +342,7 @@ export function TrainingProfileForm({ initial, currentYear }: { initial: Trainin
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[var(--primary)]" />
           <span>
             Doy mi consentimiento para que Year Arc use mis datos físicos (edad, sexo, altura, peso y molestias) sólo para calcular mi plan. Puedo
-            retirarlo borrando mi cuenta. Más en la{" "}
+            retirarlo cuando quiera en Plan › Cambiar mis datos › Borrar mis datos físicos. Más en la{" "}
             <a href="/privacidad" target="_blank" className="underline">
               política de privacidad
             </a>

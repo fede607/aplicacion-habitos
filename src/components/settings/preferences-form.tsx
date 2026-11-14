@@ -55,11 +55,11 @@ export function PreferencesForm({ settings }: { settings: UserSettingsRow }) {
       <fieldset className="grid gap-2">
         <legend className="mb-2 text-sm font-semibold">Recordatorio</legend>
         <ToggleRow id="pref-reminder" title="Recordatorio en la app" description="Te avisamos en la app si a esa hora te quedan hábitos por marcar." checked={form.reminderEnabled} onChange={(v) => set("reminderEnabled", v)} />
-        <Field label="Hora del recordatorio" htmlFor="pref-time" className="max-w-48" hint="También la usa el recordatorio por email.">
+        <Field label="Hora del recordatorio" htmlFor="pref-time" className="max-w-48">
           <Input id="pref-time" type="time" value={form.reminderTime} onChange={(e) => set("reminderTime", e.target.value)} />
         </Field>
       </fieldset>
-      <fieldset className="grid gap-2">
+      <fieldset id="novedades" className="grid scroll-mt-24 gap-2">
         <legend className="mb-2 text-sm font-semibold">Novedades</legend>
         <ToggleRow
           id="pref-marketing"

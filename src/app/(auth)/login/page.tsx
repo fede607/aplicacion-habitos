@@ -17,6 +17,9 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const params = await searchParams;
   const next = typeof params.next === "string" ? safeNextPath(params.next) : undefined;
   const oauthError = typeof params.error === "string" ? OAUTH_ERRORS[params.error] : undefined;
+  // Tras crear la cuenta sin sesión automática: aviso fijo (nunca texto de la URL) y email ya escrito.
+  const created = params.created === "1";
+  const email = typeof params.email === "string" && params.email.length <= 254 ? params.email : undefined;
   return (
     <div className="grid gap-6">
       <div className="text-center">
@@ -28,9 +31,14 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           {oauthError}
         </p>
       ) : null}
+      {created ? (
+        <p role="status" className="rounded-2xl border border-success/40 bg-success-soft px-4 py-3 text-sm">
+          ¡Cuenta creada! Entra con tu email y tu contraseña.
+        </p>
+      ) : null}
       <div className="grid gap-4 rounded-3xl border border-border bg-surface p-5 shadow-card sm:p-6">
         <OAuthButtons providers={enabledOAuthProviders()} next={next} />
-        <LoginForm next={next} />
+        <LoginForm next={next} defaultEmail={email} />
       </div>
       <p className="text-center text-sm text-muted">
         ¿No tienes cuenta?{" "}

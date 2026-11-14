@@ -4,7 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 /**
  * Alta de cuentas (registro abierto). Protecciones:
  * - Validación de campos en el servidor.
- * - Límite de 5 altas por IP y hora y 300 en total por hora (signup_rate_check).
+ * - Límite de 20 altas por IP y hora y 300 en total por hora (signup_rate_check).
+ * - 90 plazas de lanzamiento (las invitaciones del staff entran aunque estén agotadas).
  * - Cloudflare Turnstile si TURNSTILE_SECRET_KEY está configurado (sólo se lo salta una invitación personal válida).
  * - Acceso privado: si está activado, exige un enlace de grupo del staff o una invitación personal.
  * Crea la cuenta con el email confirmado y devuelve la sesión.
@@ -123,10 +124,17 @@ Deno.serve(async (req: Request) => {
 
     if (createErr) {
       const raw = createErr.message ?? "";
+      // Auth suele devolver los errores del alta como un 500 genérico: si no quedan plazas, decirlo claro
+      // (también cubre la última plaza cogida entre la comprobación de arriba y este alta).
+      let full = /signup full/i.test(raw);
+      if (!full && !inviteOnly && createErr.status === 500) {
+        const { data: spots } = await admin.rpc("signup_spots");
+        full = !!spots?.[0] && spots[0].spots_left <= 0;
+      }
       let msg = "No se ha podido crear la cuenta. Inténtalo de nuevo.";
       if (/already registered|already been registered|email.*(taken|exists)|ya existe/i.test(raw)) {
         msg = "Ya existe una cuenta con ese email. Prueba a iniciar sesión.";
-      } else if (/signup full/i.test(raw)) {
+      } else if (full) {
         msg = FULL_MSG;
       } else if (/access code/i.test(raw) || (inviteOnly && createErr.status === 500)) {
         msg = "Esta invitación no es válida, ya se ha usado o ha caducado. Pide una nueva.";

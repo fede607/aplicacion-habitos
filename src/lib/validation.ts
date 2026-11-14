@@ -191,8 +191,16 @@ export const preferencesSchema = z.object({
 export function safeNextPath(next: string | null | undefined, fallback = "/today"): string {
   if (!next || typeof next !== "string") return fallback;
   if (!next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return fallback;
-  if (next.length > 200 || /[\r\n]/.test(next)) return fallback;
-  return next;
+  // Sin caracteres de control: el parser de URL quita tabs/saltos y "/\t/evil.com" acabaría en otro dominio.
+  if (next.length > 200 || /[\x00-\x1f\x7f]/.test(next)) return fallback;
+  // Última comprobación: resuelta contra un origen ficticio, debe seguir en ese mismo origen.
+  try {
+    const url = new URL(next, "https://x.invalid");
+    if (url.origin !== "https://x.invalid") return fallback;
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return fallback;
+  }
 }
 
 export function fieldErrors(error: z.ZodError): Record<string, string> {
@@ -207,7 +215,8 @@ export function fieldErrors(error: z.ZodError): Record<string, string> {
 // Perfil de entrenamiento (plan personalizado)
 export const trainingProfileSchema = z
   .object({
-    birthYear: z.coerce.number().int().min(1920).max(2020),
+    // Mínimo 14 años (edad de consentimiento digital en España).
+    birthYear: z.coerce.number().int().min(1920).max(new Date().getFullYear() - 14, "Tienes que tener 14 años o más."),
     sex: z.enum(["male", "female"]),
     heightCm: z.coerce.number().int().min(120, "Mínimo 120 cm").max(230, "Máximo 230 cm"),
     weightKg: z.coerce.number().min(30, "Mínimo 30 kg").max(250, "Máximo 250 kg"),
